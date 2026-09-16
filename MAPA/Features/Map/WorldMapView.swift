@@ -14,6 +14,7 @@ struct WorldMapView: View {
     /// Страна, чья карточка открыта.
     @State private var cardCountry: Country?
     @State private var showsRoutes = false
+    @State private var showsExport = false
     @State private var routeExpanded = false
     @Environment(\.scenePhase) private var scenePhase
 
@@ -32,6 +33,7 @@ struct WorldMapView: View {
                 citySheet
                 routePanel
                 routesSheet
+                exportSheet
                 themeSheet
                 countryCard
             }
@@ -126,6 +128,26 @@ struct WorldMapView: View {
             )
             .darkPanel()
             .zIndex(2)
+        }
+    }
+
+    // MARK: - Экспорт
+
+    @ViewBuilder
+    private var exportSheet: some View {
+        if showsExport, let geometry = model.geometry {
+            ExportSheet(
+                theme: activeTheme,
+                geometry: geometry,
+                overlay: model.overlay,
+                statistics: model.statistics,
+                route: model.editingRoute,
+                homeCity: model.travelLog.home?.cityName,
+                markedBounds: geometry.bounds(of: model.travelLog.statuses.keys),
+                onDismiss: { withAnimation(motion.animation(.smooth)) { showsExport = false } }
+            )
+            .darkPanel()
+            .zIndex(3)
         }
     }
 
@@ -379,6 +401,13 @@ struct WorldMapView: View {
                 withAnimation(motion.animation(.smooth)) { showsRoutes = true }
             }
             .accessibilityLabel("Маршруты")
+
+            MapControlButton(icon: "square.and.arrow.up") {
+                withAnimation(motion.animation(.smooth)) { showsExport = true }
+            }
+            .accessibilityLabel("Поделиться картой")
+            .disabled(model.statistics.isEmpty)
+            .opacity(model.statistics.isEmpty ? 0.35 : 1)
 
             MapControlButton(icon: "paintpalette") {
                 withAnimation(motion.animation(.smooth)) { showsThemes = true }

@@ -32,6 +32,18 @@ public struct WorldGeometry {
 
     public func country(id: String) -> Country? { byID[id] }
 
+    /// Габариты набора стран — общий прямоугольник, в который они все влезают.
+    public func bounds(of ids: some Sequence<String>) -> CGRect? {
+        var result: CGRect?
+        for id in ids {
+            guard let country = byID[id] else { continue }
+            // Берём главный массив: у России общие габариты растянуты
+            // на весь мир из-за кусков по обе стороны 180-го меридиана.
+            result = result.map { $0.union(country.mainBounds) } ?? country.mainBounds
+        }
+        return result
+    }
+
     public func countries(on continent: Continent) -> [Country] {
         countries.filter { $0.continent == continent }
     }

@@ -134,6 +134,25 @@ public struct MapCamera: Equatable {
         return result.clamped(in: viewport)
     }
 
+    /// Камера, при которой заданный прямоугольник мира занимает кадр с запасом.
+    ///
+    /// Нужна для экспорта: кадр должен поймать всё отмеченное, а не показывать
+    /// пустой океан рядом с одной страной.
+    public func fitting(_ box: CGRect, in viewport: CGSize, padding: CGFloat = 0.18) -> MapCamera {
+        guard box.width > 0, box.height > 0, viewport.width > 0, viewport.height > 0 else { return self }
+
+        let zoomForWidth = (1 - padding) / box.width
+        let zoomForHeight = (viewport.height / viewport.width) * (1 - padding) / box.height
+
+        var result = self
+        result.zoom = min(zoomForWidth, zoomForHeight)
+        result.center = CGPoint(x: box.midX, y: box.midY)
+        // Клампим вручную, а не через `clamped`: у кадра экспорта свои пропорции
+        // и свой минимальный зум, к экрану телефона он отношения не имеет.
+        result.zoom = min(max(result.zoom, viewport.height / viewport.width), Self.maxZoom)
+        return result
+    }
+
     /// Камера, при которой страна занимает экран с запасом по краям.
     public func focused(on country: Country, in viewport: CGSize, padding: CGFloat = 0.28) -> MapCamera {
         let box = country.bounds
