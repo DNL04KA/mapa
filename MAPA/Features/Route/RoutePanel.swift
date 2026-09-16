@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 /// Панель открытого маршрута.
@@ -19,6 +20,7 @@ struct RoutePanel: View {
     let onRemovePoint: (RoutePoint) -> Void
     let onMovePoint: (Int, Int) -> Void
     let onTogglePassed: (RoutePoint) -> Void
+    let onSetPhoto: (RoutePoint, UIImage?) -> Void
     let onChangeDays: (RoutePoint, Int) -> Void
     let onRate: (Int, String) -> Void
     let onRemoveReview: () -> Void
@@ -29,8 +31,11 @@ struct RoutePanel: View {
     @State private var isComposing = false
     @State private var draftRating = 5
     @State private var draftText = ""
+    @State private var photoTarget: RoutePoint?
+    @State private var photoItem: PhotosPickerItem?
+    @State private var isPickingPhoto = false
 
-    private let rowHeight: CGFloat = 52
+    private let rowHeight: CGFloat = 104
 
     var body: some View {
         VStack(spacing: 0) {
@@ -194,71 +199,136 @@ struct RoutePanel: View {
 
     private func row(_ point: RoutePoint, at index: Int) -> some View {
         HStack(spacing: DS.Space.sm) {
-            // Номер и галочка — одна кнопка. Пройденная точка закрашивается,
-            // и порядок при этом не теряется: цифра остаётся видна.
-            Button {
-                onTogglePassed(point)
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(point.isVisited ? accent : Color.clear)
-                        .overlay {
-                            Circle().strokeBorder(
-                                point.isVisited ? Color.clear : DS.Color.border,
-                                lineWidth: 1.5
-                            )
-                        }
+            photo(point)
 
-                    if point.isVisited {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(DS.Color.inkOnAccent)
-                    } else {
-                        Text("\(index + 1)")
-                            .font(DS.Font.micro)
-                            .foregroundStyle(DS.Color.inkSecondary)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: DS.Space.xs) {
+                    passMark(point, at: index)
+
+                    Text(point.name)
+                        .font(DS.Font.subhead)
+                        .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
+                        .strikethrough(point.isVisited, color: DS.Color.inkTertiary)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        onRemovePoint(point)
+                    } label: {
+                        Image(systemName: "minus.circle")
+                            .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                            .foregroundStyle(DS.Color.inkTertiary)
+                            .frame(width: 26, height: 26)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Убрать \(point.name)")
                 }
-                .frame(width: 26, height: 26)
-                .contentShape(Rectangle())
+
+                HStack(spacing: DS.Space.xs) {
+                    if let country = point.countryName {
+                        Text(country)
+                            .font(DS.Font.micro)
+                            .foregroundStyle(DS.Color.inkTertiary)
+                    }
+                    daysStepper(point)
+                }
+
+                // Достопримечательности прямо в строке маршрута: иначе, чтобы
+                // вспомнить, зачем ты добавил город, надо уходить в карточку.
+                if let landmarks = CityFacts.landmarks(for: point.name) {
+                    Text(landmarks.prefix(3).joined(separator: " · "))
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkSecondary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("Что смотреть — расскажут те, кто был")
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .lineLimit(1)
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(point.isVisited ? "\(point.name), пройдено" : "\(point.name), точка \(index + 1)")
-            .accessibilityHint(point.isVisited ? "Снять отметку" : "Отметить пройденной")
 
-            Text(point.name)
-                .font(DS.Font.body)
-                .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
-                .strikethrough(point.isVisited, color: DS.Color.inkTertiary)
-                .lineLimit(1)
-
-            Spacer(minLength: 0)
-
-            daysStepper(point)
-
-            Button {
-                onRemovePoint(point)
-            } label: {
-                Image(systemName: "minus.circle")
-                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
-                    .foregroundStyle(DS.Color.inkTertiary)
-                    .frame(width: 30, height: 30)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Убрать \(point.name)")
-
-            // Ручка перетаскивания отдельно от строки: если тащить за всю
-            // строку, невозможно нажать «минус» и шаг дней.
+            // Ручка перетаскивания отдельно от карточки: если тащить за всю
+            // строку, невозможно нажать «минус», шаг дней и фото.
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: DS.Size.iconSm, weight: .semibold))
                 .foregroundStyle(DS.Color.inkTertiary)
-                .frame(width: 34, height: rowHeight)
+                .frame(width: 28, height: rowHeight)
                 .contentShape(Rectangle())
                 .gesture(dragGesture(for: point, at: index))
                 .accessibilityLabel("Переставить \(point.name)")
         }
+        .padding(.vertical, DS.Space.xs)
         .frame(height: rowHeight)
+    }
+
+    /// Номер и галочка — одна кнопка. Пройденная точка закрашивается,
+    /// и порядок при этом не теряется: цифра остаётся видна.
+    private func passMark(_ point: RoutePoint, at index: Int) -> some View {
+        Button {
+            onTogglePassed(point)
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(point.isVisited ? accent : Color.clear)
+                    .overlay {
+                        Circle().strokeBorder(
+                            point.isVisited ? Color.clear : DS.Color.border,
+                            lineWidth: 1.5
+                        )
+                    }
+
+                if point.isVisited {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(DS.Color.inkOnAccent)
+                } else {
+                    Text("\(index + 1)")
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkSecondary)
+                }
+            }
+            .frame(width: 22, height: 22)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(point.isVisited ? "\(point.name), пройдено" : "\(point.name), точка \(index + 1)")
+        .accessibilityHint(point.isVisited ? "Снять отметку" : "Отметить пройденной")
+    }
+
+    /// Фотография места. Своя, из галереи: чужих снимков у нас нет,
+    /// а подставлять сток под настоящую поездку — обман.
+    private func photo(_ point: RoutePoint) -> some View {
+        Button {
+            photoTarget = point
+            isPickingPhoto = true
+        } label: {
+            ZStack {
+                if let id = point.photoID, let image = RoutePhotoStore.image(id: id) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Rectangle()
+                        .fill(accent.opacity(0.12))
+                    Image(systemName: "photo.badge.plus")
+                        .font(.system(size: DS.Size.iconMd, weight: .light))
+                        .foregroundStyle(accent.opacity(0.7))
+                }
+            }
+            .frame(width: 72, height: 72)
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(point.photoID == nil ? "Добавить фото: \(point.name)" : "Фото: \(point.name)")
     }
 
     private func daysStepper(_ point: RoutePoint) -> some View {

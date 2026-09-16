@@ -1,5 +1,6 @@
 import Combine
 import SwiftUI
+import UIKit
 
 /// Счётчики отрисовки. Обычный класс, а не `ObservableObject`:
 /// если бы каждый кадр публиковал изменение, замер сам бы стал причиной просадки.
@@ -556,7 +557,9 @@ final class WorldMapViewModel: ObservableObject {
             route.points.remove(at: index)
             Haptics.shared.countryClear()
         } else {
-            route.points.append(RoutePoint(city: city))
+            route.points.append(
+                RoutePoint(city: city, countryName: geometry?.country(id: city.countryID)?.nameRU)
+            )
             Haptics.shared.countryFill()
         }
         withAnimation(reduceMotion ? DS.Motion.Preset.bounce.reducedAnimation : DS.Motion.Preset.bounce.animation) {
@@ -650,6 +653,25 @@ final class WorldMapViewModel: ObservableObject {
         }
 
         setStatus(.visited, for: country, origin: point.unitPoint, reduceMotion: reduceMotion)
+    }
+
+    /// Приложить или убрать фотографию точки.
+    ///
+    /// Старый файл удаляем сразу: иначе замена снимка оставляла бы мусор,
+    /// который никто никогда не найдёт и не почистит.
+    func setPhoto(_ image: UIImage?, for point: RoutePoint) {
+        guard var route = editingRoute,
+              let index = route.points.firstIndex(where: { $0.id == point.id })
+        else { return }
+
+        if let old = route.points[index].photoID {
+            RoutePhotoStore.delete(id: old)
+        }
+
+        route.points[index].photoID = image.flatMap(RoutePhotoStore.save)
+        editingRoute = route
+        syncOpenRoute()
+        Haptics.shared.tap(.light)
     }
 
     // MARK: - Оценки и отзывы

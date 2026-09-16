@@ -163,6 +163,7 @@ struct WorldMapView: View {
                 onRemovePoint: { model.removePoint($0) },
                 onMovePoint: { model.movePoint(from: $0, to: $1) },
                 onTogglePassed: { model.togglePassed($0, reduceMotion: motion.reduceMotion) },
+                onSetPhoto: { model.setPhoto($1, for: $0) },
                 onChangeDays: { point, days in
                     var updated = point
                     updated.days = max(1, min(60, days))

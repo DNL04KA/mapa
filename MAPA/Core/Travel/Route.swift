@@ -12,6 +12,10 @@ struct RoutePoint: Identifiable, Equatable, Codable {
     var cityID: String?
     var name: String
     var countryID: String?
+    /// Название страны по-русски. Хранится рядом с точкой, а не берётся
+    /// из геометрии при отрисовке: маршрут должен читаться сам по себе,
+    /// в том числе когда его показывают без карты.
+    var countryName: String?
     var longitude: Double
     var latitude: Double
 
@@ -20,6 +24,10 @@ struct RoutePoint: Identifiable, Equatable, Codable {
     /// Бюджет на всю остановку, в евро.
     var budget: Int
     var note: String
+    /// Имя файла с фотографией в хранилище. Хранится идентификатор, а не
+    /// сама картинка: маршрут ездит в JSON, и мегабайты фото в нём
+    /// превратили бы чтение файла в заметную паузу.
+    var photoID: String?
     /// Пройдена ли точка. Появилось позже остальных полей, поэтому
     /// необязательное в декодере — старые файлы читаются как «не пройдено».
     var isVisited: Bool
@@ -37,22 +45,26 @@ struct RoutePoint: Identifiable, Equatable, Codable {
         cityID: String? = nil,
         name: String,
         countryID: String? = nil,
+        countryName: String? = nil,
         coordinate: Coordinate,
         days: Int = 2,
         budget: Int = 0,
         note: String = "",
-        isVisited: Bool = false
+        isVisited: Bool = false,
+        photoID: String? = nil
     ) {
         self.id = id
         self.cityID = cityID
         self.name = name
         self.countryID = countryID
+        self.countryName = countryName
         self.longitude = coordinate.longitude
         self.latitude = coordinate.latitude
         self.days = days
         self.budget = budget
         self.note = note
         self.isVisited = isVisited
+        self.photoID = photoID
     }
 
     /// Старые файлы точек не знают про `isVisited` — читаем как «не пройдено»,
@@ -63,19 +75,22 @@ struct RoutePoint: Identifiable, Equatable, Codable {
         cityID = try container.decodeIfPresent(String.self, forKey: .cityID)
         name = try container.decode(String.self, forKey: .name)
         countryID = try container.decodeIfPresent(String.self, forKey: .countryID)
+        countryName = try container.decodeIfPresent(String.self, forKey: .countryName)
         longitude = try container.decode(Double.self, forKey: .longitude)
         latitude = try container.decode(Double.self, forKey: .latitude)
         days = try container.decode(Int.self, forKey: .days)
         budget = try container.decode(Int.self, forKey: .budget)
         note = try container.decode(String.self, forKey: .note)
         isVisited = try container.decodeIfPresent(Bool.self, forKey: .isVisited) ?? false
+        photoID = try container.decodeIfPresent(String.self, forKey: .photoID)
     }
 
-    init(city: City) {
+    init(city: City, countryName: String? = nil) {
         self.init(
             cityID: city.id,
             name: city.nameRU,
             countryID: city.countryID,
+            countryName: countryName,
             coordinate: city.coordinate
         )
     }

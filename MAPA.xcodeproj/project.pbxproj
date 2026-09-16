@@ -20,9 +20,11 @@
 		DA24DE4BF666126993CF5817 /* TravelStatus.swift in Build */ = {isa = PBXBuildFile; fileRef = 1246A8251CE32AE66C1A559D /* TravelStatus.swift */; };
 		F87547A1C34037F356BDB763 /* Plural.swift in Build */ = {isa = PBXBuildFile; fileRef = E11CEFFCD3C71F2A05A023B1 /* Plural.swift */; };
 		A32DA95910EA397B5D68E9BD /* AppSettings.swift in Build */ = {isa = PBXBuildFile; fileRef = FDFFE5D0C3A9831BA6642590 /* AppSettings.swift */; };
+		F985A3B026689C10CC0A746C /* CityFacts.swift in Build */ = {isa = PBXBuildFile; fileRef = BD2889D22F9B91673CB6773B /* CityFacts.swift */; };
 		88E478E7EF57B7BC4A531C19 /* CountryFacts.swift in Build */ = {isa = PBXBuildFile; fileRef = 45BA3A6203D29087547A3939 /* CountryFacts.swift */; };
 		066642841266D540CE63E0CA /* HomePlace.swift in Build */ = {isa = PBXBuildFile; fileRef = AA546965FC0E06732212DD30 /* HomePlace.swift */; };
 		8A437101834BF5E9741951C3 /* Route.swift in Build */ = {isa = PBXBuildFile; fileRef = 0D0930F3F63BE06CE85AB2E0 /* Route.swift */; };
+		96EE0CAB636D0E4D463D92F2 /* RoutePhotoStore.swift in Build */ = {isa = PBXBuildFile; fileRef = 8F5E2D9A96E80AF51A72AE46 /* RoutePhotoStore.swift */; };
 		9955EFD257CC3DEC8FAFE5F6 /* RouteStorage.swift in Build */ = {isa = PBXBuildFile; fileRef = 305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */; };
 		24C139F0D57429CDBC76FE9E /* TravelLog.swift in Build */ = {isa = PBXBuildFile; fileRef = E13BCBB013A952D97A4D48B0 /* TravelLog.swift */; };
 		30EF63FEE6566959B7011803 /* TravelLogStorage.swift in Build */ = {isa = PBXBuildFile; fileRef = 4F5B597299E617BB667CE47E /* TravelLogStorage.swift */; };
@@ -85,9 +87,11 @@
 		1246A8251CE32AE66C1A559D /* TravelStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelStatus.swift; sourceTree = "<group>"; };
 		E11CEFFCD3C71F2A05A023B1 /* Plural.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Plural.swift; sourceTree = "<group>"; };
 		FDFFE5D0C3A9831BA6642590 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		BD2889D22F9B91673CB6773B /* CityFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityFacts.swift; sourceTree = "<group>"; };
 		45BA3A6203D29087547A3939 /* CountryFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryFacts.swift; sourceTree = "<group>"; };
 		AA546965FC0E06732212DD30 /* HomePlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePlace.swift; sourceTree = "<group>"; };
 		0D0930F3F63BE06CE85AB2E0 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		8F5E2D9A96E80AF51A72AE46 /* RoutePhotoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePhotoStore.swift; sourceTree = "<group>"; };
 		305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteStorage.swift; sourceTree = "<group>"; };
 		E13BCBB013A952D97A4D48B0 /* TravelLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLog.swift; sourceTree = "<group>"; };
 		4F5B597299E617BB667CE47E /* TravelLogStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLogStorage.swift; sourceTree = "<group>"; };
@@ -198,9 +202,11 @@
 		BAC38084CBFC98D2D3FAFB1D /* Travel */ = {
 			isa = PBXGroup;
 			children = (
+				BD2889D22F9B91673CB6773B /* CityFacts.swift */,
 				45BA3A6203D29087547A3939 /* CountryFacts.swift */,
 				AA546965FC0E06732212DD30 /* HomePlace.swift */,
 				0D0930F3F63BE06CE85AB2E0 /* Route.swift */,
+				8F5E2D9A96E80AF51A72AE46 /* RoutePhotoStore.swift */,
 				305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */,
 				E13BCBB013A952D97A4D48B0 /* TravelLog.swift */,
 				4F5B597299E617BB667CE47E /* TravelLogStorage.swift */,
@@ -502,9 +508,11 @@
 				DA24DE4BF666126993CF5817 /* TravelStatus.swift */,
 				F87547A1C34037F356BDB763 /* Plural.swift */,
 				A32DA95910EA397B5D68E9BD /* AppSettings.swift */,
+				F985A3B026689C10CC0A746C /* CityFacts.swift */,
 				88E478E7EF57B7BC4A531C19 /* CountryFacts.swift */,
 				066642841266D540CE63E0CA /* HomePlace.swift */,
 				8A437101834BF5E9741951C3 /* Route.swift */,
+				96EE0CAB636D0E4D463D92F2 /* RoutePhotoStore.swift */,
 				9955EFD257CC3DEC8FAFE5F6 /* RouteStorage.swift */,
 				24C139F0D57429CDBC76FE9E /* TravelLog.swift */,
 				30EF63FEE6566959B7011803 /* TravelLogStorage.swift */,
