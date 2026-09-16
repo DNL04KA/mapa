@@ -211,16 +211,32 @@ struct CountryCardView: View {
                         onOpenCity(city)
                     } label: {
                         HStack(spacing: DS.Space.sm) {
-                            Image(systemName: city.isCapital ? "star.fill" : "mappin")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(city.isCapital ? tint : DS.Color.inkTertiary)
-                                .frame(width: 22)
+                            cityThumb(city)
 
-                            Text(city.nameRU)
-                                .font(DS.Font.body)
-                                .foregroundStyle(DS.Color.ink)
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: DS.Space.xxs) {
+                                    if city.isCapital {
+                                        Image(systemName: "star.fill")
+                                            .font(.system(size: 9, weight: .semibold))
+                                            .foregroundStyle(tint)
+                                    }
+                                    Text(city.nameRU)
+                                        .font(DS.Font.body)
+                                        .foregroundStyle(DS.Color.ink)
+                                        .lineLimit(1)
+                                }
 
-                            Spacer(minLength: 0)
+                                // Сразу видно, зачем сюда ехать, — не надо
+                                // открывать каждый город по очереди.
+                                if let places = CityFacts.landmarks(for: city.nameRU) {
+                                    Text(places.prefix(2).joined(separator: " · "))
+                                        .font(DS.Font.micro)
+                                        .foregroundStyle(DS.Color.inkTertiary)
+                                        .lineLimit(1)
+                                }
+                            }
+
+                            Spacer(minLength: DS.Space.xs)
 
                             Text(Self.populationFormatter.string(from: NSNumber(value: city.population)) ?? "")
                                 .font(DS.Font.micro)
@@ -231,7 +247,7 @@ struct CountryCardView: View {
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(DS.Color.inkTertiary)
                         }
-                        .frame(height: DS.Size.hitTarget)
+                        .frame(height: 60)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -245,6 +261,26 @@ struct CountryCardView: View {
             .padding(.horizontal, DS.Space.md)
             .dsGlass(radius: DS.Radius.md, shadow: .low)
         }
+    }
+
+    /// Квадратик с фотографией города. Если снимка нет — булавка, как раньше.
+    @ViewBuilder
+    private func cityThumb(_ city: City) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous)
+                .fill(tint.opacity(0.12))
+
+            if let cover = LandmarkPhotos.cover(for: city.nameRU) {
+                RemoteImage(url: cover.small)
+            } else {
+                Image(systemName: city.isCapital ? "star.fill" : "mappin")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(city.isCapital ? tint : DS.Color.inkTertiary)
+            }
+        }
+        .frame(width: 44, height: 44)
+        .clipped()
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
     }
 
     private func landmarks(_ facts: CountryFacts) -> some View {

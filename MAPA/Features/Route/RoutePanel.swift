@@ -76,6 +76,13 @@ struct RoutePanel: View {
             UnevenRoundedTopShape(radius: DS.Radius.xl)
                 .fill(panelFill)
                 .overlay {
+                    // Тонкое стекло поверх светлой карты давало мутно-серый
+                    // фон: белый текст на нём тонул, а фотографии выцветали.
+                    // Плотная тёмная подложка возвращает и контраст, и глубину.
+                    UnevenRoundedTopShape(radius: DS.Radius.xl)
+                        .fill(DS.Palette.abyss.opacity(motion.reduceTransparency ? 1 : 0.9))
+                }
+                .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
                         .stroke(DS.Gradient.glassBorder(0.8), lineWidth: 1)
                 }
@@ -230,7 +237,7 @@ struct RoutePanel: View {
                     if let country = point.countryName {
                         Text(country)
                             .font(DS.Font.micro)
-                            .foregroundStyle(DS.Color.inkTertiary)
+                            .foregroundStyle(DS.Color.inkSecondary)
                     }
                     daysStepper(point)
                 }
@@ -238,11 +245,13 @@ struct RoutePanel: View {
                 // Достопримечательности прямо в строке маршрута: иначе, чтобы
                 // вспомнить, зачем ты добавил город, надо уходить в карточку.
                 if let landmarks = CityFacts.landmarks(for: point.name) {
+                    // Одна строка, а не две: иначе у городов с длинными
+                    // названиями карточка распухает и ряд едет.
                     Text(landmarks.prefix(3).joined(separator: " · "))
                         .font(DS.Font.micro)
                         .foregroundStyle(DS.Color.inkSecondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 } else {
                     Text("Что смотреть — расскажут те, кто был")
                         .font(DS.Font.micro)
@@ -307,19 +316,27 @@ struct RoutePanel: View {
             isPickingPhoto = true
         } label: {
             ZStack {
+                Rectangle()
+                    .fill(accent.opacity(0.10))
+
                 if let id = point.photoID, let image = RoutePhotoStore.image(id: id) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
+                } else if let cover = LandmarkPhotos.cover(for: point.name) {
+                    // Пока своего снимка нет — показываем город таким, какой он
+                    // есть, а не серый квадрат. Плюс в углу говорит, что место
+                    // ждёт твою фотографию.
+                    RemoteImage(url: cover.small)
+                    plusBadge
                 } else {
-                    Rectangle()
-                        .fill(accent.opacity(0.12))
                     Image(systemName: "photo.badge.plus")
                         .font(.system(size: DS.Size.iconMd, weight: .light))
                         .foregroundStyle(accent.opacity(0.7))
                 }
             }
             .frame(width: 72, height: 72)
+            .clipped()
             .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
@@ -329,6 +346,21 @@ struct RoutePanel: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(point.photoID == nil ? "Добавить фото: \(point.name)" : "Фото: \(point.name)")
+    }
+
+    private var plusBadge: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Image(systemName: "plus")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(4)
+                    .background(DS.Palette.void.opacity(0.55), in: Circle())
+            }
+        }
+        .padding(4)
     }
 
     private func daysStepper(_ point: RoutePoint) -> some View {

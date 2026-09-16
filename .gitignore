@@ -23,3 +23,5 @@ __pycache__/
 # Секреты (появятся на 10-м этапе, вместе с Supabase)
 Secrets.xcconfig
 *.env
+.wiki-cache/
+.claude/launch.json

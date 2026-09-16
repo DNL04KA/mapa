@@ -45,6 +45,7 @@ struct CitySheet: View {
                 .frame(width: 38, height: 4)
 
             header
+            landmarks
             facts
             homeButton
         }
@@ -55,6 +56,10 @@ struct CitySheet: View {
         .background {
             UnevenRoundedTopShape(radius: DS.Radius.xl)
                 .fill(panelFill)
+                .overlay {
+                    UnevenRoundedTopShape(radius: DS.Radius.xl)
+                        .fill(DS.Palette.abyss.opacity(motion.reduceTransparency ? 1 : 0.9))
+                }
                 .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
                         .stroke(DS.Gradient.glassBorder(0.8), lineWidth: 1)
@@ -100,6 +105,64 @@ struct CitySheet: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Что посмотреть в городе — с настоящими фотографиями.
+    ///
+    /// Под каждым снимком стоит имя автора и лицензия. Это не мелкий шрифт
+    /// ради приличия: фотографии с Викисклада можно показывать именно при
+    /// условии, что автора назвали.
+    @ViewBuilder
+    private var landmarks: some View {
+        let photos = LandmarkPhotos.photos(for: city.nameRU)
+        let names = CityFacts.landmarks(for: city.nameRU) ?? []
+
+        if !photos.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: DS.Space.sm) {
+                    ForEach(photos) { photo in
+                        VStack(alignment: .leading, spacing: 5) {
+                            ZStack {
+                                Rectangle().fill(accent.opacity(0.10))
+                                RemoteImage(url: photo.small)
+                            }
+                            .frame(width: 152, height: 104)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                            }
+
+                            Text(photo.name)
+                                .font(DS.Font.caption)
+                                .foregroundStyle(DS.Color.ink)
+                                .lineLimit(1)
+
+                            if let credit = photo.credit {
+                                // Две строки, а не одна: обрезанное имя автора —
+                                // это уже не указание авторства.
+                                Text(credit)
+                                    .font(DS.Font.micro)
+                                    .foregroundStyle(DS.Color.inkTertiary)
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .frame(width: 152, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                .padding(.horizontal, DS.Space.screen)
+            }
+            .padding(.horizontal, -DS.Space.screen)
+        } else if !names.isEmpty {
+            Text(names.joined(separator: " · "))
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.inkSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+        }
     }
 
     private var facts: some View {
