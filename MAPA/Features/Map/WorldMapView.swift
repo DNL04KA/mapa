@@ -371,57 +371,176 @@ struct WorldMapView: View {
                 Spacer(minLength: 0)
 
                 HStack(alignment: .bottom) {
-                    cornerControls
                     Spacer(minLength: 0)
                     zoomControls
                 }
+
+                if model.state == .ready, let route = model.routes.first, !route.points.isEmpty {
+                    nextRouteCard(route)
+                        .transition(motion.transition(.move(edge: .bottom).combined(with: .opacity)))
+                }
+
+                mapTabBar
             }
             .padding(DS.Space.md)
         }
     }
 
-    /// Служебные кнопки ушли вниз слева: верх экрана теперь занимает статистика.
-    private var cornerControls: some View {
-        HStack(spacing: DS.Space.xs) {
-            MapControlButton(
-                icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
-                isActive: model.currentCoordinate != nil,
-                tint: activeTheme.accent
-            ) {
+    /// Нижняя панель.
+    ///
+    /// Раньше это были шесть одинаковых серых иконок без подложки и подписей
+    /// поверх бледной карты: понять, где маршруты, а где оформление, было
+    /// нельзя. Подложка возвращает читаемость, подписи — смысл.
+    private var mapTabBar: some View {
+        HStack(spacing: 0) {
+            tabItem(icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
+                    title: "Я",
+                    isActive: model.currentCoordinate != nil) {
                 model.locateMe()
             }
-            .accessibilityLabel("Показать, где я")
 
-            MapControlButton(icon: "speedometer", isActive: showsDebug) {
-                withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
-            }
-            .accessibilityLabel("Панель замеров")
-
-            MapControlButton(icon: "point.topleft.down.curvedto.point.bottomright.up",
-                             isActive: model.editingRoute != nil,
-                             tint: activeTheme.accent) {
+            tabItem(icon: "point.topleft.down.curvedto.point.bottomright.up",
+                    title: "Маршруты",
+                    isActive: model.editingRoute != nil) {
                 withAnimation(motion.animation(.smooth)) { showsRoutes = true }
             }
-            .accessibilityLabel("Маршруты")
 
-            MapControlButton(icon: "square.and.arrow.up") {
+            tabItem(icon: "square.and.arrow.up",
+                    title: "Поделиться",
+                    isActive: false,
+                    isEnabled: !model.statistics.isEmpty) {
                 withAnimation(motion.animation(.smooth)) { showsExport = true }
             }
-            .accessibilityLabel("Поделиться картой")
-            .disabled(model.statistics.isEmpty)
-            .opacity(model.statistics.isEmpty ? 0.35 : 1)
 
-            MapControlButton(icon: "paintpalette") {
+            tabItem(icon: "paintpalette", title: "Оформление", isActive: false) {
                 withAnimation(motion.animation(.smooth)) { showsThemes = true }
             }
-            .accessibilityLabel("Оформление карты")
         }
+        .padding(.horizontal, DS.Space.xxs)
+        .padding(.vertical, 6)
+        .background {
+            Capsule(style: .continuous)
+                .fill(barFill)
+                .overlay {
+                    Capsule(style: .continuous)
+                        .strokeBorder(activeTheme.mapInk.opacity(0.10), lineWidth: 1)
+                }
+                .dsShadow(.medium)
+        }
+    }
+
+    private var barFill: AnyShapeStyle {
+        if motion.reduceTransparency {
+            return AnyShapeStyle(activeTheme.isLight ? Color.white : DS.Palette.abyss)
+        }
+        return AnyShapeStyle(activeTheme.isLight
+                             ? Color.white.opacity(0.88)
+                             : DS.Palette.abyss.opacity(0.82))
+    }
+
+    private func tabItem(
+        icon: String,
+        title: String,
+        isActive: Bool,
+        isEnabled: Bool = true,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            Haptics.shared.tap(.light)
+            action()
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.system(size: 17, weight: .medium))
+                Text(title)
+                    .font(.system(size: 10, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(isActive ? activeTheme.accent : activeTheme.mapInk.opacity(0.68))
+            .frame(maxWidth: .infinity)
+            .frame(height: 42)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.35)
+        .accessibilityLabel(title)
+    }
+
+    /// Ближайший маршрут прямо на карте.
+    ///
+    /// Фотографии — самое ценное, что есть в приложении, и до этой правки они
+    /// лежали на два касания вглубь. Теперь первый экран сразу показывает,
+    /// куда ты собрался.
+    private func nextRouteCard(_ route: Route) -> some View {
+        Button {
+            Haptics.shared.tap(.light)
+            model.openRoute(route, reduceMotion: motion.reduceMotion)
+            routeExpanded = false
+        } label: {
+            HStack(spacing: DS.Space.sm) {
+                ZStack {
+                    Rectangle().fill(activeTheme.accent.opacity(0.12))
+                    RemoteImage(url: LandmarkPhotos.cover(for: route.points[0].name)?.small)
+                }
+                .frame(width: 48, height: 48)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(route.displayTitle)
+                        .font(DS.Font.subhead)
+                        .foregroundStyle(activeTheme.mapInk)
+                        .lineLimit(1)
+
+                    Text(routeSummary(route))
+                        .font(DS.Font.micro)
+                        .foregroundStyle(activeTheme.mapInk.opacity(0.6))
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(activeTheme.mapInk.opacity(0.4))
+            }
+            .padding(DS.Space.xs)
+            .padding(.trailing, DS.Space.xs)
+            .background {
+                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                    .fill(barFill)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                            .strokeBorder(activeTheme.mapInk.opacity(0.10), lineWidth: 1)
+                    }
+                    .dsShadow(.medium)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Маршрут \(route.displayTitle). \(routeSummary(route))")
+    }
+
+    private func routeSummary(_ route: Route) -> String {
+        let cities = Plural.format(route.points.count, "город", "города", "городов")
+        let days = Plural.format(route.totalDays, "день", "дня", "дней")
+        if route.isInProgress {
+            return "\(route.visitedCount) из \(route.points.count) пройдено · \(days)"
+        }
+        return "\(cities) · \(days)"
     }
 
     /// Кнопки без подложек: на карте во весь экран любая плашка вырезает
     /// из неё кусок. Читаемость держит тень под самой иконкой.
     private var zoomControls: some View {
         VStack(spacing: DS.Space.xxs) {
+            MapControlButton(icon: "speedometer", isActive: showsDebug) {
+                withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
+            }
+            .accessibilityLabel("Панель замеров")
+
             MapControlButton(icon: "plus") {
                 model.zoomIn(reduceMotion: motion.reduceMotion)
             }

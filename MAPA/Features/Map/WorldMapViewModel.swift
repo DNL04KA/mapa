@@ -194,6 +194,7 @@ final class WorldMapViewModel: ObservableObject {
             rebuildMarked(excluding: nil)
             refreshStatistics()
             state = .ready
+            focusOnMyWorldIfNeeded()
         } catch {
             state = .failed(error.localizedDescription)
         }
@@ -203,6 +204,33 @@ final class WorldMapViewModel: ObservableObject {
         guard size != viewport, size.width > 0, size.height > 0 else { return }
         viewport = size
         camera = camera.clamped(in: size)
+        // Размер экрана и данные приходят в неизвестном порядке, а кадрировать
+        // можно только зная оба. Пробуем на каждом из двух событий.
+        focusOnMyWorldIfNeeded()
+    }
+
+    /// Первый кадр — по твоим странам, а не по всему Меркатору.
+    ///
+    /// Иначе половину экрана занимают пустой океан и Антарктида, которую
+    /// никто никогда не отметит, а вся твоя жизнь ютится в углу Европы.
+    /// Геолокация делает похожее, но только с разрешением, а его дают редко.
+    private func focusOnMyWorldIfNeeded() {
+        guard !didAutoFocus, !userHasInteracted, let geometry, viewport.width > 0 else { return }
+
+        // Только прожитое: «хочу» люди ставят по всему глобусу, и рамка
+        // по мечтам получается размером с мир — то есть никакая.
+        var ids = Set(travelLog.statuses.filter { $0.value != .wishlist }.keys)
+        if let home = travelLog.home { ids.insert(home.countryID) }
+        if ids.isEmpty { ids = Set(travelLog.statuses.keys) }
+        guard !ids.isEmpty, let box = geometry.bounds(of: ids) else { return }
+
+        didAutoFocus = true
+
+        // Не наезжаем вплотную: у одной маленькой страны рамка вырождается
+        // в точку, и человек не понимает, на что он смотрит.
+        var target = camera.fitting(box, in: viewport, padding: 0.2)
+        target.zoom = min(target.zoom, 5.5)
+        camera = target.clamped(in: viewport)
     }
 
     // MARK: - Жесты

@@ -54,6 +54,9 @@ struct WorldStatsPanel: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Шапка читается сверху вниз одним столбцом: надпись, число, полоса,
+    /// счёт. Раньше огромный процент стоял слева, а «17 стран» мелко справа —
+    /// и это выглядело как два чужих друг другу виджета на одном экране.
     private var header: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .bottom, spacing: DS.Space.sm) {
@@ -61,27 +64,21 @@ struct WorldStatsPanel: View {
 
                 Spacer(minLength: 0)
 
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(Plural.countries(statistics.exploredCount))
-                        .font(DS.Font.subhead)
-                        .foregroundStyle(theme.mapInk)
-                        .monospacedDigit()
-
-                    Text(Plural.continents(statistics.continentsTouched))
-                        .font(DS.Font.caption)
-                        .foregroundStyle(theme.mapInk.opacity(0.7))
-                        .monospacedDigit()
-                }
-
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(theme.mapInk.opacity(0.7))
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     .animation(motion.animation(.snap), value: isExpanded)
-                    .padding(.bottom, 3)
+                    .padding(.bottom, 6)
             }
 
             progressLine
+
+            Text(Plural.countries(statistics.exploredCount)
+                 + " · " + Plural.continents(statistics.continentsTouched))
+                .font(DS.Font.caption)
+                .foregroundStyle(theme.mapInk.opacity(0.7))
+                .monospacedDigit()
         }
         .dsMapText()
         .accessibilityElement(children: .combine)
@@ -142,7 +139,7 @@ struct WorldStatsPanel: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(theme.mapInk.opacity(0.15))
+                    .fill(theme.mapInk.opacity(theme.isLight ? 0.18 : 0.15))
 
                 Capsule()
                     .fill(
@@ -161,7 +158,7 @@ struct WorldStatsPanel: View {
                     .animation(motion.animation(.smooth), value: statistics.worldPercent)
             }
         }
-        .frame(height: theme.isLight ? 2 : 4)
+        .frame(height: theme.isLight ? 3 : 4)
         .accessibilityHidden(true)
     }
 
