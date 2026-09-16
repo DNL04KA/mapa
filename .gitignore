@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Секреты (появятся на 10-м этапе, вместе с Supabase)
+Secrets.xcconfig
+*.env

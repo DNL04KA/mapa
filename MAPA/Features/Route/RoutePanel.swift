@@ -1,0 +1,409 @@
+import SwiftUI
+
+/// Панель открытого маршрута.
+///
+/// Одна панель на два состояния, а не два экрана. Свёрнутая — тонкая полоса
+/// с итогами: карта остаётся открытой, и точки добавляются тапом по городам.
+/// Развёрнутая — редактор с порядком, днями и отзывами.
+/// Если развести их по экранам, между «собрать» и «поправить» появится переход,
+/// а это ровно то место, где маршрут бросают недоделанным.
+@MainActor
+struct RoutePanel: View {
+
+    @Environment(\.dsMotion) private var motion
+
+    let route: Route
+    let accent: Color
+    @Binding var isExpanded: Bool
+
+    let onRemovePoint: (RoutePoint) -> Void
+    let onMovePoint: (Int, Int) -> Void
+    let onChangeDays: (RoutePoint, Int) -> Void
+    let onRate: (Int, String) -> Void
+    let onRemoveReview: () -> Void
+    let onDone: () -> Void
+
+    @State private var draggingID: UUID?
+    @State private var dragOffset: CGFloat = 0
+    @State private var isComposing = false
+    @State private var draftRating = 5
+    @State private var draftText = ""
+
+    private let rowHeight: CGFloat = 52
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            panel
+        }
+        .ignoresSafeArea(edges: .bottom)
+    }
+
+    private var panel: some View {
+        VStack(spacing: DS.Space.md) {
+            summary
+
+            if isExpanded {
+                Divider().overlay(DS.Color.hairline)
+
+                // Прокрутка обязательна: десяток точек плюс отзывы не влезут
+                // ни в какой экран, а «Готово» должно остаться на виду.
+                ScrollView {
+                    VStack(alignment: .leading, spacing: DS.Space.md) {
+                        points
+                        reviews
+                    }
+                    .padding(.bottom, DS.Space.xs)
+                }
+                .frame(maxHeight: 420)
+                .scrollIndicators(.hidden)
+            }
+
+            PillButton(route.points.count >= 2 ? "Готово" : "Закрыть",
+                       kind: .primary, fullWidth: true, action: onDone)
+        }
+        .padding(.horizontal, DS.Space.screen)
+        .padding(.top, DS.Space.sm)
+        .padding(.bottom, DS.Space.xl)
+        .frame(maxWidth: .infinity)
+        .background {
+            UnevenRoundedTopShape(radius: DS.Radius.xl)
+                .fill(panelFill)
+                .overlay {
+                    UnevenRoundedTopShape(radius: DS.Radius.xl)
+                        .stroke(DS.Gradient.glassBorder(0.8), lineWidth: 1)
+                }
+                .dsShadow(.high)
+                .ignoresSafeArea(edges: .bottom)
+        }
+        .transition(.move(edge: .bottom))
+    }
+
+    private var panelFill: AnyShapeStyle {
+        motion.reduceTransparency
+            ? AnyShapeStyle(DS.Color.materialFallback)
+            : AnyShapeStyle(.ultraThinMaterial)
+    }
+
+    // MARK: - Итоги
+
+    private var summary: some View {
+        Button {
+            Haptics.shared.tap(.light)
+            withAnimation(motion.animation(.smooth)) { isExpanded.toggle() }
+        } label: {
+            HStack(spacing: DS.Space.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(route.displayTitle)
+                        .font(DS.Font.subhead)
+                        .foregroundStyle(DS.Color.ink)
+                        .lineLimit(1)
+
+                    Text(totalsText)
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .monospacedDigit()
+                }
+
+                Spacer(minLength: 0)
+
+                if let average = route.averageRating {
+                    HStack(spacing: DS.Space.xxs) {
+                        RatingStars(value: average, size: 12, tint: accent)
+                        Text(String(format: "%.1f", average))
+                            .font(DS.Font.caption)
+                            .foregroundStyle(DS.Color.inkSecondary)
+                            .monospacedDigit()
+                    }
+                }
+
+                Image(systemName: "chevron.up")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+            }
+            .frame(minHeight: DS.Size.hitTarget)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var totalsText: String {
+        guard !route.points.isEmpty else { return "Коснись страны, затем города" }
+        var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
+        if route.totalDays > 0 {
+            parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+        }
+        if route.totalDistanceKm > 1 {
+            parts.append("\(Int(route.totalDistanceKm)) км")
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    // MARK: - Точки
+
+    @ViewBuilder
+    private var points: some View {
+        if route.points.isEmpty {
+            Text("Коснись страны на карте — появятся её города. Тап по городу добавит его в маршрут.")
+                .font(DS.Font.callout)
+                .foregroundStyle(DS.Color.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            VStack(spacing: 0) {
+                ForEach(Array(route.points.enumerated()), id: \.element.id) { index, point in
+                    row(point, at: index)
+                        .offset(y: offset(for: index))
+                        .zIndex(point.id == draggingID ? 1 : 0)
+                }
+            }
+            .animation(motion.animation(.snap), value: draggingID)
+        }
+    }
+
+    private func row(_ point: RoutePoint, at index: Int) -> some View {
+        HStack(spacing: DS.Space.sm) {
+            Text("\(index + 1)")
+                .font(DS.Font.micro)
+                .foregroundStyle(DS.Color.inkOnAccent)
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(accent))
+
+            Text(point.name)
+                .font(DS.Font.body)
+                .foregroundStyle(DS.Color.ink)
+                .lineLimit(1)
+
+            Spacer(minLength: 0)
+
+            daysStepper(point)
+
+            Button {
+                onRemovePoint(point)
+            } label: {
+                Image(systemName: "minus.circle")
+                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .frame(width: 30, height: 30)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Убрать \(point.name)")
+
+            // Ручка перетаскивания отдельно от строки: если тащить за всю
+            // строку, невозможно нажать «минус» и шаг дней.
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                .foregroundStyle(DS.Color.inkTertiary)
+                .frame(width: 34, height: rowHeight)
+                .contentShape(Rectangle())
+                .gesture(dragGesture(for: point, at: index))
+                .accessibilityLabel("Переставить \(point.name)")
+        }
+        .frame(height: rowHeight)
+    }
+
+    private func daysStepper(_ point: RoutePoint) -> some View {
+        HStack(spacing: DS.Space.xxs) {
+            stepperButton("minus", enabled: point.days > 1) {
+                onChangeDays(point, point.days - 1)
+            }
+
+            Text("\(point.days)")
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.ink)
+                .monospacedDigit()
+                .frame(minWidth: 16)
+
+            stepperButton("plus", enabled: point.days < 60) {
+                onChangeDays(point, point.days + 1)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Дней в \(point.name): \(point.days)")
+    }
+
+    private func stepperButton(_ icon: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.shared.tap(.soft)
+            action()
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(enabled ? DS.Color.inkSecondary : DS.Color.inkTertiary.opacity(0.4))
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+    }
+
+    // MARK: - Перетаскивание
+
+    private func dragGesture(for point: RoutePoint, at index: Int) -> some Gesture {
+        DragGesture(minimumDistance: 4)
+            .onChanged { value in
+                if draggingID != point.id {
+                    draggingID = point.id
+                    Haptics.shared.tap(.soft)
+                }
+                dragOffset = value.translation.height
+            }
+            .onEnded { _ in
+                let target = targetIndex(from: index)
+                if target != index { onMovePoint(index, target) }
+                draggingID = nil
+                dragOffset = 0
+            }
+    }
+
+    /// Куда встанет строка, если отпустить сейчас.
+    private func targetIndex(from index: Int) -> Int {
+        let shift = Int((dragOffset / rowHeight).rounded())
+        return min(max(index + shift, 0), route.points.count - 1)
+    }
+
+    /// Сдвиг строки: перетаскиваемая едет за пальцем, остальные расступаются.
+    private func offset(for index: Int) -> CGFloat {
+        guard let draggingID,
+              let from = route.points.firstIndex(where: { $0.id == draggingID })
+        else { return 0 }
+
+        if index == from { return dragOffset }
+
+        let to = targetIndex(from: from)
+        if from < to, index > from, index <= to { return -rowHeight }
+        if from > to, index < from, index >= to { return rowHeight }
+        return 0
+    }
+
+    // MARK: - Отзывы
+
+    @ViewBuilder
+    private var reviews: some View {
+        VStack(alignment: .leading, spacing: DS.Space.sm) {
+            SectionHeader("Отзывы", subtitle: reviewsSubtitle)
+
+            if isComposing {
+                composer
+            } else {
+                Button {
+                    draftRating = route.myReview?.rating ?? 5
+                    draftText = route.myReview?.text ?? ""
+                    withAnimation(motion.animation(.smooth)) { isComposing = true }
+                } label: {
+                    HStack(spacing: DS.Space.xs) {
+                        Image(systemName: route.myReview == nil ? "star" : "pencil")
+                            .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                        Text(route.myReview == nil ? "Оценить маршрут" : "Изменить свой отзыв")
+                    }
+                    .font(DS.Font.callout)
+                    .foregroundStyle(accent)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(height: DS.Size.hitTarget)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            ForEach(route.reviews) { review in
+                reviewRow(review)
+            }
+        }
+    }
+
+    private var reviewsSubtitle: String? {
+        guard let average = route.averageRating else {
+            return "Пока никто не оценивал"
+        }
+        return String(format: "%.1f · ", average)
+            + Plural.format(route.reviews.count, "отзыв", "отзыва", "отзывов")
+    }
+
+    private var composer: some View {
+        VStack(alignment: .leading, spacing: DS.Space.sm) {
+            RatingStars(value: Double(draftRating), size: 22, tint: accent) { draftRating = $0 }
+
+            // Своё текстовое поле, а не TextEditor: у системного нет плейсхолдера
+            // и он тащит собственный фон, который не вписывается в стекло.
+            ZStack(alignment: .topLeading) {
+                if draftText.isEmpty {
+                    Text("Что стоит знать тому, кто поедет за тобой?")
+                        .font(DS.Font.callout)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .padding(.horizontal, DS.Space.xs)
+                        .padding(.vertical, DS.Space.xs + 2)
+                        .allowsHitTesting(false)
+                }
+
+                TextEditor(text: $draftText)
+                    .font(DS.Font.callout)
+                    .foregroundStyle(DS.Color.ink)
+                    .scrollContentBackground(.hidden)
+                    .frame(height: 72)
+                    .padding(.horizontal, DS.Space.xxs)
+            }
+            .background(DS.Color.surfaceSunken.opacity(0.5))
+            .dsRounded(DS.Radius.sm)
+
+            HStack(spacing: DS.Space.xs) {
+                PillButton("Сохранить", kind: .primary, fullWidth: true) {
+                    onRate(draftRating, draftText.trimmingCharacters(in: .whitespacesAndNewlines))
+                    withAnimation(motion.animation(.smooth)) { isComposing = false }
+                }
+
+                if route.myReview != nil {
+                    Button {
+                        onRemoveReview()
+                        withAnimation(motion.animation(.smooth)) { isComposing = false }
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                            .foregroundStyle(DS.Color.danger)
+                            .frame(width: DS.Size.controlHeight, height: DS.Size.controlHeight)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Удалить отзыв")
+                }
+            }
+        }
+    }
+
+    private func reviewRow(_ review: RouteReview) -> some View {
+        VStack(alignment: .leading, spacing: DS.Space.xxs) {
+            HStack(spacing: DS.Space.xs) {
+                Text(review.authorName)
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.ink)
+
+                RatingStars(value: Double(review.rating), size: 11, tint: accent)
+
+                Spacer(minLength: 0)
+
+                Text(Self.dateFormatter.string(from: review.createdAt))
+                    .font(DS.Font.micro)
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+
+            if !review.text.isEmpty {
+                Text(review.text)
+                    .font(DS.Font.callout)
+                    .foregroundStyle(DS.Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(DS.Space.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .dsGlass(radius: DS.Radius.sm, shadow: .low)
+        .accessibilityElement(children: .combine)
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "d MMMM"
+        return formatter
+    }()
+}
