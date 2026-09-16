@@ -18,6 +18,7 @@ struct RoutePanel: View {
 
     let onRemovePoint: (RoutePoint) -> Void
     let onMovePoint: (Int, Int) -> Void
+    let onTogglePassed: (RoutePoint) -> Void
     let onChangeDays: (RoutePoint, Int) -> Void
     let onRate: (Int, String) -> Void
     let onRemoveReview: () -> Void
@@ -123,13 +124,42 @@ struct RoutePanel: View {
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
             }
             .frame(minHeight: DS.Size.hitTarget)
+            .overlay(alignment: .bottom) { progressLine }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
+    /// Тонкая полоса прогресса под заголовком. Появляется только когда
+    /// есть что показывать — у нетронутого маршрута её нет.
+    @ViewBuilder
+    private var progressLine: some View {
+        if route.visitedCount > 0 {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(DS.Color.hairline)
+                    Capsule()
+                        .fill(accent)
+                        .frame(width: proxy.size.width * CGFloat(route.visitedCount) / CGFloat(max(route.points.count, 1)))
+                        .animation(motion.animation(.smooth), value: route.visitedCount)
+                }
+            }
+            .frame(height: 2)
+        }
+    }
+
     private var totalsText: String {
         guard !route.points.isEmpty else { return "Коснись страны, затем города" }
+
+        // Начатый маршрут в первую очередь про прогресс, а не про километры.
+        if route.visitedCount > 0 {
+            var parts = ["\(route.visitedCount) из \(route.points.count) пройдено"]
+            if route.totalDays > 0 {
+                parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+            }
+            return parts.joined(separator: " · ")
+        }
+
         var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
         if route.totalDays > 0 {
             parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
@@ -164,15 +194,42 @@ struct RoutePanel: View {
 
     private func row(_ point: RoutePoint, at index: Int) -> some View {
         HStack(spacing: DS.Space.sm) {
-            Text("\(index + 1)")
-                .font(DS.Font.micro)
-                .foregroundStyle(DS.Color.inkOnAccent)
-                .frame(width: 22, height: 22)
-                .background(Circle().fill(accent))
+            // Номер и галочка — одна кнопка. Пройденная точка закрашивается,
+            // и порядок при этом не теряется: цифра остаётся видна.
+            Button {
+                onTogglePassed(point)
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(point.isVisited ? accent : Color.clear)
+                        .overlay {
+                            Circle().strokeBorder(
+                                point.isVisited ? Color.clear : DS.Color.border,
+                                lineWidth: 1.5
+                            )
+                        }
+
+                    if point.isVisited {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(DS.Color.inkOnAccent)
+                    } else {
+                        Text("\(index + 1)")
+                            .font(DS.Font.micro)
+                            .foregroundStyle(DS.Color.inkSecondary)
+                    }
+                }
+                .frame(width: 26, height: 26)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(point.isVisited ? "\(point.name), пройдено" : "\(point.name), точка \(index + 1)")
+            .accessibilityHint(point.isVisited ? "Снять отметку" : "Отметить пройденной")
 
             Text(point.name)
                 .font(DS.Font.body)
-                .foregroundStyle(DS.Color.ink)
+                .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
+                .strikethrough(point.isVisited, color: DS.Color.inkTertiary)
                 .lineLimit(1)
 
             Spacer(minLength: 0)

@@ -46,6 +46,12 @@ struct MapAnimatableState: VectorArithmetic {
     }
 }
 
+/// Остановка маршрута на карте.
+struct RouteStop: Equatable {
+    let point: CGPoint
+    let isVisited: Bool
+}
+
 /// Отмеченная страна, готовая к отрисовке.
 ///
 /// Рисуются по отдельности, а не общим слитым путём: у соседних стран
@@ -76,7 +82,7 @@ struct MapOverlayState: Equatable {
     var highlight: Path?
 
     /// Точки открытого маршрута в единичном пространстве, по порядку.
-    var routeLine: [CGPoint] = []
+    var routeLine: [RouteStop] = []
 
     struct Bloom: Equatable {
         let countryID: String

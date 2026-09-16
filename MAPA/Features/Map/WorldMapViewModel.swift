@@ -623,6 +623,35 @@ final class WorldMapViewModel: ObservableObject {
         persistRoutes()
     }
 
+    // MARK: - Прохождение
+
+    /// Отметить точку пройденной или снять отметку.
+    ///
+    /// Заодно красим страну: если ты доехал до города, страна посещена —
+    /// требовать второго действия на карте было бы бюрократией.
+    func togglePassed(_ point: RoutePoint, reduceMotion: Bool) {
+        guard var route = editingRoute,
+              let index = route.points.firstIndex(where: { $0.id == point.id })
+        else { return }
+
+        route.points[index].isVisited.toggle()
+        let didPass = route.points[index].isVisited
+        editingRoute = route
+        rebuildRouteLine()
+        syncOpenRoute()
+
+        guard didPass,
+              let countryID = point.countryID,
+              travelLog.status(for: countryID) == nil,
+              let country = geometry?.country(id: countryID)
+        else {
+            Haptics.shared.tap(didPass ? .medium : .soft)
+            return
+        }
+
+        setStatus(.visited, for: country, origin: point.unitPoint, reduceMotion: reduceMotion)
+    }
+
     // MARK: - Оценки и отзывы
 
     /// Поставить или изменить свою оценку открытого маршрута.
@@ -672,7 +701,9 @@ final class WorldMapViewModel: ObservableObject {
     /// Линия маршрута для холста. Пересобирается при смене точек,
     /// а не на каждом кадре.
     private func rebuildRouteLine() {
-        overlay.routeLine = editingRoute?.points.map(\.unitPoint) ?? []
+        overlay.routeLine = editingRoute?.points.map {
+            RouteStop(point: $0.unitPoint, isVisited: $0.isVisited)
+        } ?? []
     }
 
     private func persistRoutes() {

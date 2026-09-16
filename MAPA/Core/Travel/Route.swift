@@ -20,6 +20,9 @@ struct RoutePoint: Identifiable, Equatable, Codable {
     /// Бюджет на всю остановку, в евро.
     var budget: Int
     var note: String
+    /// Пройдена ли точка. Появилось позже остальных полей, поэтому
+    /// необязательное в декодере — старые файлы читаются как «не пройдено».
+    var isVisited: Bool
 
     var coordinate: Coordinate {
         Coordinate(longitude: longitude, latitude: latitude)
@@ -37,7 +40,8 @@ struct RoutePoint: Identifiable, Equatable, Codable {
         coordinate: Coordinate,
         days: Int = 2,
         budget: Int = 0,
-        note: String = ""
+        note: String = "",
+        isVisited: Bool = false
     ) {
         self.id = id
         self.cityID = cityID
@@ -48,6 +52,23 @@ struct RoutePoint: Identifiable, Equatable, Codable {
         self.days = days
         self.budget = budget
         self.note = note
+        self.isVisited = isVisited
+    }
+
+    /// Старые файлы точек не знают про `isVisited` — читаем как «не пройдено»,
+    /// а не роняем разбор всего маршрута.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        cityID = try container.decodeIfPresent(String.self, forKey: .cityID)
+        name = try container.decode(String.self, forKey: .name)
+        countryID = try container.decodeIfPresent(String.self, forKey: .countryID)
+        longitude = try container.decode(Double.self, forKey: .longitude)
+        latitude = try container.decode(Double.self, forKey: .latitude)
+        days = try container.decode(Int.self, forKey: .days)
+        budget = try container.decode(Int.self, forKey: .budget)
+        note = try container.decode(String.self, forKey: .note)
+        isVisited = try container.decodeIfPresent(Bool.self, forKey: .isVisited) ?? false
     }
 
     init(city: City) {
@@ -126,6 +147,14 @@ struct Route: Identifiable, Equatable, Codable {
     var myReview: RouteReview? { reviews.first(where: \.isMine) }
 
     var totalDays: Int { points.reduce(0) { $0 + $1.days } }
+
+    /// Сколько точек уже пройдено.
+    var visitedCount: Int { points.filter(\.isVisited).count }
+
+    /// Маршрут начат, но не закончен.
+    var isInProgress: Bool { visitedCount > 0 && visitedCount < points.count }
+
+    var isComplete: Bool { !points.isEmpty && visitedCount == points.count }
     var totalBudget: Int { points.reduce(0) { $0 + $1.budget } }
 
     /// Длина маршрута по прямым между точками, километры.

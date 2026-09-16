@@ -544,9 +544,9 @@ struct MapCanvas: View, Animatable {
         guard overlay.routeLine.count > 1 else { return }
 
         var path = Path()
-        path.move(to: overlay.routeLine[0])
-        for point in overlay.routeLine.dropFirst() {
-            path.addLine(to: point)
+        path.move(to: overlay.routeLine[0].point)
+        for stop in overlay.routeLine.dropFirst() {
+            path.addLine(to: stop.point)
         }
 
         context.stroke(
@@ -560,31 +560,20 @@ struct MapCanvas: View, Animatable {
             style: StrokeStyle(lineWidth: 2.2 / side, lineCap: .round, lineJoin: .round)
         )
 
-        // Точки остановок. Без них линия читается как перелёт, а не как
-        // маршрут: непонятно, где именно ты останавливаешься.
+        // Остановки. Без них линия читается как перелёт, а не как маршрут:
+        // непонятно, где именно ты останавливаешься.
+        // Пройденные закрашены, будущие полые — прогресс виден прямо на карте.
         let background = theme.isLight ? Color.white : DS.Palette.void
-        for (index, point) in overlay.routeLine.enumerated() {
-            let radius = (index == 0 ? 5.0 : 3.6) / side
+        for stop in overlay.routeLine {
+            let radius = (stop.isVisited ? 4.6 : 3.8) / side
             let circle = Path(
                 ellipseIn: CGRect(
-                    x: point.x - radius, y: point.y - radius,
+                    x: stop.point.x - radius, y: stop.point.y - radius,
                     width: radius * 2, height: radius * 2
                 )
             )
-            context.fill(circle, with: .color(background))
+            context.fill(circle, with: .color(stop.isVisited ? theme.accent : background))
             context.stroke(circle, with: .color(theme.accent), lineWidth: 2.2 / side)
-
-            // Первая точка полая — от неё маршрут начинается.
-            if index > 0 {
-                let inner = radius * 0.45
-                context.fill(
-                    Path(ellipseIn: CGRect(
-                        x: point.x - inner, y: point.y - inner,
-                        width: inner * 2, height: inner * 2
-                    )),
-                    with: .color(theme.accent)
-                )
-            }
         }
     }
 

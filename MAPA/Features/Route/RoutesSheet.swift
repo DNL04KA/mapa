@@ -45,19 +45,25 @@ struct RoutesSheet: View {
                 .font(DS.Font.title)
                 .foregroundStyle(DS.Color.ink)
 
-            if routes.isEmpty {
-                empty
-            } else {
-                ScrollView {
-                    VStack(spacing: DS.Space.xs) {
-                        ForEach(routes) { route in
-                            row(route)
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.md) {
+                    if routes.isEmpty {
+                        empty
+                    } else {
+                        VStack(alignment: .leading, spacing: DS.Space.xs) {
+                            SectionHeader("Твои маршруты")
+                            ForEach(routes) { route in
+                                row(route)
+                            }
                         }
                     }
+
+                    community
                 }
-                .frame(maxHeight: 360)
-                .scrollIndicators(.hidden)
+                .padding(.bottom, DS.Space.xs)
             }
+            .frame(maxHeight: 400)
+            .scrollIndicators(.hidden)
 
             PillButton("Новый маршрут", icon: "plus", kind: .primary, fullWidth: true, action: onCreate)
         }
@@ -99,6 +105,36 @@ struct RoutesSheet: View {
         .padding(DS.Space.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .dsGlass(radius: DS.Radius.md, shadow: .low)
+    }
+
+    /// Раздел сообщества.
+    ///
+    /// Заполнять его выдуманными маршрутами выдуманных людей я не стал:
+    /// человек начнёт их сохранять и планировать по ним поездку, а они
+    /// ненастоящие. Пустой раздел честнее и заодно объясняет, чего ждать.
+    private var community: some View {
+        VStack(alignment: .leading, spacing: DS.Space.xs) {
+            SectionHeader("Маршруты сообщества")
+
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                Image(systemName: "person.2")
+                    .font(.system(size: DS.Size.iconLg, weight: .light))
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .padding(.bottom, DS.Space.xxs)
+
+                Text("Пока никого нет")
+                    .font(DS.Font.subhead)
+                    .foregroundStyle(DS.Color.ink)
+
+                Text("Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать.")
+                    .font(DS.Font.callout)
+                    .foregroundStyle(DS.Color.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(DS.Space.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .dsGlass(radius: DS.Radius.md, shadow: .low)
+        }
     }
 
     private func row(_ route: Route) -> some View {
@@ -154,6 +190,10 @@ struct RoutesSheet: View {
     }
 
     private func subtitle(_ route: Route) -> String {
+        if route.isComplete { return "Пройден целиком" }
+        if route.isInProgress {
+            return "\(route.visitedCount) из \(route.points.count) пройдено"
+        }
         var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
         if route.totalDays > 0 {
             parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
