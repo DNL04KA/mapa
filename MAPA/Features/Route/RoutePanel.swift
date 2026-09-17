@@ -196,6 +196,7 @@ struct RoutePanel: View {
             VStack(spacing: 0) {
                 ForEach(Array(route.points.enumerated()), id: \.element.id) { index, point in
                     row(point, at: index)
+                        .dsReveal(index)
                         .offset(y: offset(for: index))
                         .zIndex(point.id == draggingID ? 1 : 0)
                 }
@@ -315,52 +316,53 @@ struct RoutePanel: View {
             photoTarget = point
             isPickingPhoto = true
         } label: {
-            ZStack {
-                Rectangle()
-                    .fill(accent.opacity(0.10))
-
-                if let id = point.photoID, let image = RoutePhotoStore.image(id: id) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                } else if let cover = LandmarkPhotos.cover(for: point.name) {
-                    // Пока своего снимка нет — показываем город таким, какой он
-                    // есть, а не серый квадрат. Плюс в углу говорит, что место
-                    // ждёт твою фотографию.
-                    RemoteImage(url: cover.small)
-                    plusBadge
-                } else {
-                    Image(systemName: "photo.badge.plus")
-                        .font(.system(size: DS.Size.iconMd, weight: .light))
-                        .foregroundStyle(accent.opacity(0.7))
+            // Размер держит подложка, картинка и значок ложатся поверх неё.
+            // Внутри стопки картинка с `.fill` раздувала бы её собой, и значок
+            // уезжал бы за обрезку — на части карточек он так и пропадал.
+            Rectangle()
+                .fill(accent.opacity(0.10))
+                .frame(width: 72, height: 72)
+                .overlay {
+                    if let id = point.photoID, let image = RoutePhotoStore.image(id: id) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                    } else if let cover = LandmarkPhotos.cover(for: point.name) {
+                        // Пока своего снимка нет — показываем город таким, какой
+                        // он есть, а не серый квадрат.
+                        RemoteImage(url: cover.small)
+                    } else {
+                        Image(systemName: "photo.badge.plus")
+                            .font(.system(size: DS.Size.iconMd, weight: .light))
+                            .foregroundStyle(accent.opacity(0.7))
+                    }
                 }
-            }
-            .frame(width: 72, height: 72)
-            .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
-                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
-            }
-            .contentShape(Rectangle())
+                .clipped()
+                .overlay(alignment: .bottomTrailing) {
+                    // Плюс нужен только там, где снимок чужой: он говорит,
+                    // что место ждёт твою фотографию.
+                    if point.photoID == nil, LandmarkPhotos.cover(for: point.name) != nil {
+                        plusBadge
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                        .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                }
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(point.photoID == nil ? "Добавить фото: \(point.name)" : "Фото: \(point.name)")
     }
 
     private var plusBadge: some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Image(systemName: "plus")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(4)
-                    .background(DS.Palette.void.opacity(0.55), in: Circle())
-            }
-        }
-        .padding(4)
+        Image(systemName: "plus")
+            .font(.system(size: 9, weight: .bold))
+            .foregroundStyle(.white)
+            .padding(4)
+            .background(DS.Palette.void.opacity(0.55), in: Circle())
+            .padding(4)
     }
 
     private func daysStepper(_ point: RoutePoint) -> some View {

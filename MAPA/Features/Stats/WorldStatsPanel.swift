@@ -19,9 +19,31 @@ struct WorldStatsPanel: View {
                 emptyHeader
             } else {
                 header
+
+                // В покое панель намеренно без подложки: карта занимает весь
+                // экран, и плашка вырезала бы из неё кусок. Но таблица чисел
+                // поверх материков не читается вообще — тут подложка не
+                // украшение, а условие читаемости.
                 if isExpanded {
-                    legend
-                    continents
+                    VStack(alignment: .leading, spacing: DS.Space.sm) {
+                        legend
+                        Divider().overlay(theme.mapInk.opacity(0.14))
+                        worldRow
+                        Divider().overlay(theme.mapInk.opacity(0.14))
+                        continents
+                    }
+                    .padding(DS.Space.sm)
+                    .background {
+                        RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                            .fill(theme.isLight
+                                  ? Color.white.opacity(0.92)
+                                  : DS.Palette.abyss.opacity(0.88))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                                    .strokeBorder(theme.mapInk.opacity(0.1), lineWidth: 1)
+                            }
+                            .dsShadow(.medium)
+                    }
                 }
             }
         }
@@ -54,11 +76,15 @@ struct WorldStatsPanel: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// Шапка читается сверху вниз одним столбцом: надпись, число, полоса,
-    /// счёт. Раньше огромный процент стоял слева, а «17 стран» мелко справа —
-    /// и это выглядело как два чужих друг другу виджета на одном экране.
+    /// Шапка в покое: надпись, число, счёт. И ничего больше.
+    ///
+    /// Полоса отсюда убрана намеренно. При 3.9 % любая полоса — это почти
+    /// пустая дорожка с точкой у левого края: она не сообщает ничего, чего
+    /// не сказало бы само число, зато выглядит недогрузившейся. Прогресс
+    /// уместен там, где ему есть с чем себя сравнить, — в развёрнутой
+    /// таблице по континентам, куда он и переехал.
     private var header: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xs) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .bottom, spacing: DS.Space.sm) {
                 percent
 
@@ -72,12 +98,10 @@ struct WorldStatsPanel: View {
                     .padding(.bottom, 6)
             }
 
-            progressLine
-
             Text(Plural.countries(statistics.exploredCount)
                  + " · " + Plural.continents(statistics.continentsTouched))
                 .font(DS.Font.caption)
-                .foregroundStyle(theme.mapInk.opacity(0.7))
+                .foregroundStyle(theme.mapInk.opacity(0.65))
                 .monospacedDigit()
         }
         .dsMapText()
@@ -133,54 +157,30 @@ struct WorldStatsPanel: View {
         }
     }
 
-    /// Полоса под числом: мир, разрезанный на континенты по площади.
+    /// Итог по миру — первой строкой таблицы, в одном ряду с континентами.
     ///
-    /// Раньше это была одна сплошная черта, и при 3.9 % она читалась как
-    /// случайный штрих у левого края — непонятно, чего именно 3.9. Теперь
-    /// видно, из чего складывается число: широкая Азия, узкая Европа, и
-    /// сколько съедено внутри каждого куска. Сумма закрашенного по-прежнему
-    /// равна проценту над полосой — это одна и та же величина, показанная
-    /// телом, а не цифрой.
-    private var progressLine: some View {
-        GeometryReader { proxy in
-            let gap: CGFloat = 3
-            let segments = statistics.segments
-            let usable = max(0, proxy.size.width - gap * CGFloat(max(0, segments.count - 1)))
+    /// Здесь полоса на месте: рядом стоят шесть таких же, и сразу видно, что
+    /// Европа почти закрашена, а Южная Америка не начата. В одиночку, без
+    /// соседей, та же полоса не значила ничего.
+    private var worldRow: some View {
+        HStack(spacing: DS.Space.sm) {
+            Text("Весь мир")
+                .font(DS.Font.caption)
+                .foregroundStyle(theme.mapInk)
+                .frame(width: 118, alignment: .leading)
 
-            HStack(spacing: gap) {
-                ForEach(segments) { segment in
-                    let width = usable * segment.share
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(theme.mapInk.opacity(theme.isLight ? 0.13 : 0.14))
+            progressBar(statistics.worldPercent / 100)
 
-                        Capsule()
-                            .fill(progressFill)
-                            .frame(width: width * min(1, max(0, segment.filled)))
-                            .shadow(color: theme.isLight ? .clear : theme.accent.opacity(0.8), radius: 6)
-                    }
-                    .frame(width: width)
-                }
-            }
-            .animation(motion.animation(.smooth), value: statistics.worldPercent)
+            Text(String(format: "%.1f%%", statistics.worldPercent))
+                .font(DS.Font.micro)
+                .foregroundStyle(theme.mapInk.opacity(0.5))
+                .monospacedDigit()
+                .frame(width: 42, alignment: .trailing)
         }
-        .frame(height: theme.isLight ? 4 : 5)
-        .accessibilityHidden(true)
+        .frame(height: 22)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Весь мир: \(String(format: "%.1f", statistics.worldPercent)) процента")
     }
-
-    private var progressFill: AnyShapeStyle {
-        theme.isLight
-            ? AnyShapeStyle(theme.mapInk.opacity(0.8))
-            : AnyShapeStyle(
-                LinearGradient(
-                    colors: [theme.accent.opacity(0.7), theme.accent],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-    }
-
-    // MARK: - Разбивка
 
     private var legend: some View {
         HStack(spacing: DS.Space.md) {
@@ -229,7 +229,7 @@ struct WorldStatsPanel: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
-            progressBar(progress.fraction)
+            progressBar(progress.areaFraction)
 
             Text("\(progress.explored)/\(progress.total)")
                 .font(DS.Font.micro)

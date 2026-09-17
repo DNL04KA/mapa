@@ -577,6 +577,24 @@ final class WorldMapViewModel: ObservableObject {
         rebuildRouteLine()
     }
 
+    /// Взять набросок по стране себе.
+    ///
+    /// Сразу сохраняем, а не оставляем «черновиком до закрытия»: человек уже
+    /// сказал «беру», и потерять это из-за случайного свайпа он не должен.
+    func takeSuggestedRoute(_ stops: [CountryRoutePlanner.Stop], for country: Country, reduceMotion: Bool) {
+        guard stops.count > 1 else { return }
+        let route = CountryRoutePlanner.route(
+            title: country.nameRU,
+            countryID: country.id,
+            countryName: country.nameRU,
+            stops: stops
+        )
+        routes.insert(route, at: 0)
+        persistRoutes()
+        Haptics.shared.success()
+        openRoute(route, reduceMotion: reduceMotion)
+    }
+
     func add(_ city: City, reduceMotion: Bool) {
         guard var route = editingRoute else { return }
         // Повторный тап по уже добавленному городу убирает его — так проще

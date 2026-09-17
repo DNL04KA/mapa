@@ -16,12 +16,16 @@ struct CountryCardView: View {
     let isHome: Bool
     let cities: [City]
     let onOpenCity: (City) -> Void
+    let onTakeRoute: ([CountryRoutePlanner.Stop]) -> Void
     let onSelectStatus: (TravelStatus) -> Void
     let onClose: () -> Void
 
     @State private var dragOffset: CGFloat = 0
 
     private var facts: CountryFacts? { CountryFacts.facts(for: country.id) }
+    private var routeStops: [CountryRoutePlanner.Stop] {
+        CountryRoutePlanner.suggest(for: cities)
+    }
     private var heroHeight: CGFloat { 320 }
 
     private var tint: Color {
@@ -101,6 +105,14 @@ struct CountryCardView: View {
             statusRow
             if let facts {
                 tiles(facts)
+            }
+            if routeStops.count > 1 {
+                CountryRouteSection(
+                    stops: routeStops,
+                    tint: tint,
+                    onTake: { onTakeRoute(routeStops) },
+                    onOpenCity: onOpenCity
+                )
             }
             if !cities.isEmpty {
                 cityList
@@ -251,6 +263,7 @@ struct CountryCardView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .dsReveal(index)
                     .accessibilityLabel(city.isCapital ? "\(city.nameRU), столица" : city.nameRU)
 
                     if index < min(cities.count, 6) - 1 {

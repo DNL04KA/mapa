@@ -241,6 +241,11 @@ struct WorldMapView: View {
                     closeCardKeepingSelection()
                     model.focus(on: city, reduceMotion: motion.reduceMotion)
                 },
+                onTakeRoute: { stops in
+                    closeCardKeepingSelection()
+                    model.takeSuggestedRoute(stops, for: country, reduceMotion: motion.reduceMotion)
+                    routeExpanded = true
+                },
                 onSelectStatus: { model.setStatusFromCard($0, for: country, reduceMotion: motion.reduceMotion) },
                 onClose: { closeCard() }
             )
@@ -354,7 +359,7 @@ struct WorldMapView: View {
             MapVignette()
 
             VStack(spacing: 0) {
-                MapTopScrim(height: statsExpanded ? 430 : 210)
+                MapTopScrim(height: 210)
                 Spacer(minLength: 0)
             }
             .ignoresSafeArea(edges: .top)
