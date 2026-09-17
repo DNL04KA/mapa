@@ -9,8 +9,9 @@ struct WorldMapView: View {
     @State private var showsDebug = false
     @State private var statsExpanded = false
     @State private var showsThemes = false
-    /// Платная тема, которую сейчас примеряют. Живёт только пока открыта панель.
-    @State private var previewTheme: MapTheme?
+    /// Платное полотно или палитра, которые сейчас примеряют.
+    /// Живёт только пока открыта панель.
+    @State private var previewChoice: ThemePreview?
     /// Страна, чья карточка открыта.
     @State private var cardCountry: Country?
     @State private var showsRoutes = false
@@ -18,8 +19,10 @@ struct WorldMapView: View {
     @State private var routeExpanded = false
     @Environment(\.scenePhase) private var scenePhase
 
-    let theme: MapTheme
-    let onSelectTheme: (MapTheme) -> Void
+    let surface: MapSurface
+    let palette: MapPalette
+    let onSelectSurface: (MapSurface) -> Void
+    let onSelectPalette: (MapPalette) -> Void
     /// Витрина дизайн-системы осталась рабочим инструментом
     /// и открывается из панели оформления.
     let onOpenGallery: () -> Void
@@ -278,11 +281,13 @@ struct WorldMapView: View {
     private var themeSheet: some View {
         if showsThemes {
             ThemePicker(
-                current: theme,
-                preview: previewTheme,
-                onSelect: { onSelectTheme($0) },
+                surface: surface,
+                palette: palette,
+                preview: previewChoice,
+                onSelectSurface: { onSelectSurface($0) },
+                onSelectPalette: { onSelectPalette($0) },
                 onPreview: { candidate in
-                    withAnimation(motion.animation(.smooth)) { previewTheme = candidate }
+                    withAnimation(motion.animation(.smooth)) { previewChoice = candidate }
                 },
                 onDismiss: { closeThemes() },
                 onOpenGallery: {
@@ -295,14 +300,23 @@ struct WorldMapView: View {
         }
     }
 
-    /// Тема, которой карта нарисована прямо сейчас: примеряемая имеет
-    /// приоритет над выбранной, но нигде не сохраняется.
-    private var activeTheme: MapTheme { previewTheme ?? theme }
+    /// Оформление, которым карта нарисована прямо сейчас.
+    ///
+    /// Примеряемое подменяет ровно свою половину: выбирая цвета, ты видишь их
+    /// на своём полотне, а примеряя полотно — со своими цветами. Нигде не
+    /// сохраняется и снимается при закрытии панели.
+    private var activeTheme: MapTheme {
+        switch previewChoice {
+        case let .surface(candidate): return MapTheme(surface: candidate, palette: palette)
+        case let .palette(candidate): return MapTheme(surface: surface, palette: candidate)
+        case nil: return MapTheme(surface: surface, palette: palette)
+        }
+    }
 
     private func closeThemes() {
         withAnimation(motion.animation(.smooth)) {
             showsThemes = false
-            previewTheme = nil
+            previewChoice = nil
         }
     }
 

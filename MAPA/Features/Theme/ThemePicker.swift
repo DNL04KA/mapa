@@ -1,24 +1,60 @@
 import SwiftUI
 
+/// Что именно сейчас примеряют.
+///
+/// Полотно и палитра примеряются по отдельности: выбирая цвета, ты должен
+/// видеть их на **своём** полотне, а не на чужом.
+enum ThemePreview: Equatable {
+    case surface(MapSurface)
+    case palette(MapPalette)
+
+    var id: String {
+        switch self {
+        case let .surface(surface): return "surface:" + surface.id
+        case let .palette(palette): return "palette:" + palette.id
+        }
+    }
+
+    var isPremium: Bool {
+        switch self {
+        case let .surface(surface): return surface.isPremium
+        case let .palette(palette): return palette.isPremium
+        }
+    }
+}
+
 /// Выбор оформления карты.
 ///
-/// Панель живёт в одном слое с картой: пока листаешь темы, карта под ними
-/// видна и меняется сразу. Платную тему можно примерить — она применяется
-/// к твоей настоящей карте, пока панель открыта, и снимается при закрытии.
-/// Без этого продавать оформление бессмысленно: по квадратику превью
-/// невозможно понять, каково это.
+/// Две вкладки, а не один список. Полотно — то, на чём нарисована карта;
+/// палитра — чем закрашены страны. Раньше это было слито в одну тему, и
+/// «бумага с яркими странами» была невозможна в принципе: пришлось бы
+/// заводить отдельную тему на каждое сочетание.
+///
+/// Панель живёт в одном слое с картой: пока листаешь, карта под ней видна и
+/// меняется сразу. Платное можно примерить — оно применяется к твоей настоящей
+/// карте, пока панель открыта, и снимается при закрытии. Без этого продавать
+/// оформление бессмысленно: по квадратику превью невозможно понять, каково это.
 @MainActor
 struct ThemePicker: View {
 
     @Environment(\.dsMotion) private var motion
 
-    let current: MapTheme
-    let preview: MapTheme?
-    let onSelect: (MapTheme) -> Void
-    let onPreview: (MapTheme?) -> Void
+    let surface: MapSurface
+    let palette: MapPalette
+    let preview: ThemePreview?
+    let onSelectSurface: (MapSurface) -> Void
+    let onSelectPalette: (MapPalette) -> Void
+    let onPreview: (ThemePreview?) -> Void
     let onDismiss: () -> Void
     let onOpenGallery: () -> Void
 
+    enum Tab: String, CaseIterable, Identifiable {
+        case surface = "Полотно"
+        case palette = "Цвета"
+        var id: String { rawValue }
+    }
+
+    @State private var tab: Tab = .surface
     @State private var dragOffset: CGFloat = 0
 
     private let columns = [GridItem(.adaptive(minimum: 100), spacing: DS.Space.sm)]
@@ -52,16 +88,25 @@ struct ThemePicker: View {
                 .font(DS.Font.title)
                 .foregroundStyle(DS.Color.ink)
 
+            tabs
+
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.Space.lg) {
-                    section("Открыто", themes: MapTheme.free)
-                    premiumBlock
-                    section(nil, themes: MapTheme.premium)
+                    switch tab {
+                    case .surface:
+                        surfaceSection("Открыто", MapSurface.free)
+                        premiumBlock
+                        surfaceSection(nil, MapSurface.premium)
+                    case .palette:
+                        paletteSection("Открыто", MapPalette.free)
+                        premiumBlock
+                        paletteSection(nil, MapPalette.premium)
+                    }
                     footer
                 }
                 .padding(.bottom, DS.Space.sm)
             }
-            .frame(maxHeight: 460)
+            .frame(maxHeight: 440)
             .scrollIndicators(.hidden)
         }
         .padding(.horizontal, DS.Space.screen)
@@ -71,6 +116,10 @@ struct ThemePicker: View {
         .background {
             UnevenRoundedTopShape(radius: DS.Radius.xl)
                 .fill(panelFill)
+                .overlay {
+                    UnevenRoundedTopShape(radius: DS.Radius.xl)
+                        .fill(DS.Palette.abyss.opacity(motion.reduceTransparency ? 1 : 0.9))
+                }
                 .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
                         .stroke(DS.Gradient.glassBorder(0.8), lineWidth: 1)
@@ -89,17 +138,184 @@ struct ThemePicker: View {
             : AnyShapeStyle(.ultraThinMaterial)
     }
 
-    // MARK: - Секции
+    // MARK: - Вкладки
 
-    private func section(_ title: String?, themes: [MapTheme]) -> some View {
-        VStack(alignment: .leading, spacing: DS.Space.sm) {
-            if let title {
-                Text(title).dsOverline()
-            }
-            LazyVGrid(columns: columns, spacing: DS.Space.md) {
-                ForEach(themes) { swatch($0) }
+    private var tabs: some View {
+        HStack(spacing: 0) {
+            ForEach(Tab.allCases) { item in
+                let isOn = tab == item
+                Button {
+                    Haptics.shared.selection()
+                    // Примерка снимается при переходе: иначе непонятно,
+                    // что именно сейчас надето на карту.
+                    onPreview(nil)
+                    withAnimation(motion.animation(.snap)) { tab = item }
+                } label: {
+                    Text(item.rawValue)
+                        .font(DS.Font.callout)
+                        .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkSecondary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background {
+                            if isOn {
+                                Capsule().fill(DS.Color.ink)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
             }
         }
+        .padding(3)
+        .background(Capsule().fill(DS.Color.surfaceSunken.opacity(0.7)))
+    }
+
+    // MARK: - Полотна
+
+    private func surfaceSection(_ title: String?, _ items: [MapSurface]) -> some View {
+        VStack(alignment: .leading, spacing: DS.Space.sm) {
+            if let title { Text(title).dsOverline() }
+            LazyVGrid(columns: columns, spacing: DS.Space.md) {
+                ForEach(items) { item in
+                    tile(
+                        name: item.name,
+                        subtitle: item.subtitle,
+                        accent: item.accent,
+                        isPremium: item.isPremium,
+                        isSelected: item.id == surface.id && preview == nil,
+                        isPreviewing: preview == .surface(item)
+                    ) {
+                        RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                            .fill(item.previewGradient)
+                    } tap: {
+                        choose(.surface(item), isFree: !item.isPremium) {
+                            onSelectSurface(item)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Палитры
+
+    private func paletteSection(_ title: String?, _ items: [MapPalette]) -> some View {
+        VStack(alignment: .leading, spacing: DS.Space.sm) {
+            if let title { Text(title).dsOverline() }
+            LazyVGrid(columns: columns, spacing: DS.Space.md) {
+                ForEach(items) { item in
+                    tile(
+                        name: item.name,
+                        subtitle: item.subtitle,
+                        accent: item.previewColors.first ?? surface.accent,
+                        isPremium: item.isPremium,
+                        isSelected: item.id == palette.id && preview == nil,
+                        isPreviewing: preview == .palette(item)
+                    ) {
+                        paletteSwatch(item)
+                    } tap: {
+                        choose(.palette(item), isFree: !item.isPremium) {
+                            onSelectPalette(item)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Цвета показываем на твоём полотне, а не на нейтральном фоне:
+    /// одна и та же палитра на бумаге и в ночи выглядит по-разному.
+    private func paletteSwatch(_ item: MapPalette) -> some View {
+        let colors = item.id == MapPalette.monoAccent.id
+            ? Array(repeating: surface.accent, count: 4)
+            : item.previewColors
+
+        return ZStack {
+            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                .fill(surface.previewGradient)
+
+            HStack(spacing: 3) {
+                ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(color)
+                }
+            }
+            .padding(DS.Space.xs)
+        }
+    }
+
+    // MARK: - Плитка
+
+    private func choose(_ item: ThemePreview, isFree: Bool, apply: () -> Void) {
+        if isFree {
+            Haptics.shared.selection()
+            onPreview(nil)
+            apply()
+        } else {
+            Haptics.shared.tap(.soft)
+            onPreview(preview == item ? nil : item)
+        }
+    }
+
+    private func tile<Art: View>(
+        name: String,
+        subtitle: String?,
+        accent: Color,
+        isPremium: Bool,
+        isSelected: Bool,
+        isPreviewing: Bool,
+        @ViewBuilder art: () -> Art,
+        tap: @escaping () -> Void
+    ) -> some View {
+        Button(action: tap) {
+            VStack(spacing: DS.Space.xs) {
+                ZStack {
+                    art()
+                        .frame(height: 78)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                                .strokeBorder(
+                                    isSelected || isPreviewing ? accent : DS.Color.border,
+                                    lineWidth: isSelected || isPreviewing ? 2 : 1
+                                )
+                        }
+
+                    if isPreviewing {
+                        badge("eye.fill", size: DS.Size.iconMd)
+                    } else if isPremium {
+                        badge("lock.fill", size: DS.Size.iconSm)
+                    } else if isSelected {
+                        badge("checkmark", size: DS.Size.iconMd)
+                    }
+                }
+
+                VStack(spacing: 0) {
+                    Text(name)
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.ink)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(DS.Font.micro)
+                            .foregroundStyle(DS.Color.inkTertiary)
+                    }
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            }
+        }
+        .buttonStyle(.plain)
+        .animation(motion.animation(.snap), value: isSelected)
+        .accessibilityLabel(name)
+        .accessibilityHint(isPremium ? "Платное. Коснись, чтобы примерить" : "Применить")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    private func badge(_ icon: String, size: CGFloat) -> some View {
+        Image(systemName: icon)
+            .font(.system(size: size, weight: .bold))
+            .foregroundStyle(.white)
+            .shadow(color: .black.opacity(0.7), radius: 4)
     }
 
     /// Блок подписки. Никаких кнопок «купить»: покупок ещё нет,
@@ -126,12 +342,14 @@ struct ThemePicker: View {
                     .clipShape(Capsule())
             }
 
-            Text("Пятнадцать оформлений, где меняется не цвет, а материал карты: пергамент со штриховкой пером, миллиметровка чертежа, звёздное небо под сушей.")
+            Text(tab == .surface
+                 ? "Пятнадцать полотен, где меняется не цвет, а материал карты: пергамент со штриховкой пером, миллиметровка чертежа, звёздное небо под сушей."
+                 : "Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний.")
                 .font(DS.Font.callout)
                 .foregroundStyle(DS.Color.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Label("Коснись любой — примеришь на своей карте", systemImage: "hand.tap")
+            Label("Коснись любого — примеришь на своей карте", systemImage: "hand.tap")
                 .font(DS.Font.caption)
                 .foregroundStyle(DS.Palette.indigoSoft)
         }
@@ -151,80 +369,6 @@ struct ThemePicker: View {
                         .strokeBorder(DS.Palette.indigoSoft.opacity(0.45), lineWidth: 1)
                 }
         }
-    }
-
-    // MARK: - Плитка темы
-
-    private func swatch(_ theme: MapTheme) -> some View {
-        let isSelected = theme.id == current.id && preview == nil
-        let isPreviewing = preview?.id == theme.id
-
-        return Button {
-            if theme.isPremium {
-                Haptics.shared.tap(.soft)
-                onPreview(isPreviewing ? nil : theme)
-            } else {
-                Haptics.shared.selection()
-                onPreview(nil)
-                onSelect(theme)
-            }
-        } label: {
-            VStack(spacing: DS.Space.xs) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                        .fill(theme.previewGradient)
-                        .frame(height: 78)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                                .strokeBorder(
-                                    isSelected || isPreviewing ? theme.accent : DS.Color.border,
-                                    lineWidth: isSelected || isPreviewing ? 2 : 1
-                                )
-                        }
-                        .overlay(alignment: .bottomTrailing) {
-                            Circle()
-                                .fill(theme.accent)
-                                .frame(width: 12, height: 12)
-                                .padding(DS.Space.xs)
-                        }
-
-                    if isPreviewing {
-                        Image(systemName: "eye.fill")
-                            .font(.system(size: DS.Size.iconMd, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.7), radius: 4)
-                    } else if theme.isPremium {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: DS.Size.iconSm, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.85))
-                            .shadow(color: .black.opacity(0.7), radius: 4)
-                    } else if isSelected {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: DS.Size.iconMd, weight: .bold))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.7), radius: 4)
-                    }
-                }
-
-                VStack(spacing: 0) {
-                    Text(theme.name)
-                        .font(DS.Font.caption)
-                        .foregroundStyle(DS.Color.ink)
-                    if let subtitle = theme.subtitle {
-                        Text(subtitle)
-                            .font(DS.Font.micro)
-                            .foregroundStyle(DS.Color.inkTertiary)
-                    }
-                }
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            }
-        }
-        .buttonStyle(.plain)
-        .animation(motion.animation(.snap), value: isSelected)
-        .accessibilityLabel(theme.name)
-        .accessibilityHint(theme.isPremium ? "Платная тема. Коснись, чтобы примерить" : "Применить оформление")
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 
     private var footer: some View {

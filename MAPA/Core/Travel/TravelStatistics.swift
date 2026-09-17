@@ -20,6 +20,22 @@ struct TravelStatistics: Equatable {
     let continentsTouched: Int
     let continents: [ContinentProgress]
 
+    /// Мир, разрезанный на континенты по площади. Нужен полосе прогресса:
+    /// сумма всех долей равна единице, а сумма закрашенного — ровно
+    /// `worldPercent`. Поэтому Антарктида здесь есть, хотя в списке
+    /// континентов её нет: без неё полоса не сходилась бы с числом над ней.
+    let segments: [AreaSegment]
+
+    struct AreaSegment: Identifiable, Equatable {
+        let continent: Continent
+        /// Доля континента в площади всей суши, 0…1.
+        let share: Double
+        /// Какая часть самого континента пройдена, 0…1.
+        let filled: Double
+
+        var id: String { continent.rawValue }
+    }
+
     struct ContinentProgress: Identifiable, Equatable {
         let continent: Continent
         let explored: Int
@@ -36,7 +52,8 @@ struct TravelStatistics: Equatable {
         wishlistCount: 0,
         exploredCount: 0,
         continentsTouched: 0,
-        continents: []
+        continents: [],
+        segments: []
     )
 
     var isEmpty: Bool { exploredCount == 0 && wishlistCount == 0 }
@@ -49,6 +66,8 @@ struct TravelStatistics: Equatable {
         var living = 0
         var wishlist = 0
         var exploredPerContinent: [Continent: Int] = [:]
+        var exploredAreaPerContinent: [Continent: Double] = [:]
+        var totalAreaPerContinent: [Continent: Double] = [:]
 
         for (countryID, status) in log.statuses {
             switch status {
@@ -62,6 +81,7 @@ struct TravelStatistics: Equatable {
             exploredArea += country.areaKm2
             if let continent = country.continent {
                 exploredPerContinent[continent, default: 0] += 1
+                exploredAreaPerContinent[continent, default: 0] += country.areaKm2
             }
         }
 
@@ -69,6 +89,16 @@ struct TravelStatistics: Equatable {
         for country in geometry.countries {
             guard let continent = country.continent else { continue }
             totalPerContinent[continent, default: 0] += 1
+            totalAreaPerContinent[continent, default: 0] += country.areaKm2
+        }
+
+        let segments = Continent.allCases.compactMap { continent -> AreaSegment? in
+            guard let total = totalAreaPerContinent[continent], total > 0 else { return nil }
+            return AreaSegment(
+                continent: continent,
+                share: total / geometry.totalAreaKm2,
+                filled: (exploredAreaPerContinent[continent] ?? 0) / total
+            )
         }
 
         let continents = Continent.travelable.compactMap { continent -> ContinentProgress? in
@@ -87,7 +117,8 @@ struct TravelStatistics: Equatable {
             wishlistCount: wishlist,
             exploredCount: visited + living,
             continentsTouched: continents.filter { $0.explored > 0 }.count,
-            continents: continents
+            continents: continents,
+            segments: segments
         )
     }
 }

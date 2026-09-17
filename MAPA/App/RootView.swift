@@ -20,8 +20,10 @@ struct RootView: View {
             AuroraBackground(intensity: settings.theme.isLight ? 0 : 0.5, colors: settings.theme.auroraColors)
 
             WorldMapView(
-                theme: settings.theme,
-                onSelectTheme: { settings.select($0) },
+                surface: settings.surface,
+                palette: settings.palette,
+                onSelectSurface: { settings.select($0) },
+                onSelectPalette: { settings.select($0) },
                 onOpenGallery: { showsGallery = true }
             )
         }

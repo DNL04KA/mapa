@@ -471,11 +471,9 @@ struct MapCanvas: View, Animatable {
         let shading = statusShading(status, countryID: countryID, tint: tint, flagHue: flagHue, in: box)
 
         var fill = context
-        // В подобранной палитре «хочу» гасится сильнее: тона и так глубокие,
-        // и при 0.74 желание спорило бы с прожитым.
-        fill.opacity = status == .wishlist
-            ? (theme.palette == .curated ? 0.28 : 0.74)
-            : 0.90
+        // Насколько тише «хочу», решает сама палитра: у глубоких наборов
+        // мечта при 0.74 спорила бы с прожитым, а у флагов наоборот пропала бы.
+        fill.opacity = status == .wishlist ? theme.palette.wishOpacity : 0.90
         fill.fill(path, with: shading)
 
         guard !theme.isLight, !theme.flatFill else { return }
@@ -599,17 +597,14 @@ struct MapCanvas: View, Animatable {
     ) -> GraphicsContext.Shading {
         // Подобранная палитра плоская по определению: смысл в том, что тона
         // подобраны друг к другу, и градиент внутри страны тут только мешает.
-        if theme.palette == .curated {
-            switch status {
-            case .living:
-                return .color(DS.StatusColor.curatedHome)
-            case .visited:
-                return .color(DS.StatusColor.curated(for: countryID))
-            case .wishlist:
-                // Мечта бледнее прожитого: тон тот же, плотность меньше.
-                return .color(DS.StatusColor.curated(for: countryID)
-                    .opacity(DS.StatusColor.curatedWishOpacity))
+        // Набор — плоский по определению: смысл в том, что тона подобраны
+        // друг к другу, и градиент внутри страны тут только мешает.
+        if case .set = theme.palette.mode {
+            if status == .living {
+                return .color(theme.palette.home)
             }
+            // Пустой набор — это «Акцент»: цвет берётся у самого полотна.
+            return .color(theme.palette.color(for: countryID) ?? theme.accent)
         }
 
         let colors = DS.StatusColor.colors(status, tint: tint, flagHue: flagHue, onLight: theme.isLight)

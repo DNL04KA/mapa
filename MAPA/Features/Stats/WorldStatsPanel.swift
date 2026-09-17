@@ -133,33 +133,51 @@ struct WorldStatsPanel: View {
         }
     }
 
-    /// Полоса под числом: тот же процент, но видимый телом, а не цифрой.
-    /// На старте она почти пустая — это честно и хорошо мотивирует.
+    /// Полоса под числом: мир, разрезанный на континенты по площади.
+    ///
+    /// Раньше это была одна сплошная черта, и при 3.9 % она читалась как
+    /// случайный штрих у левого края — непонятно, чего именно 3.9. Теперь
+    /// видно, из чего складывается число: широкая Азия, узкая Европа, и
+    /// сколько съедено внутри каждого куска. Сумма закрашенного по-прежнему
+    /// равна проценту над полосой — это одна и та же величина, показанная
+    /// телом, а не цифрой.
     private var progressLine: some View {
         GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(theme.mapInk.opacity(theme.isLight ? 0.18 : 0.15))
+            let gap: CGFloat = 3
+            let segments = statistics.segments
+            let usable = max(0, proxy.size.width - gap * CGFloat(max(0, segments.count - 1)))
 
-                Capsule()
-                    .fill(
-                        theme.isLight
-                            ? AnyShapeStyle(theme.mapInk.opacity(0.75))
-                            : AnyShapeStyle(
-                                LinearGradient(
-                                    colors: [theme.accent.opacity(0.65), theme.accent],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                    )
-                    .frame(width: max(0, proxy.size.width * min(1, statistics.worldPercent / 100)))
-                    .shadow(color: theme.isLight ? .clear : theme.accent.opacity(0.9), radius: 7)
-                    .animation(motion.animation(.smooth), value: statistics.worldPercent)
+            HStack(spacing: gap) {
+                ForEach(segments) { segment in
+                    let width = usable * segment.share
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(theme.mapInk.opacity(theme.isLight ? 0.13 : 0.14))
+
+                        Capsule()
+                            .fill(progressFill)
+                            .frame(width: width * min(1, max(0, segment.filled)))
+                            .shadow(color: theme.isLight ? .clear : theme.accent.opacity(0.8), radius: 6)
+                    }
+                    .frame(width: width)
+                }
             }
+            .animation(motion.animation(.smooth), value: statistics.worldPercent)
         }
-        .frame(height: theme.isLight ? 3 : 4)
+        .frame(height: theme.isLight ? 4 : 5)
         .accessibilityHidden(true)
+    }
+
+    private var progressFill: AnyShapeStyle {
+        theme.isLight
+            ? AnyShapeStyle(theme.mapInk.opacity(0.8))
+            : AnyShapeStyle(
+                LinearGradient(
+                    colors: [theme.accent.opacity(0.7), theme.accent],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
     }
 
     // MARK: - Разбивка
