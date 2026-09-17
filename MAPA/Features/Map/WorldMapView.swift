@@ -408,7 +408,11 @@ struct WorldMapView: View {
                     zoomControls
                 }
 
-                if model.state == .ready, let route = model.routes.first, !route.points.isEmpty {
+                // Только начатый и недойденный маршрут. Раньше карточка висела
+                // всегда и молча — непонятно было, что это и почему оно тут,
+                // тем более что маршруты и так открываются кнопкой ниже.
+                // Теперь у неё одна работа: вернуть туда, где ты остановился.
+                if model.state == .ready, let route = model.routes.first(where: \.isInProgress) {
                     nextRouteCard(route)
                         .transition(motion.transition(.move(edge: .bottom).combined(with: .opacity)))
                 }
@@ -521,7 +525,14 @@ struct WorldMapView: View {
                 .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
+                    // Подпись обязательна: без неё карточка не объясняет,
+                    // зачем она на экране.
+                    Text("ПРОДОЛЖИТЬ")
+                        .font(.system(size: 9, weight: .semibold))
+                        .tracking(1.4)
+                        .foregroundStyle(activeTheme.accent)
+
                     Text(route.displayTitle)
                         .font(DS.Font.subhead)
                         .foregroundStyle(activeTheme.mapInk)
@@ -553,16 +564,12 @@ struct WorldMapView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Маршрут \(route.displayTitle). \(routeSummary(route))")
+        .accessibilityLabel("Продолжить маршрут \(route.displayTitle). \(routeSummary(route))")
     }
 
     private func routeSummary(_ route: Route) -> String {
-        let cities = Plural.format(route.points.count, "город", "города", "городов")
         let days = Plural.format(route.totalDays, "день", "дня", "дней")
-        if route.isInProgress {
-            return "\(route.visitedCount) из \(route.points.count) пройдено · \(days)"
-        }
-        return "\(cities) · \(days)"
+        return "\(route.visitedCount) из \(route.points.count) пройдено · \(days)"
     }
 
     /// Кнопки без подложек: на карте во весь экран любая плашка вырезает
