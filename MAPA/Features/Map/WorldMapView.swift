@@ -28,28 +28,41 @@ struct WorldMapView: View {
     let onOpenGallery: () -> Void
 
     var body: some View {
-        GeometryReader { proxy in
-            ZStack {
-                content(in: proxy.size)
-                overlays
-                statusSheet
-                citySheet
-                routePanel
-                routesSheet
-                exportSheet
-                themeSheet
-                countryCard
-            }
-            .environment(\.mapTheme, activeTheme)
-            .onAppear { model.updateViewport(proxy.size) }
-            .onChange(of: proxy.size) { model.updateViewport($0) }
-            .onChange(of: scenePhase) { phase in
-                // Уходим в фон — дожидаемся записи, чтобы отметка не потерялась.
-                guard phase != .active else { return }
-                Task { await model.flushPendingSaves() }
-            }
+        ZStack {
+            mapLayer
+            overlays
+            statusSheet
+            citySheet
+            routePanel
+            routesSheet
+            exportSheet
+            themeSheet
+            countryCard
+        }
+        .environment(\.mapTheme, activeTheme)
+        .onChange(of: scenePhase) { phase in
+            // Уходим в фон — дожидаемся записи, чтобы отметка не потерялась.
+            guard phase != .active else { return }
+            Task { await model.flushPendingSaves() }
         }
         .task { await model.load() }
+    }
+
+    /// Карта — во весь экран, включая вырез и полосу внизу.
+    ///
+    /// Своя `GeometryReader` с `ignoresSafeArea` нужна не ради вида: камера и
+    /// попадание пальцем считаются от `viewport`, и если бы карта рисовалась
+    /// во весь экран, а размер приходил из безопасной зоны, тап уезжал бы от
+    /// того места, куда человек ткнул. Поэтому рисуем и меряем одним и тем же
+    /// прямоугольником. Панели и кнопки живут отдельным слоем — им безопасная
+    /// зона как раз нужна.
+    private var mapLayer: some View {
+        GeometryReader { proxy in
+            content(in: proxy.size)
+                .onAppear { model.updateViewport(proxy.size) }
+                .onChange(of: proxy.size) { model.updateViewport($0) }
+        }
+        .ignoresSafeArea()
     }
 
     // MARK: - Состояния
@@ -357,6 +370,7 @@ struct WorldMapView: View {
     private var overlays: some View {
         ZStack {
             MapVignette()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 MapTopScrim(height: 210)
