@@ -535,44 +535,150 @@ struct MapCanvas: View, Animatable {
 
     /// Линия маршрута.
     ///
-    /// Две обводки: широкая в цвет фона и тонкая в акцент. Так линия читается
-    /// и над водой, и над цветной страной — без подложки она терялась бы
-    /// ровно там, где маршрут интереснее всего.
+    /// Ломаная из отрезков читалась как схема метро, а не как поездка, и
+    /// спорила с картой: у страны мягкий контур, а маршрут — углы. Поэтому
+    /// линия сглажена по опорным точкам.
+    ///
+    /// Пройденное и предстоящее нарисованы по-разному: сплошное позади,
+    /// пунктир впереди. Это тот же приём, что у навигаторов, и он избавляет
+    /// от необходимости объяснять словами, где ты сейчас.
     private func drawRoute(in context: GraphicsContext, side: CGFloat) {
-        guard overlay.routeLine.count > 1 else { return }
+        let stops = overlay.routeLine
+        guard stops.count > 1 else { return }
 
-        var path = Path()
-        path.move(to: overlay.routeLine[0].point)
-        for stop in overlay.routeLine.dropFirst() {
-            path.addLine(to: stop.point)
-        }
+        // Граница пройденного: до последней отмеченной точки включительно.
+        let lastVisited = stops.lastIndex(where: \.isVisited)
+        let walked = lastVisited.map { Array(stops.prefix($0 + 1)) } ?? []
+        let ahead = Array(stops.suffix(from: lastVisited ?? 0))
 
-        context.stroke(
-            path,
-            with: .color((theme.isLight ? Color.white : DS.Palette.void).opacity(0.75)),
-            style: StrokeStyle(lineWidth: 5.5 / side, lineCap: .round, lineJoin: .round)
-        )
-        context.stroke(
-            path,
-            with: .color(theme.accent),
-            style: StrokeStyle(lineWidth: 2.2 / side, lineCap: .round, lineJoin: .round)
-        )
+        let full = Self.smoothPath(stops.map(\.point))
 
-        // Остановки. Без них линия читается как перелёт, а не как маршрут:
-        // непонятно, где именно ты останавливаешься.
-        // Пройденные закрашены, будущие полые — прогресс виден прямо на карте.
-        let background = theme.isLight ? Color.white : DS.Palette.void
-        for stop in overlay.routeLine {
-            let radius = (stop.isVisited ? 4.6 : 3.8) / side
-            let circle = Path(
-                ellipseIn: CGRect(
-                    x: stop.point.x - radius, y: stop.point.y - radius,
-                    width: radius * 2, height: radius * 2
-                )
+        // Подложка — мягкая тень, а не вторая линия: жёсткий контур в цвет
+        // фона прорезал в карте канавку.
+        context.drawLayer { layer in
+            layer.addFilter(.shadow(color: DS.Palette.void.opacity(theme.isLight ? 0.18 : 0.5),
+                                    radius: 4 / side, y: 1 / side))
+            layer.stroke(
+                full,
+                with: .color(.clear),
+                style: StrokeStyle(lineWidth: 5 / side, lineCap: .round, lineJoin: .round)
             )
-            context.fill(circle, with: .color(stop.isVisited ? theme.accent : background))
-            context.stroke(circle, with: .color(theme.accent), lineWidth: 2.2 / side)
         }
+
+        func stroke(_ path: Path, style: StrokeStyle, opacity: Double) {
+            context.drawLayer { layer in
+                if theme.markedGlow > 0 {
+                    layer.addFilter(.shadow(color: theme.accent.opacity(0.7 * theme.markedGlow),
+                                            radius: 7 / side))
+                }
+                layer.stroke(path, with: .color(theme.accent.opacity(opacity)), style: style)
+            }
+        }
+
+        // Впереди — точками, позади — сплошным. Тот же приём, что
+        // у навигаторов: где ты сейчас, видно без единого слова.
+        if ahead.count > 1 {
+            stroke(
+                Self.smoothPath(ahead.map(\.point)),
+                style: StrokeStyle(lineWidth: 3 / side, lineCap: .round, lineJoin: .round,
+                                   dash: [0.5 / side, 7 / side]),
+                opacity: 0.9
+            )
+        }
+
+        if walked.count > 1 {
+            stroke(
+                Self.smoothPath(walked.map(\.point)),
+                style: StrokeStyle(lineWidth: 3.4 / side, lineCap: .round, lineJoin: .round),
+                opacity: 1
+            )
+        }
+
+        drawRouteStops(stops, lastVisited: lastVisited, in: context)
+    }
+
+    /// Остановки. Без них линия читается как перелёт, а не как маршрут:
+    /// непонятно, где именно ты останавливаешься.
+    ///
+    /// Рисуются в экранных координатах, а не в мировых. Мир масштабируется
+    /// в сотни раз, и окружность радиусом в тысячную долю единицы Core
+    /// Graphics аппроксимирует до увеличения — на экране из неё получался
+    /// квадрат. Точке же нужен постоянный размер в точках экрана, а не в
+    /// градусах, поэтому снимаем масштаб и переводим центры руками.
+    private func drawRouteStops(
+        _ stops: [RouteStop],
+        lastVisited: Int?,
+        in context: GraphicsContext
+    ) {
+        // Ободок всегда белый, на любой теме: точка обязана читаться и на
+        // неоновой стране, и на бумаге, а белый — единственный цвет, который
+        // не спорит ни с одной заливкой.
+        let ring = Color.white
+        // Следующая точка — та, до которой ещё не дошёл. Она крупнее прочих:
+        // на карте сразу видно, куда двигаться дальше.
+        let next = stops.firstIndex { !$0.isVisited }
+        let toScreen = context.transform
+
+        var screen = context
+        screen.transform = .identity
+
+        for (index, stop) in stops.enumerated() {
+            let center = stop.point.applying(toScreen)
+            let isNext = index == next
+            let radius: CGFloat = isNext ? 6.5 : stop.isVisited ? 5.5 : 4.5
+
+            // Ободок вокруг точки — она обязана читаться на любой стране.
+            screen.drawLayer { halo in
+                halo.addFilter(.shadow(color: DS.Palette.void.opacity(0.45), radius: 3, y: 1))
+                halo.fill(Self.circle(at: center, radius: radius + 2.4), with: .color(ring))
+            }
+
+            if stop.isVisited {
+                screen.fill(Self.circle(at: center, radius: radius),
+                            with: .color(theme.accent))
+            } else {
+                screen.fill(Self.circle(at: center, radius: radius),
+                            with: .color(ring))
+                screen.stroke(Self.circle(at: center, radius: radius),
+                              with: .color(theme.accent),
+                              lineWidth: isNext ? 3 : 2.2)
+            }
+        }
+    }
+
+    private static func circle(at point: CGPoint, radius: CGFloat) -> Path {
+        Path(ellipseIn: CGRect(x: point.x - radius, y: point.y - radius,
+                               width: radius * 2, height: radius * 2))
+    }
+
+    /// Гладкая кривая через все точки — Catmull–Rom, переведённый в кубические
+    /// Безье. Берём именно её, а не сплайн общего вида: она проходит **через**
+    /// опорные точки, а не мимо них, а точки здесь — это города, и линия
+    /// обязана входить ровно в них.
+    private static func smoothPath(_ points: [CGPoint]) -> Path {
+        var path = Path()
+        guard let first = points.first else { return path }
+        path.move(to: first)
+        guard points.count > 2 else {
+            for point in points.dropFirst() { path.addLine(to: point) }
+            return path
+        }
+
+        for index in 0..<(points.count - 1) {
+            let p0 = points[max(index - 1, 0)]
+            let p1 = points[index]
+            let p2 = points[index + 1]
+            let p3 = points[min(index + 2, points.count - 1)]
+
+            // Коэффициент 6 — классический для Catmull–Rom: при нём кривая
+            // повторяет ломаную, лишь скругляя углы, и не уходит в петли.
+            let control1 = CGPoint(x: p1.x + (p2.x - p0.x) / 6,
+                                   y: p1.y + (p2.y - p0.y) / 6)
+            let control2 = CGPoint(x: p2.x - (p3.x - p1.x) / 6,
+                                   y: p2.y - (p3.y - p1.y) / 6)
+            path.addCurve(to: p2, control1: control1, control2: control2)
+        }
+        return path
     }
 
     /// Страна под открытым шитом. Пока выбираешь статус — видно, что именно
