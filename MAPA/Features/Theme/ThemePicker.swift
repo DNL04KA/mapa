@@ -69,7 +69,7 @@ struct ThemePicker: View {
 
     private var scrim: some View {
         Rectangle()
-            .fill(DS.Palette.void.opacity(0.35))
+            .fill(DS.Color.scrim)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture(perform: onDismiss)
@@ -118,7 +118,7 @@ struct ThemePicker: View {
                 .fill(panelFill)
                 .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
-                        .fill(DS.Palette.abyss.opacity(motion.reduceTransparency ? 1 : 0.9))
+                        .fill(DS.Color.panel.opacity(motion.reduceTransparency ? 1 : 0.9))
                 }
                 .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)

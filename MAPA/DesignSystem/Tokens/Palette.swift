@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Корневое пространство имён дизайн-системы MAPA.
 /// Всё, что относится к внешнему виду, живёт под `DS.` — так в автокомплите
@@ -41,6 +42,18 @@ public extension DS {
         // Служебные
         static let danger     = SwiftUI.Color(hex: 0xFF5C6E)
         static let ocean      = SwiftUI.Color(hex: 0x0D1220)   // «вода» на карте
+
+        // MARK: Светлая сторона
+
+        // Не белый лист, а тёплая бумага — тот же материал, что у светлого
+        // полотна карты. Чистый #FFFFFF рядом с ней выглядит как дырка.
+        static let paper      = SwiftUI.Color(hex: 0xFBFAF7)
+        static let paperDeep  = SwiftUI.Color(hex: 0xF2F0EB)
+        static let paperSunk  = SwiftUI.Color(hex: 0xE9E7E1)
+
+        static let inkDark    = SwiftUI.Color(hex: 0x141A21)
+        static let inkDarkMid = SwiftUI.Color(hex: 0x5A6470)
+        static let inkDarkLow = SwiftUI.Color(hex: 0x8B949F)
     }
 }
 
@@ -51,23 +64,48 @@ public extension DS {
     /// Роли, а не оттенки. В экранах используем только это:
     /// если завтра поменяем бренд, правка будет ровно здесь.
     enum Color {
+
+        /// Цвет, который сам знает, что делать на светлом и на тёмном.
+        ///
+        /// Так панели следуют выбранному полотну карты без единой правки
+        /// на местах: панель объявляет свою схему один раз, а все роли
+        /// переключаются сами. Пока роли были статично-тёмными, светлая
+        /// карта соседствовала с чёрными панелями, и это выглядело так,
+        /// будто половину приложения забыли покрасить.
+        static func adaptive(light: SwiftUI.Color, dark: SwiftUI.Color) -> SwiftUI.Color {
+            SwiftUI.Color(UIColor { trait in
+                trait.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+            })
+        }
+
         // Фоны и поверхности (по возрастанию высоты над «дном»)
-        public static let canvas       = Palette.void
-        public static let background   = Palette.abyss
-        public static let surface      = Palette.surface
-        public static let surfaceRaised = Palette.elevated
-        public static let surfaceSunken = Palette.deep
+        public static let canvas        = adaptive(light: Palette.paper,     dark: Palette.void)
+        public static let background    = adaptive(light: Palette.paperDeep, dark: Palette.abyss)
+        public static let surface       = adaptive(light: Palette.paper,     dark: Palette.surface)
+        public static let surfaceRaised = adaptive(light: .white,            dark: Palette.elevated)
+        public static let surfaceSunken = adaptive(light: Palette.paperSunk, dark: Palette.deep)
 
         // Границы и разделители
-        public static let hairline     = SwiftUI.Color.white.opacity(0.07)
-        public static let border       = SwiftUI.Color.white.opacity(0.12)
-        public static let borderStrong = SwiftUI.Color.white.opacity(0.22)
+        public static let hairline     = adaptive(light: .black.opacity(0.07),
+                                                  dark:  .white.opacity(0.07))
+        public static let border       = adaptive(light: .black.opacity(0.12),
+                                                  dark:  .white.opacity(0.12))
+        public static let borderStrong = adaptive(light: .black.opacity(0.22),
+                                                  dark:  .white.opacity(0.22))
 
         // Текст
-        public static let ink          = Palette.inkHigh
-        public static let inkSecondary = Palette.inkMid
-        public static let inkTertiary  = Palette.inkLow
-        public static let inkOnAccent  = Palette.void
+        public static let ink          = adaptive(light: Palette.inkDark,    dark: Palette.inkHigh)
+        public static let inkSecondary = adaptive(light: Palette.inkDarkMid, dark: Palette.inkMid)
+        public static let inkTertiary  = adaptive(light: Palette.inkDarkLow, dark: Palette.inkLow)
+        public static let inkOnAccent  = adaptive(light: .white,             dark: Palette.void)
+
+        /// Подложка панели: то, на чём лежит содержимое всплывающих панелей.
+        public static let panel        = adaptive(light: Palette.paper, dark: Palette.abyss)
+
+        /// Затемнение под панелью. На светлой теме затемняем слабее:
+        /// чёрная пелена поверх бумаги выглядит как сбой, а не как глубина.
+        public static let scrim        = adaptive(light: .black.opacity(0.18),
+                                                  dark:  Palette.void.opacity(0.45))
 
         // Акцент
         public static let accent       = Palette.indigo
@@ -80,7 +118,7 @@ public extension DS {
         public static let mapBorder    = SwiftUI.Color.white.opacity(0.17)
 
         /// Непрозрачная замена материалу, когда включён Reduce Transparency.
-        public static let materialFallback = Palette.elevated
+        public static let materialFallback = adaptive(light: .white, dark: Palette.elevated)
     }
 }
 

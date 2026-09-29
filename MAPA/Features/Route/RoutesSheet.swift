@@ -26,7 +26,7 @@ struct RoutesSheet: View {
 
     private var scrim: some View {
         Rectangle()
-            .fill(DS.Palette.void.opacity(0.4))
+            .fill(DS.Color.scrim)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture(perform: onDismiss)

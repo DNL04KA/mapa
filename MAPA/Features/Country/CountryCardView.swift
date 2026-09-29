@@ -61,18 +61,20 @@ struct CountryCardView: View {
 
     private var background: some View {
         ZStack {
-            DS.Palette.void
+            // Не жёсткий чёрный, а роль: на бумажном полотне карточка
+            // должна быть бумажной, иначе она выпадает из приложения.
+            DS.Color.canvas
 
             // Цвет страны, разлитый по всему экрану, — карточка продолжает
             // ту заливку, которую ты видел на карте.
             RadialGradient(
-                colors: [tint.opacity(0.32), .clear],
+                colors: [tint.opacity(theme.isLight ? 0.5 : 0.32), .clear],
                 center: .top,
                 startRadius: 0,
                 endRadius: 620
             )
 
-            NoiseOverlay(opacity: 0.05)
+            NoiseOverlay(opacity: theme.isLight ? 0.03 : 0.05)
         }
         .ignoresSafeArea()
     }

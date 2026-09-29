@@ -17,6 +17,11 @@ public struct DSButtonStyle: ButtonStyle {
         case ghost
         /// Действие в цвете статуса.
         case status(TravelStatus)
+        /// Главное действие в цвете текущего полотна.
+        ///
+        /// Брендовый индиго хорош на тёмной карте и спорит с тёплой бумагой.
+        /// Там, где рядом видно само полотно, кнопка берёт его акцент.
+        case tinted(Color)
     }
 
     private let kind: Kind
@@ -82,6 +87,8 @@ public struct DSButtonStyle: ButtonStyle {
                 Color.clear
             case .status(let status):
                 DS.Gradient.status(status)
+            case .tinted(let color):
+                color
             }
         }
 
@@ -91,6 +98,7 @@ public struct DSButtonStyle: ButtonStyle {
             case .secondary: return DS.Color.ink
             case .ghost:     return DS.Color.inkSecondary
             case .status(let status): return DS.Gradient.statusForeground(status)
+            case .tinted: return .white
             }
         }
 
@@ -103,6 +111,8 @@ public struct DSButtonStyle: ButtonStyle {
                 return configuration.isPressed ? .low : .glow(DS.Gradient.statusGlowColor(status), radius: 20)
             case .secondary:
                 return .low
+            case .tinted(let color):
+                return configuration.isPressed ? .low : .glow(color, radius: 16)
             case .ghost:
                 return .none
             }

@@ -54,6 +54,12 @@ struct RoutePanel: View {
 
                 // Прокрутка обязательна: десяток точек плюс отзывы не влезут
                 // ни в какой экран, а «Готово» должно остаться на виду.
+                // Оценка стоит до точек, а не после них.
+                // Пять городов — это больше пятисот точек высоты, и всё, что
+                // лежало под ними, человек просто не находил: отзывы были
+                // написаны, но для него их не существовало.
+                ratingBar
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: DS.Space.md) {
                         points
@@ -66,7 +72,7 @@ struct RoutePanel: View {
             }
 
             PillButton(route.points.count >= 2 ? "Готово" : "Закрыть",
-                       kind: .primary, fullWidth: true, action: onDone)
+                       kind: .tinted(accent), fullWidth: true, action: onDone)
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
@@ -80,7 +86,7 @@ struct RoutePanel: View {
                     // фон: белый текст на нём тонул, а фотографии выцветали.
                     // Плотная тёмная подложка возвращает и контраст, и глубину.
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
-                        .fill(DS.Palette.abyss.opacity(motion.reduceTransparency ? 1 : 0.9))
+                        .fill(DS.Color.panel.opacity(motion.reduceTransparency ? 1 : 0.9))
                 }
                 .overlay {
                     UnevenRoundedTopShape(radius: DS.Radius.xl)
@@ -206,13 +212,16 @@ struct RoutePanel: View {
     }
 
     private func row(_ point: RoutePoint, at index: Int) -> some View {
-        HStack(spacing: DS.Space.sm) {
+        HStack(alignment: .top, spacing: DS.Space.xs) {
+            // Номер с пунктиром — то же, что в ленте по стране. Список точек
+            // и маршрут по стране это одна и та же вещь в двух местах, и
+            // выглядеть они должны одинаково.
+            rail(point, at: index, isLast: index == route.points.count - 1)
+
             photo(point)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: DS.Space.xs) {
-                    passMark(point, at: index)
-
                     Text(point.name)
                         .font(DS.Font.subhead)
                         .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
@@ -246,8 +255,6 @@ struct RoutePanel: View {
                 // Достопримечательности прямо в строке маршрута: иначе, чтобы
                 // вспомнить, зачем ты добавил город, надо уходить в карточку.
                 if let landmarks = CityFacts.landmarks(for: point.name) {
-                    // Одна строка, а не две: иначе у городов с длинными
-                    // названиями карточка распухает и ряд едет.
                     Text(landmarks.prefix(3).joined(separator: " · "))
                         .font(DS.Font.micro)
                         .foregroundStyle(DS.Color.inkSecondary)
@@ -260,13 +267,14 @@ struct RoutePanel: View {
                         .lineLimit(1)
                 }
             }
+            .padding(.top, 2)
 
             // Ручка перетаскивания отдельно от карточки: если тащить за всю
             // строку, невозможно нажать «минус», шаг дней и фото.
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: DS.Size.iconSm, weight: .semibold))
                 .foregroundStyle(DS.Color.inkTertiary)
-                .frame(width: 28, height: rowHeight)
+                .frame(width: 26, height: rowHeight)
                 .contentShape(Rectangle())
                 .gesture(dragGesture(for: point, at: index))
                 .accessibilityLabel("Переставить \(point.name)")
@@ -275,8 +283,7 @@ struct RoutePanel: View {
         .frame(height: rowHeight)
     }
 
-    /// Номер и галочка — одна кнопка. Пройденная точка закрашивается,
-    /// и порядок при этом не теряется: цифра остаётся видна.
+    /// Кружок с номером, он же отметка «пройдено».
     private func passMark(_ point: RoutePoint, at index: Int) -> some View {
         Button {
             onTogglePassed(point)
@@ -309,8 +316,23 @@ struct RoutePanel: View {
         .accessibilityHint(point.isVisited ? "Снять отметку" : "Отметить пройденной")
     }
 
-    /// Фотография места. Своя, из галереи: чужих снимков у нас нет,
-    /// а подставлять сток под настоящую поездку — обман.
+    /// Номер точки и пунктир до следующей.
+    private func rail(_ point: RoutePoint, at index: Int, isLast: Bool) -> some View {
+        VStack(spacing: 0) {
+            passMark(point, at: index)
+
+            if !isLast {
+                DashedLine()
+                    .stroke(accent.opacity(0.45),
+                            style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [3, 5]))
+                    .frame(width: 2)
+                    .frame(maxHeight: .infinity)
+            }
+        }
+        .frame(width: 22)
+        .padding(.top, 4)
+    }
+
     private func photo(_ point: RoutePoint) -> some View {
         Button {
             photoTarget = point
@@ -392,8 +414,11 @@ struct RoutePanel: View {
         } label: {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(enabled ? DS.Color.inkSecondary : DS.Color.inkTertiary.opacity(0.4))
+                .foregroundStyle(enabled ? accent : DS.Color.inkTertiary.opacity(0.4))
                 .frame(width: 24, height: 24)
+                .background {
+                    Circle().fill(enabled ? accent.opacity(0.12) : Color.clear)
+                }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -442,6 +467,37 @@ struct RoutePanel: View {
     // MARK: - Отзывы
 
     @ViewBuilder
+    /// Оценка одним касанием.
+    ///
+    /// Раньше поставить её можно было только через форму с текстом, и
+    /// большинство маршрутов так и оставались без оценки: писать отзыв ради
+    /// четырёх звёзд никто не станет. Звёзды принимают оценку сразу, а текст
+    /// остаётся отдельным добровольным шагом.
+    private var ratingBar: some View {
+        HStack(spacing: DS.Space.sm) {
+            Text(route.myReview == nil ? "Оценить маршрут" : "Твоя оценка")
+                .font(DS.Font.callout)
+                .foregroundStyle(route.myReview == nil ? DS.Color.inkSecondary : DS.Color.ink)
+
+            Spacer(minLength: 0)
+
+            RatingStars(
+                value: Double(route.myReview?.rating ?? 0),
+                size: 17,
+                tint: accent,
+                onSelect: { rating in
+                    onRate(rating, route.myReview?.text ?? "")
+                }
+            )
+        }
+        .padding(.horizontal, DS.Space.sm)
+        .padding(.vertical, DS.Space.xs)
+        .background {
+            RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                .fill(DS.Color.surfaceSunken.opacity(0.5))
+        }
+    }
+
     private var reviews: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
             SectionHeader("Отзывы", subtitle: reviewsSubtitle)
@@ -567,4 +623,14 @@ struct RoutePanel: View {
         formatter.dateFormat = "d MMMM"
         return formatter
     }()
+}
+
+/// Вертикальная линия сверху вниз — для пунктира между точками.
+private struct DashedLine: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        return path
+    }
 }

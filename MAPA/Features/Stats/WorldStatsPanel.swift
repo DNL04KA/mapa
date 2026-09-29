@@ -35,9 +35,7 @@ struct WorldStatsPanel: View {
                     .padding(DS.Space.sm)
                     .background {
                         RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                            .fill(theme.isLight
-                                  ? Color.white.opacity(0.92)
-                                  : DS.Palette.abyss.opacity(0.88))
+                            .fill(DS.Color.panel.opacity(0.92))
                             .overlay {
                                 RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                                     .strokeBorder(theme.mapInk.opacity(0.1), lineWidth: 1)

@@ -142,7 +142,7 @@ struct WorldMapView: View {
                 onSetHome: { model.setHome(at: city, reduceMotion: motion.reduceMotion) },
                 onDismiss: { model.dismissCity(reduceMotion: motion.reduceMotion) }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(2)
         }
     }
@@ -162,7 +162,7 @@ struct WorldMapView: View {
                 markedBounds: geometry.bounds(of: model.travelLog.statuses.keys),
                 onDismiss: { withAnimation(motion.animation(.smooth)) { showsExport = false } }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(3)
         }
     }
@@ -192,7 +192,7 @@ struct WorldMapView: View {
                     model.closeRoute(reduceMotion: motion.reduceMotion)
                 }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(2)
         }
     }
@@ -216,7 +216,7 @@ struct WorldMapView: View {
                 onDelete: { model.deleteRoute($0) },
                 onDismiss: { withAnimation(motion.animation(.smooth)) { showsRoutes = false } }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(3)
         }
     }
@@ -267,7 +267,7 @@ struct WorldMapView: View {
                     .scale(scale: 0.12, anchor: cardAnchor).combined(with: .opacity)
                 )
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(4)
         }
     }
@@ -313,7 +313,7 @@ struct WorldMapView: View {
                     onOpenGallery()
                 }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(3)
         }
     }
@@ -360,7 +360,7 @@ struct WorldMapView: View {
                 onOpenCard: { openCard(for: country) },
                 onDismiss: { model.dismissSelection(reduceMotion: motion.reduceMotion) }
             )
-            .darkPanel()
+            .themedPanel(activeTheme)
             .zIndex(2)
         }
     }
@@ -721,7 +721,13 @@ struct MapErrorView: View {
 /// переделывать половину интерфейса. Схему навязываем поддереву — цветовая
 /// схема приложения при этом остаётся светлой, ради читаемого статус-бара.
 extension View {
-    func darkPanel() -> some View {
-        environment(\.colorScheme, .dark)
+    /// Панель в схеме выбранного полотна.
+    ///
+    /// Раньше здесь было жёсткое «всегда тёмная»: на бумажной карте панели
+    /// оставались чёрными, и выглядело это так, будто половину приложения
+    /// забыли покрасить. Теперь схема идёт от полотна, а роли цветов
+    /// переключаются сами — на местах не меняется ничего.
+    func themedPanel(_ theme: MapTheme) -> some View {
+        environment(\.colorScheme, theme.isLight ? .light : .dark)
     }
 }

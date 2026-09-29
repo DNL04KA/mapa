@@ -37,7 +37,7 @@ struct ExportSheet: View {
 
     private var scrim: some View {
         Rectangle()
-            .fill(DS.Palette.void.opacity(0.5))
+            .fill(DS.Color.scrim)
             .ignoresSafeArea()
             .contentShape(Rectangle())
             .onTapGesture(perform: onDismiss)
