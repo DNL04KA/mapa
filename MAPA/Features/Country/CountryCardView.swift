@@ -217,10 +217,13 @@ struct CountryCardView: View {
     /// карточка закроется, а страна останется выбранной.
     private var cityList: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Города")
+            // Показываем все, а не первые шесть: у России их шестнадцать,
+            // и обрезать список ровно там, где начинается незнакомое, —
+            // это прятать то, ради чего человек сюда и зашёл.
+            SectionHeader("Города", subtitle: Plural.format(cities.count, "город", "города", "городов"))
 
             VStack(spacing: 0) {
-                ForEach(Array(cities.prefix(6).enumerated()), id: \.element.id) { index, city in
+                ForEach(Array(cities.enumerated()), id: \.element.id) { index, city in
                     Button {
                         onOpenCity(city)
                     } label: {
@@ -268,7 +271,7 @@ struct CountryCardView: View {
                     .dsReveal(index)
                     .accessibilityLabel(city.isCapital ? "\(city.nameRU), столица" : city.nameRU)
 
-                    if index < min(cities.count, 6) - 1 {
+                    if index < cities.count - 1 {
                         Divider().overlay(DS.Color.hairline)
                     }
                 }
