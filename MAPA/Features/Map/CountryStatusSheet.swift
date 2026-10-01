@@ -84,7 +84,7 @@ struct CountryStatusSheet: View {
 
     private var header: some View {
         VStack(spacing: DS.Space.xxs) {
-            Text(country.nameRU)
+            Text(country.displayName)
                 .font(DS.Font.title)
                 .foregroundStyle(DS.Color.ink)
                 .multilineTextAlignment(.center)

@@ -80,7 +80,7 @@ struct CitySheet: View {
 
     private var header: some View {
         VStack(spacing: DS.Space.xxs) {
-            Text(city.nameRU)
+            Text(city.displayName)
                 .font(DS.Font.title)
                 .foregroundStyle(DS.Color.ink)
                 .lineLimit(2)

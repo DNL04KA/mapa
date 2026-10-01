@@ -130,14 +130,14 @@ public extension ButtonStyle where Self == DSButtonStyle {
 /// а не к результату действия, поэтому ощущается мгновенным.
 public struct PillButton: View {
 
-    private let title: String
+    private let title: LocalizedStringKey
     private let icon: String?
     private let kind: DSButtonStyle.Kind
     private let fullWidth: Bool
     private let action: () -> Void
 
     public init(
-        _ title: String,
+        _ title: LocalizedStringKey,
         icon: String? = nil,
         kind: DSButtonStyle.Kind = .primary,
         fullWidth: Bool = false,

@@ -135,7 +135,7 @@ struct CountryCardView: View {
     private var title: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .center, spacing: DS.Space.xs) {
-                Text(country.nameRU)
+                Text(country.displayName)
                     .font(.system(size: 40, weight: .bold))
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(2)
@@ -220,7 +220,7 @@ struct CountryCardView: View {
             // Показываем все, а не первые шесть: у России их шестнадцать,
             // и обрезать список ровно там, где начинается незнакомое, —
             // это прятать то, ради чего человек сюда и зашёл.
-            SectionHeader("Города", subtitle: Plural.format(cities.count, "город", "города", "городов"))
+            SectionHeader("Города", subtitle: Plural.cities(cities.count))
 
             VStack(spacing: 0) {
                 ForEach(Array(cities.enumerated()), id: \.element.id) { index, city in
@@ -237,7 +237,7 @@ struct CountryCardView: View {
                                             .font(.system(size: 9, weight: .semibold))
                                             .foregroundStyle(tint)
                                     }
-                                    Text(city.nameRU)
+                                    Text(city.displayName)
                                         .font(DS.Font.body)
                                         .foregroundStyle(DS.Color.ink)
                                         .lineLimit(1)
@@ -269,7 +269,7 @@ struct CountryCardView: View {
                     }
                     .buttonStyle(.plain)
                     .dsReveal(index)
-                    .accessibilityLabel(city.isCapital ? "\(city.nameRU), столица" : city.nameRU)
+                    .accessibilityLabel(city.isCapital ? "\(city.displayName), столица" : city.displayName)
 
                     if index < cities.count - 1 {
                         Divider().overlay(DS.Color.hairline)

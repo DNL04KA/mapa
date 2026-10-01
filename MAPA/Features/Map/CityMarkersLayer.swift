@@ -93,7 +93,7 @@ struct CityMarkersLayer: View, Animatable {
     /// Ширину букв считаем приблизительно — точный замер тут не нужен,
     /// а `Text` пришлось бы измерять через отдельный проход разметки.
     private func labelBox(for city: City, at point: CGPoint) -> CGRect {
-        let width = CGFloat(city.nameRU.count) * 6.6 + 26
+        let width = CGFloat(city.displayName.count) * 6.6 + 26
         return CGRect(x: point.x - 10, y: point.y - 11, width: width, height: 22)
     }
 }
@@ -136,7 +136,7 @@ struct CityMarker: View {
             .shadow(color: theme.mapInkShadow, radius: 2.5)
             .shadow(color: isSelected ? accent.opacity(0.9) : .clear, radius: 8)
 
-            Text(city.nameRU)
+            Text(city.displayName)
                 .font(.system(size: city.isCapital ? 12 : 11, weight: city.isCapital ? .semibold : .medium))
                 .foregroundStyle(theme.mapInk)
                 .fixedSize()
@@ -147,10 +147,10 @@ struct CityMarker: View {
         .offset(x: labelShift)
         .transition(motion.transition(.scale(scale: 0.4).combined(with: .opacity)))
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(city.isCapital ? "\(city.nameRU), столица" : city.nameRU)
+        .accessibilityLabel(city.isCapital ? "\(city.displayName), столица" : city.displayName)
     }
 
     private var labelShift: CGFloat {
-        CGFloat(city.nameRU.count) * 3 + 4
+        CGFloat(city.displayName.count) * 3 + 4
     }
 }

@@ -195,9 +195,9 @@ struct ExportCard: View {
     }
 
     private func routeSubtitle(_ route: Route) -> String {
-        var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
+        var parts = [Plural.points(route.points.count)]
         if route.totalDays > 0 {
-            parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+            parts.append(Plural.days(route.totalDays))
         }
         if route.totalDistanceKm > 1 {
             parts.append("\(Int(route.totalDistanceKm)) км")

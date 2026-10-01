@@ -25,3 +25,4 @@ Secrets.xcconfig
 *.env
 .wiki-cache/
 .claude/launch.json
+.missing-en.txt

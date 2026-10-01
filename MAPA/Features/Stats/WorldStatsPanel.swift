@@ -105,7 +105,8 @@ struct WorldStatsPanel: View {
         .dsMapText()
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
-            "Мир открыт на \(String(format: "%.1f", statistics.worldPercent)) процента, "
+            String(format: NSLocalizedString("Мир открыт на %@ процента, ", comment: ""),
+                   String(format: "%.1f", statistics.worldPercent))
             + "\(Plural.countries(statistics.exploredCount)), "
             + "\(Plural.continents(statistics.continentsTouched))"
         )
@@ -177,7 +178,7 @@ struct WorldStatsPanel: View {
         }
         .frame(height: 22)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Весь мир: \(String(format: "%.1f", statistics.worldPercent)) процента")
+        .accessibilityLabel(Text("Весь мир: \(String(format: "%.1f", statistics.worldPercent)) процента"))
     }
 
     private var legend: some View {

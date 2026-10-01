@@ -48,8 +48,8 @@ struct CountryRouteSection: View {
         HStack(alignment: .firstTextBaseline) {
             SectionHeader("Маршрут по стране")
             Spacer(minLength: DS.Space.xs)
-            Text(Plural.format(stops.count, "город", "города", "городов")
-                 + " · " + Plural.format(totalDays, "день", "дня", "дней"))
+            Text(Plural.cities(stops.count)
+                 + " · " + Plural.days(totalDays))
                 .font(DS.Font.micro)
                 .foregroundStyle(DS.Color.inkTertiary)
                 .monospacedDigit()
@@ -70,7 +70,7 @@ struct CountryRouteSection: View {
             .buttonStyle(.plain)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(index + 1). \(stop.city.nameRU), \(Plural.format(stop.days, "день", "дня", "дней"))")
+        .accessibilityLabel("\(index + 1). \(stop.city.displayName), \(Plural.days(stop.days))")
     }
 
     /// Номер и линия до следующей точки.
@@ -167,14 +167,14 @@ struct CountryRouteSection: View {
             }
             .overlay(alignment: .bottomLeading) {
                 HStack(alignment: .lastTextBaseline, spacing: DS.Space.xs) {
-                    Text(stop.city.nameRU)
+                    Text(stop.city.displayName)
                         .font(DS.Font.subhead)
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
                     Spacer(minLength: 0)
 
-                    Text(Plural.format(stop.days, "день", "дня", "дней"))
+                    Text(Plural.days(stop.days))
                         .font(DS.Font.micro)
                         .foregroundStyle(.white.opacity(0.85))
                         .monospacedDigit()

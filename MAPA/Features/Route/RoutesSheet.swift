@@ -194,9 +194,9 @@ struct RoutesSheet: View {
         if route.isInProgress {
             return "\(route.visitedCount) из \(route.points.count) пройдено"
         }
-        var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
+        var parts = [Plural.points(route.points.count)]
         if route.totalDays > 0 {
-            parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+            parts.append(Plural.days(route.totalDays))
         }
         return parts.joined(separator: " · ")
     }

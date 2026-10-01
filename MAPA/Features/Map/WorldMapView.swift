@@ -477,7 +477,7 @@ struct WorldMapView: View {
 
     private func tabItem(
         icon: String,
-        title: String,
+        title: LocalizedStringKey,
         isActive: Bool,
         isEnabled: Bool = true,
         action: @escaping () -> Void
@@ -502,7 +502,7 @@ struct WorldMapView: View {
         .buttonStyle(.plain)
         .disabled(!isEnabled)
         .opacity(isEnabled ? 1 : 0.35)
-        .accessibilityLabel(title)
+        .accessibilityLabel(Text(title))
     }
 
     /// Ближайший маршрут прямо на карте.
@@ -568,8 +568,9 @@ struct WorldMapView: View {
     }
 
     private func routeSummary(_ route: Route) -> String {
-        let days = Plural.format(route.totalDays, "день", "дня", "дней")
-        return "\(route.visitedCount) из \(route.points.count) пройдено · \(days)"
+        let days = Plural.days(route.totalDays)
+        return String(format: NSLocalizedString("%@ из %@ пройдено · %@", comment: ""),
+                      "\(route.visitedCount)", "\(route.points.count)", days)
     }
 
     /// Кнопки без подложек: на карте во весь экран любая плашка вырезает

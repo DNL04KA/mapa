@@ -24,7 +24,8 @@ SRC_ROOT = os.path.join(ROOT, APP)
 PROJ_DIR = os.path.join(ROOT, APP + ".xcodeproj")
 
 SOURCE_EXT = {".swift"}
-RESOURCE_EXT = {".xcassets", ".json", ".geojson", ".strings", ".xcstrings", ".ttf", ".otf", ".png"}
+RESOURCE_EXT = {".xcassets", ".json", ".geojson", ".strings", ".stringsdict",
+                ".xcstrings", ".ttf", ".otf", ".png"}
 BUNDLE_DIRS = {".xcassets"}          # папки, которые Xcode видит как единый файл
 SKIP = {".DS_Store"}
 
@@ -67,6 +68,7 @@ def file_type(name: str) -> str:
         ".json": "text.json",
         ".geojson": "text.json",
         ".strings": "text.plist.strings",
+        ".stringsdict": "text.plist.stringsdict",
         ".xcstrings": "text.json.xcstrings",
         ".png": "image.png",
         ".ttf": "file",
@@ -194,6 +196,7 @@ def generate():
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = MAPA;
+				INFOPLIST_KEY_CFBundleLocalizations = "ru en";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "\u041f\u043e\u043a\u0430\u0436\u0435\u043c, \u0432 \u043a\u0430\u043a\u043e\u0439 \u0442\u044b \u0441\u0442\u0440\u0430\u043d\u0435, \u0438 \u0441\u0440\u0430\u0437\u0443 \u043f\u0440\u0438\u0431\u043b\u0438\u0437\u0438\u043c \u043a \u043d\u0435\u0439 \u043a\u0430\u0440\u0442\u0443.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -276,7 +279,7 @@ def generate():
 			}};
 			buildConfigurationList = {project_cfg_list} /* Build configuration list for PBXProject "{app}" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ru;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

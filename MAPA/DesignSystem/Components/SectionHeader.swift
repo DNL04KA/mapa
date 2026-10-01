@@ -4,10 +4,10 @@ import SwiftUI
 /// между блоками был одинаковым на всех экранах.
 public struct SectionHeader: View {
 
-    private let title: String
+    private let title: LocalizedStringKey
     private let subtitle: String?
 
-    public init(_ title: String, subtitle: String? = nil) {
+    public init(_ title: LocalizedStringKey, subtitle: String? = nil) {
         self.title = title
         self.subtitle = subtitle
     }

@@ -11,9 +11,9 @@ public enum TravelStatus: String, CaseIterable, Identifiable, Codable, Sendable 
 
     public var title: String {
         switch self {
-        case .visited:  return "Был"
-        case .living:   return "Живу"
-        case .wishlist: return "Хочу"
+        case .visited:  return String(localized: "Был")
+        case .living:   return String(localized: "Живу")
+        case .wishlist: return String(localized: "Хочу")
         }
     }
 
@@ -28,9 +28,9 @@ public enum TravelStatus: String, CaseIterable, Identifiable, Codable, Sendable 
     /// Короткое пояснение — пригодится в шите выбора на 3-м этапе.
     public var subtitle: String {
         switch self {
-        case .visited:  return "Уже видел своими глазами"
-        case .living:   return "Здесь мой дом"
-        case .wishlist: return "Однажды доберусь"
+        case .visited:  return String(localized: "Уже видел своими глазами")
+        case .living:   return String(localized: "Здесь мой дом")
+        case .wishlist: return String(localized: "Однажды доберусь")
         }
     }
 }

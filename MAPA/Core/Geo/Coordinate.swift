@@ -26,17 +26,7 @@ public enum Continent: String, CaseIterable, Identifiable, Codable, Sendable {
 
     public var id: String { rawValue }
 
-    public var title: String {
-        switch self {
-        case .africa:       return "Африка"
-        case .asia:         return "Азия"
-        case .europe:       return "Европа"
-        case .northAmerica: return "Северная Америка"
-        case .southAmerica: return "Южная Америка"
-        case .oceania:      return "Океания"
-        case .antarctica:   return "Антарктида"
-        }
-    }
+    // Название на языке приложения живёт в AppLocale.swift.
 
     /// Континенты, которые считаются «покрываемыми» в статистике.
     /// Антарктида не в счёт: туда попадают единицы, и она бы портила прогресс.

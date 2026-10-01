@@ -1,31 +1,21 @@
 import Foundation
 
-/// Русские числительные: «1 страна», «2 страны», «5 стран».
+/// Числительные: «1 страна», «2 страны», «5 стран».
 ///
-/// `NumberFormatter` такого не умеет, а строки вида «5 страна(ы)»
-/// сразу выдают, что приложение делали не для людей.
+/// Правила склонения не зашиты в код, а лежат в `Localizable.stringsdict`,
+/// и выбирает их система. Так и должно быть: в русском пять форм поведения
+/// (1, 2–4, 5–20, 21, 111), в английском две, в арабском шесть. Считать это
+/// руками — значит однажды написать «5 страна» на языке, которого не знаешь.
 enum Plural {
 
-    static func format(_ count: Int, _ one: String, _ few: String, _ many: String) -> String {
-        "\(count) \(word(count, one, few, many))"
-    }
+    static func countries(_ count: Int) -> String { localized("plural.countries", count) }
+    static func continents(_ count: Int) -> String { localized("plural.continents", count) }
+    static func cities(_ count: Int) -> String { localized("plural.cities", count) }
+    static func days(_ count: Int) -> String { localized("plural.days", count) }
+    static func points(_ count: Int) -> String { localized("plural.points", count) }
+    static func reviews(_ count: Int) -> String { localized("plural.reviews", count) }
 
-    static func word(_ count: Int, _ one: String, _ few: String, _ many: String) -> String {
-        let hundred = abs(count) % 100
-        let ten = hundred % 10
-
-        // 11–14 — исключение: «11 стран», а не «11 страна».
-        if hundred >= 11 && hundred <= 14 { return many }
-        if ten == 1 { return one }
-        if ten >= 2 && ten <= 4 { return few }
-        return many
-    }
-
-    static func countries(_ count: Int) -> String {
-        format(count, "страна", "страны", "стран")
-    }
-
-    static func continents(_ count: Int) -> String {
-        format(count, "континент", "континента", "континентов")
+    private static func localized(_ key: String, _ count: Int) -> String {
+        String(format: NSLocalizedString(key, comment: ""), count)
     }
 }

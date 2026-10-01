@@ -102,6 +102,7 @@ struct ThemePicker: View {
                         premiumBlock
                         paletteSection(nil, MapPalette.premium)
                     }
+                    languageRow
                     footer
                 }
                 .padding(.bottom, DS.Space.sm)
@@ -151,7 +152,7 @@ struct ThemePicker: View {
                     onPreview(nil)
                     withAnimation(motion.animation(.snap)) { tab = item }
                 } label: {
-                    Text(item.rawValue)
+                    Text(LocalizedStringKey(item.rawValue))
                         .font(DS.Font.callout)
                         .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkSecondary)
                         .frame(maxWidth: .infinity)
@@ -291,11 +292,14 @@ struct ThemePicker: View {
                 }
 
                 VStack(spacing: 0) {
-                    Text(name)
+                    // Названия полотен и палитр лежат в модели обычными
+                    // строками, но в таблице переводов они есть — поэтому
+                    // оборачиваем в ключ, а не показываем как есть.
+                    Text(LocalizedStringKey(name))
                         .font(DS.Font.caption)
                         .foregroundStyle(DS.Color.ink)
                     if let subtitle {
-                        Text(subtitle)
+                        Text(LocalizedStringKey(subtitle))
                             .font(DS.Font.micro)
                             .foregroundStyle(DS.Color.inkTertiary)
                     }
@@ -306,7 +310,7 @@ struct ThemePicker: View {
         }
         .buttonStyle(.plain)
         .animation(motion.animation(.snap), value: isSelected)
-        .accessibilityLabel(name)
+        .accessibilityLabel(Text(LocalizedStringKey(name)))
         .accessibilityHint(isPremium ? "Платное. Коснись, чтобы примерить" : "Применить")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
@@ -369,6 +373,46 @@ struct ThemePicker: View {
                         .strokeBorder(DS.Palette.indigoSoft.opacity(0.45), lineWidth: 1)
                 }
         }
+    }
+
+    /// Язык приложения.
+    ///
+    /// Своего переключателя внутри нет намеренно. iOS сама заводит для
+    /// приложения с двумя и более переводами пункт «Язык» в своих настройках,
+    /// и этот путь всегда верен: он переживает перезапуск, учитывает порядок
+    /// языков у человека и не требует подменять бандл на ходу. Наше дело —
+    /// довести туда, а не изображать то же самое своими руками.
+    private var languageRow: some View {
+        Button {
+            Haptics.shared.tap(.light)
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            UIApplication.shared.open(url)
+        } label: {
+            HStack(spacing: DS.Space.xs) {
+                Image(systemName: "globe")
+                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                Text("Язык приложения")
+                Spacer(minLength: 0)
+                Text(languageName)
+                    .foregroundStyle(DS.Color.inkTertiary)
+                Image(systemName: "arrow.up.forward.app")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+            .font(DS.Font.callout)
+            .foregroundStyle(DS.Color.inkSecondary)
+            .frame(height: DS.Size.hitTarget)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(Text("Откроются настройки приложения"))
+    }
+
+    /// Язык, который система выбрала из наших переводов, — его и показываем.
+    private var languageName: String {
+        let code = Bundle.main.preferredLocalizations.first ?? "ru"
+        return Locale(identifier: code).localizedString(forLanguageCode: code)?.capitalized
+            ?? code.uppercased()
     }
 
     private var footer: some View {

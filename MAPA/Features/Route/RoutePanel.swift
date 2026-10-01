@@ -173,14 +173,14 @@ struct RoutePanel: View {
         if route.visitedCount > 0 {
             var parts = ["\(route.visitedCount) из \(route.points.count) пройдено"]
             if route.totalDays > 0 {
-                parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+                parts.append(Plural.days(route.totalDays))
             }
             return parts.joined(separator: " · ")
         }
 
-        var parts = [Plural.format(route.points.count, "точка", "точки", "точек")]
+        var parts = [Plural.points(route.points.count)]
         if route.totalDays > 0 {
-            parts.append(Plural.format(route.totalDays, "день", "дня", "дней"))
+            parts.append(Plural.days(route.totalDays))
         }
         if route.totalDistanceKm > 1 {
             parts.append("\(Int(route.totalDistanceKm)) км")
@@ -535,7 +535,7 @@ struct RoutePanel: View {
             return "Пока никто не оценивал"
         }
         return String(format: "%.1f · ", average)
-            + Plural.format(route.reviews.count, "отзыв", "отзыва", "отзывов")
+            + Plural.reviews(route.reviews.count)
     }
 
     private var composer: some View {
