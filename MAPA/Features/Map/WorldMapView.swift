@@ -4,11 +4,13 @@ import SwiftUI
 struct WorldMapView: View {
 
     @StateObject private var model = WorldMapViewModel()
+    @StateObject private var account = AccountStore()
     @Environment(\.dsMotion) private var motion
 
     @State private var showsDebug = false
     @State private var statsExpanded = false
     @State private var showsThemes = false
+    @State private var showsAccount = false
     /// Платное полотно или палитра, которые сейчас примеряют.
     /// Живёт только пока открыта панель.
     @State private var previewChoice: ThemePreview?
@@ -37,6 +39,7 @@ struct WorldMapView: View {
             routesSheet
             exportSheet
             themeSheet
+            accountSheet
             countryCard
         }
         .environment(\.mapTheme, activeTheme)
@@ -296,6 +299,21 @@ struct WorldMapView: View {
     }
 
     @ViewBuilder
+    private var accountSheet: some View {
+        if showsAccount {
+            AccountSheet(
+                account: account,
+                accent: activeTheme.accent,
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { showsAccount = false }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(3)
+        }
+    }
+
+    @ViewBuilder
     private var themeSheet: some View {
         if showsThemes {
             ThemePicker(
@@ -430,10 +448,10 @@ struct WorldMapView: View {
     /// нельзя. Подложка возвращает читаемость, подписи — смысл.
     private var mapTabBar: some View {
         HStack(spacing: 0) {
-            tabItem(icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
-                    title: "Я",
-                    isActive: model.currentCoordinate != nil) {
-                model.locateMe()
+            tabItem(icon: "person.crop.circle",
+                    title: "Профиль",
+                    isActive: showsAccount) {
+                withAnimation(motion.animation(.smooth)) { showsAccount = true }
             }
 
             tabItem(icon: "point.topleft.down.curvedto.point.bottomright.up",
@@ -577,6 +595,17 @@ struct WorldMapView: View {
     /// из неё кусок. Читаемость держит тень под самой иконкой.
     private var zoomControls: some View {
         VStack(spacing: DS.Space.xxs) {
+            // «Где я» — управление картой, а не раздел приложения: его место
+            // рядом с зумом, а не в нижней панели между профилем и маршрутами.
+            MapControlButton(
+                icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
+                isActive: model.currentCoordinate != nil,
+                tint: activeTheme.accent
+            ) {
+                model.locateMe()
+            }
+            .accessibilityLabel("Показать, где я")
+
             MapControlButton(icon: "speedometer", isActive: showsDebug) {
                 withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
             }

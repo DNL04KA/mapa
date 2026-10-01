@@ -26,3 +26,4 @@ Secrets.xcconfig
 .wiki-cache/
 .claude/launch.json
 .missing-en.txt
+Supabase.plist
