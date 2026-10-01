@@ -519,7 +519,7 @@ struct WorldMapView: View {
             HStack(spacing: DS.Space.sm) {
                 ZStack {
                     Rectangle().fill(activeTheme.accent.opacity(0.12))
-                    RemoteImage(url: LandmarkPhotos.cover(for: route.points[0].name)?.small)
+                    RemoteImage(url: CityFacts.cover(for: route.points[0].cityID)?.small)
                 }
                 .frame(width: 48, height: 48)
                 .clipped()

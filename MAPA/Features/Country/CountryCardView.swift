@@ -245,8 +245,8 @@ struct CountryCardView: View {
 
                                 // Сразу видно, зачем сюда ехать, — не надо
                                 // открывать каждый город по очереди.
-                                if let places = CityFacts.landmarks(for: city.nameRU) {
-                                    Text(places.prefix(2).joined(separator: " · "))
+                                if let places = CityFacts.summary(for: city.id, limit: 2) {
+                                    Text(places)
                                         .font(DS.Font.micro)
                                         .foregroundStyle(DS.Color.inkTertiary)
                                         .lineLimit(1)
@@ -288,7 +288,7 @@ struct CountryCardView: View {
             RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous)
                 .fill(tint.opacity(0.12))
 
-            if let cover = LandmarkPhotos.cover(for: city.nameRU) {
+            if let cover = CityFacts.cover(for: city.id) {
                 RemoteImage(url: cover.small)
             } else {
                 Image(systemName: city.isCapital ? "star.fill" : "mappin")

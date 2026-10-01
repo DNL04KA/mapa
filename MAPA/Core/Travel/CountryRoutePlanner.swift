@@ -13,8 +13,8 @@ enum CountryRoutePlanner {
     struct Stop: Identifiable, Equatable {
         let city: City
         let days: Int
-        let landmarks: [String]
-        let photo: LandmarkPhoto?
+        let landmarks: [Landmark]
+        let photo: Landmark?
 
         var id: String { city.id }
     }
@@ -37,7 +37,7 @@ enum CountryRoutePlanner {
     /// строку и не добавляет причины туда ехать. Поэтому сперва берём все
     /// известные, и только если их не набралось — дотягиваем самыми крупными.
     private static func pick(from cities: [City], limit: Int) -> [City] {
-        let known = cities.filter { CityFacts.landmarks(for: $0.nameRU) != nil }
+        let known = cities.filter { !CityFacts.landmarks(for: $0.id).isEmpty }
         if known.count >= limit { return Array(known.prefix(limit)) }
 
         let knownIDs = Set(known.map(\.id))
@@ -76,12 +76,12 @@ enum CountryRoutePlanner {
     // MARK: - Сколько дней
 
     private static func stop(for city: City) -> Stop {
-        let landmarks = CityFacts.landmarks(for: city.nameRU) ?? []
+        let landmarks = CityFacts.landmarks(for: city.id)
         return Stop(
             city: city,
             days: days(landmarks: landmarks.count, population: city.population),
             landmarks: landmarks,
-            photo: LandmarkPhotos.cover(for: city.nameRU)
+            photo: CityFacts.cover(for: city.id)
         )
     }
 

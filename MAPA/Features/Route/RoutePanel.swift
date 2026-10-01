@@ -254,8 +254,8 @@ struct RoutePanel: View {
 
                 // Достопримечательности прямо в строке маршрута: иначе, чтобы
                 // вспомнить, зачем ты добавил город, надо уходить в карточку.
-                if let landmarks = CityFacts.landmarks(for: point.name) {
-                    Text(landmarks.prefix(3).joined(separator: " · "))
+                if let landmarks = CityFacts.summary(for: point.cityID) {
+                    Text(landmarks)
                         .font(DS.Font.micro)
                         .foregroundStyle(DS.Color.inkSecondary)
                         .lineLimit(1)
@@ -349,7 +349,7 @@ struct RoutePanel: View {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
-                    } else if let cover = LandmarkPhotos.cover(for: point.name) {
+                    } else if let cover = CityFacts.cover(for: point.cityID) {
                         // Пока своего снимка нет — показываем город таким, какой
                         // он есть, а не серый квадрат.
                         RemoteImage(url: cover.small)
@@ -363,7 +363,7 @@ struct RoutePanel: View {
                 .overlay(alignment: .bottomTrailing) {
                     // Плюс нужен только там, где снимок чужой: он говорит,
                     // что место ждёт твою фотографию.
-                    if point.photoID == nil, LandmarkPhotos.cover(for: point.name) != nil {
+                    if point.photoID == nil, CityFacts.cover(for: point.cityID) != nil {
                         plusBadge
                     }
                 }

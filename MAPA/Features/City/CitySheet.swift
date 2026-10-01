@@ -114,8 +114,8 @@ struct CitySheet: View {
     /// условии, что автора назвали.
     @ViewBuilder
     private var landmarks: some View {
-        let photos = LandmarkPhotos.photos(for: city.nameRU)
-        let names = CityFacts.landmarks(for: city.nameRU) ?? []
+        let places = CityFacts.landmarks(for: city.id)
+        let photos = places.filter { $0.small != nil }
 
         if !photos.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -156,8 +156,8 @@ struct CitySheet: View {
                 .padding(.horizontal, DS.Space.screen)
             }
             .padding(.horizontal, -DS.Space.screen)
-        } else if !names.isEmpty {
-            Text(names.joined(separator: " · "))
+        } else if !places.isEmpty {
+            Text(places.map(\.name).joined(separator: " · "))
                 .font(DS.Font.caption)
                 .foregroundStyle(DS.Color.inkSecondary)
                 .multilineTextAlignment(.center)

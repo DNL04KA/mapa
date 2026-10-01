@@ -112,7 +112,7 @@ struct CountryRouteSection: View {
                         .font(DS.Font.micro)
                         .foregroundStyle(DS.Color.inkTertiary)
                 } else {
-                    Text(stop.landmarks.prefix(3).joined(separator: " · "))
+                    Text(stop.landmarks.prefix(3).map(\.name).joined(separator: " · "))
                         .font(DS.Font.micro)
                         .foregroundStyle(DS.Color.inkSecondary)
                         .lineLimit(2)
