@@ -97,7 +97,7 @@ struct AccountSheet: View {
                         .foregroundStyle(DS.Color.ink)
                         .focused($nameFocused)
                         .submitLabel(.done)
-                        .onSubmit(commitName)
+                        .onSubmit { commitName() }
                 } else {
                     Text(account.profile.name)
                         .font(DS.Font.title)
