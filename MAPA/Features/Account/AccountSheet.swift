@@ -18,12 +18,28 @@ struct AccountSheet: View {
     @State private var draftName: String = ""
     @State private var isEditingName = false
     @State private var dragOffset: CGFloat = 0
+    @State private var isPickingAvatar = false
     @FocusState private var nameFocused: Bool
 
     var body: some View {
         ZStack(alignment: .bottom) {
             scrim
             panel
+
+            if isPickingAvatar {
+                AvatarPicker(
+                    current: account.profile.avatar,
+                    accent: accent,
+                    onSelect: { avatar in
+                        account.setAvatar(avatar)
+                        withAnimation(motion.animation(.smooth)) { isPickingAvatar = false }
+                    },
+                    onDismiss: {
+                        withAnimation(motion.animation(.smooth)) { isPickingAvatar = false }
+                    }
+                )
+                .zIndex(1)
+            }
         }
         .ignoresSafeArea()
     }
@@ -141,18 +157,25 @@ struct AccountSheet: View {
     }
 
     private var avatar: some View {
-        ZStack {
-            Circle().fill(accent.opacity(0.18))
-
-            if let url = account.profile.avatarURL {
-                RemoteImage(url: url).clipShape(Circle())
-            } else {
-                Text(account.profile.initial)
-                    .font(.system(size: 26, weight: .semibold, design: .rounded))
-                    .foregroundStyle(accent)
-            }
+        Button {
+            Haptics.shared.tap(.light)
+            withAnimation(motion.animation(.smooth)) { isPickingAvatar = true }
+        } label: {
+            AvatarView(avatar: account.profile.avatar, size: 64)
+                .overlay(alignment: .bottomTrailing) {
+                    // Маленький карандаш в углу: без него непонятно,
+                    // что по кружку вообще можно нажать.
+                    Image(systemName: "pencil")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(DS.Color.inkOnAccent)
+                        .padding(5)
+                        .background(accent, in: Circle())
+                        .overlay { Circle().strokeBorder(DS.Color.panel, lineWidth: 2) }
+                }
+                .contentShape(Circle())
         }
-        .frame(width: 64, height: 64)
+        .buttonStyle(.plain)
+        .accessibilityLabel("Изменить аватарку")
     }
 
     // MARK: - Зачем входить

@@ -711,10 +711,10 @@ final class WorldMapViewModel: ObservableObject {
         else { return }
 
         if let old = route.points[index].photoID {
-            RoutePhotoStore.delete(id: old)
+            PhotoStore.routes.delete(id: old)
         }
 
-        route.points[index].photoID = image.flatMap(RoutePhotoStore.save)
+        route.points[index].photoID = image.flatMap(PhotoStore.routes.save)
         editingRoute = route
         syncOpenRoute()
         Haptics.shared.tap(.light)

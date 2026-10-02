@@ -14,7 +14,7 @@ struct Profile: Equatable, Codable {
     let id: String
     var name: String
     var email: String?
-    var avatarURL: URL?
+    var avatar: Avatar
     let provider: AuthProvider
     let createdAt: Date
 
@@ -26,11 +26,12 @@ struct Profile: Equatable, Codable {
     }
 
     static func local() -> Profile {
-        Profile(
-            id: "local-" + UUID().uuidString,
+        let id = "local-" + UUID().uuidString
+        return Profile(
+            id: id,
             name: String(localized: "Путешественник"),
             email: nil,
-            avatarURL: nil,
+            avatar: .suggested(for: id),
             provider: .local,
             createdAt: Date()
         )

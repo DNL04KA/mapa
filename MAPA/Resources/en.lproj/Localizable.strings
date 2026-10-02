@@ -12,6 +12,7 @@
 "%@, точка %@" = "%@, stop %@";
 "%@: %@ из %@" = "%@: %@ of %@";
 "Core Haptics: щелчок + волна" = "Core Haptics: tap + wave";
+"Аватарка" = "Avatar";
 "Азия" = "Asia";
 "Акцент" = "Accent";
 "Антарктида" = "Antarctica";
@@ -35,6 +36,7 @@
 "Вход с Apple" = "Sign in with Apple";
 "Вход через Google" = "Sign in with Google";
 "Выбор" = "Selection";
+"Выбрать своё фото" = "Choose your own photo";
 "Вывеска в ночном городе" = "A sign in a night city";
 "Выйти" = "Sign out";
 "Выцветшая типографская краска" = "Faded printing ink";
@@ -58,6 +60,7 @@
 "Загружаем карту мира" = "Loading the world map";
 "Закат" = "Sunset";
 "Закрыть" = "Close";
+"Закрыть выбор аватарки" = "Close avatar picker";
 "Закрыть выбор оформления" = "Close appearance picker";
 "Закрыть выбор статуса" = "Close status picker";
 "Закрыть город" = "Close city";
@@ -71,11 +74,13 @@
 "Здесь мой дом" = "This is my home";
 "Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать." = "Routes by other people will appear here — with photos, budgets and reviews. We did not fill this section with invented ones: you cannot travel by those.";
 "Из них собирается всё остальное" = "Everything else is built from these";
+"Изменить аватарку" = "Change avatar";
 "Изменить имя" = "Edit name";
 "Изменить свой отзыв" = "Edit your review";
 "Изморозь по воде" = "Frost on the water";
 "Изолинии глубин" = "Depth contours";
 "Изумруд" = "Emerald";
+"Или выбери значок" = "Or pick a glyph";
 "Ими будут заливаться страны" = "Countries will be filled with these";
 "Имя" = "Name";
 "Индиго" = "Indigo";

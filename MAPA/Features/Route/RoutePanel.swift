@@ -345,7 +345,7 @@ struct RoutePanel: View {
                 .fill(accent.opacity(0.10))
                 .frame(width: 72, height: 72)
                 .overlay {
-                    if let id = point.photoID, let image = RoutePhotoStore.image(id: id) {
+                    if let id = point.photoID, let image = PhotoStore.routes.image(id: id) {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()

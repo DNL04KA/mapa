@@ -45,6 +45,19 @@ final class AccountStore: ObservableObject {
         storage.save(profile)
     }
 
+    func setAvatar(_ avatar: Avatar) {
+        guard avatar != profile.avatar else { return }
+        // Старое своё фото удаляем сразу: иначе в папке копятся снимки,
+        // на которые уже никто не смотрит.
+        if case let .photo(old) = profile.avatar, case .photo(let new) = avatar, old != new {
+            PhotoStore.avatars.delete(id: old)
+        } else if case let .photo(old) = profile.avatar {
+            PhotoStore.avatars.delete(id: old)
+        }
+        profile.avatar = avatar
+        storage.save(profile)
+    }
+
     func signIn(with provider: AuthProvider) async {
         state = .working
         do {
