@@ -119,10 +119,14 @@ struct CountryCardView: View {
             if !cities.isEmpty {
                 cityList
             }
+            // «Что посмотреть» есть почти у каждой страны: это данные.
+            // Архитектура и советы — только там, где они написаны руками.
+            if !countryLandmarks.isEmpty {
+                landmarks
+            }
             if let facts {
-                landmarks(facts)
                 architecture(facts)
-            } else {
+            } else if countryLandmarks.isEmpty {
                 missingFacts
             }
             community
@@ -301,34 +305,54 @@ struct CountryCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
     }
 
-    private func landmarks(_ facts: CountryFacts) -> some View {
+    private var countryLandmarks: [Landmark] { CountryLandmarks.all(for: country.id) }
+
+    /// Что посмотреть в стране — лентой с фотографиями.
+    ///
+    /// Список строк заменён на снимки намеренно: «Колизей, Помпеи, Венеция»
+    /// читается как оглавление, а четыре фотографии — как причина поехать.
+    private var landmarks: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
             SectionHeader("Что посмотреть")
 
-            VStack(spacing: 0) {
-                ForEach(Array(facts.landmarks.enumerated()), id: \.offset) { index, landmark in
-                    HStack(spacing: DS.Space.sm) {
-                        Text("\(index + 1)")
-                            .font(DS.Font.micro)
-                            .foregroundStyle(DS.Color.inkOnAccent)
-                            .frame(width: 22, height: 22)
-                            .background(Circle().fill(tint))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: DS.Space.sm) {
+                    ForEach(Array(countryLandmarks.enumerated()), id: \.element.id) { index, place in
+                        VStack(alignment: .leading, spacing: 5) {
+                            ZStack {
+                                Rectangle().fill(tint.opacity(0.14))
+                                RemoteImage(url: place.small)
+                            }
+                            .frame(width: 168, height: 112)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                            }
 
-                        Text(landmark)
-                            .font(DS.Font.body)
-                            .foregroundStyle(DS.Color.ink)
+                            Text(place.name)
+                                .font(DS.Font.caption)
+                                .foregroundStyle(DS.Color.ink)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
 
-                        Spacer(minLength: 0)
-                    }
-                    .frame(height: DS.Size.hitTarget)
-
-                    if index < facts.landmarks.count - 1 {
-                        Divider().overlay(DS.Color.hairline)
+                            if let credit = place.credit {
+                                Text(credit)
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(DS.Color.inkTertiary)
+                                    .lineLimit(2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .frame(width: 168, alignment: .leading)
+                        .dsReveal(index)
+                        .accessibilityElement(children: .combine)
                     }
                 }
+                .padding(.horizontal, DS.Space.screen)
             }
-            .padding(.horizontal, DS.Space.md)
-            .dsGlass(radius: DS.Radius.md, shadow: .low)
+            .padding(.horizontal, -DS.Space.screen)
         }
     }
 
