@@ -62,8 +62,10 @@
 		84C555616BEF224C61E3478A /* CountryCardView.swift in Build */ = {isa = PBXBuildFile; fileRef = FE7D6BE8F2E9475BC8087918 /* CountryCardView.swift */; };
 		E2B0BF1E1AB36B1AA2E3D76C /* CountryRouteSection.swift in Build */ = {isa = PBXBuildFile; fileRef = 9A584C1B913505D4FDDC1911 /* CountryRouteSection.swift */; };
 		482DAA2EB6AE221BD5CCAD82 /* CountrySilhouette.swift in Build */ = {isa = PBXBuildFile; fileRef = B327AEC79DCF306611F43F4B /* CountrySilhouette.swift */; };
+		5399AC021601B5B7B515E801 /* ExportAnimation.swift in Build */ = {isa = PBXBuildFile; fileRef = 2D97D2C62D97ADB72C083E48 /* ExportAnimation.swift */; };
 		D0B14A177E580A862825F936 /* ExportCard.swift in Build */ = {isa = PBXBuildFile; fileRef = 7D5CDE6089D05EBF56C7068F /* ExportCard.swift */; };
 		C8F0357372ED287DAFFAEE10 /* ExportSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 57DEF104470D52C2A2E3982E /* ExportSheet.swift */; };
+		097F90062C2EC23B364A2171 /* VideoExporter.swift in Build */ = {isa = PBXBuildFile; fileRef = D9FC2E28474B31AE779B3AE4 /* VideoExporter.swift */; };
 		E3DFA8C293674ADFE2499D8F /* DesignSystemGalleryView.swift in Build */ = {isa = PBXBuildFile; fileRef = C8BCE44F445592C8766659E0 /* DesignSystemGalleryView.swift */; };
 		9E01C58286648F0242EE252D /* GallerySections.swift in Build */ = {isa = PBXBuildFile; fileRef = AC18190B7505992E84FFA71A /* GallerySections.swift */; };
 		AD91509502F625E5A5B70D3E /* CityMarkersLayer.swift in Build */ = {isa = PBXBuildFile; fileRef = 063C360A943E55A6C639232A /* CityMarkersLayer.swift */; };
@@ -148,8 +150,10 @@
 		FE7D6BE8F2E9475BC8087918 /* CountryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryCardView.swift; sourceTree = "<group>"; };
 		9A584C1B913505D4FDDC1911 /* CountryRouteSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryRouteSection.swift; sourceTree = "<group>"; };
 		B327AEC79DCF306611F43F4B /* CountrySilhouette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountrySilhouette.swift; sourceTree = "<group>"; };
+		2D97D2C62D97ADB72C083E48 /* ExportAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportAnimation.swift; sourceTree = "<group>"; };
 		7D5CDE6089D05EBF56C7068F /* ExportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCard.swift; sourceTree = "<group>"; };
 		57DEF104470D52C2A2E3982E /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
+		D9FC2E28474B31AE779B3AE4 /* VideoExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoExporter.swift; sourceTree = "<group>"; };
 		C8BCE44F445592C8766659E0 /* DesignSystemGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemGalleryView.swift; sourceTree = "<group>"; };
 		AC18190B7505992E84FFA71A /* GallerySections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GallerySections.swift; sourceTree = "<group>"; };
 		063C360A943E55A6C639232A /* CityMarkersLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityMarkersLayer.swift; sourceTree = "<group>"; };
@@ -394,8 +398,10 @@
 		935A1D23F486F234CC406266 /* Export */ = {
 			isa = PBXGroup;
 			children = (
+				2D97D2C62D97ADB72C083E48 /* ExportAnimation.swift */,
 				7D5CDE6089D05EBF56C7068F /* ExportCard.swift */,
 				57DEF104470D52C2A2E3982E /* ExportSheet.swift */,
+				D9FC2E28474B31AE779B3AE4 /* VideoExporter.swift */,
 			);
 			path = Export;
 			sourceTree = "<group>";
@@ -661,8 +667,10 @@
 				84C555616BEF224C61E3478A /* CountryCardView.swift */,
 				E2B0BF1E1AB36B1AA2E3D76C /* CountryRouteSection.swift */,
 				482DAA2EB6AE221BD5CCAD82 /* CountrySilhouette.swift */,
+				5399AC021601B5B7B515E801 /* ExportAnimation.swift */,
 				D0B14A177E580A862825F936 /* ExportCard.swift */,
 				C8F0357372ED287DAFFAEE10 /* ExportSheet.swift */,
+				097F90062C2EC23B364A2171 /* VideoExporter.swift */,
 				E3DFA8C293674ADFE2499D8F /* DesignSystemGalleryView.swift */,
 				9E01C58286648F0242EE252D /* GallerySections.swift */,
 				AD91509502F625E5A5B70D3E /* CityMarkersLayer.swift */,

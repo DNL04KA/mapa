@@ -120,6 +120,8 @@
 "На симуляторе не ощущается — нужен телефон" = "Cannot be felt in the simulator — you need a phone";
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
+"Не удалось нарисовать кадр" = "Could not draw a frame";
+"Не удалось начать запись видео" = "Could not start recording the video";
 "Неон" = "Neon";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
@@ -149,6 +151,7 @@
 "Платное. Коснись, чтобы примерить" = "Paid. Tap to try it on";
 "Плетение холста" = "Canvas weave";
 "Поделиться" = "Share";
+"Поделиться видео" = "Share video";
 "Подробнее о стране" = "More about the country";
 "Подтвердить удаление" = "Confirm deletion";
 "Пока никого нет" = "Nobody here yet";
@@ -180,6 +183,7 @@
 "Свернуть подробности" = "Collapse details";
 "Светлая" = "Light";
 "Свои маршруты можно опубликовать" = "You can publish your own routes";
+"Сделать видео" = "Make a video";
 "Сделать домом" = "Make it home";
 "Северная Америка" = "North America";
 "Северное сияние" = "Northern lights";
@@ -189,6 +193,7 @@
 "Системный шрифт, масштабируется Dynamic Type" = "System font, scales with Dynamic Type";
 "Снятие статуса" = "Status removed";
 "Снять отметку" = "Remove the mark";
+"Собираем видео" = "Building the video";
 "Собираем мир" = "Assembling the world";
 "Советуют заложить" = "Suggested to allow";
 "Сохранить" = "Save";

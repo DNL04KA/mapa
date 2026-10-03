@@ -20,6 +20,8 @@ struct ExportSheet: View {
     @State private var template: ExportTemplate = .map
     @State private var rendered: Image?
     @State private var isRendering = false
+    @State private var video: URL?
+    @State private var videoProgress: Double?
     @State private var dragOffset: CGFloat = 0
 
     /// Высота превью. Карточка рисуется в натуральную величину и ужимается —
@@ -33,6 +35,11 @@ struct ExportSheet: View {
         }
         .ignoresSafeArea()
         .task(id: renderKey) { await render() }
+        .onChange(of: renderKey) { _ in
+            // Сменили формат или шаблон — прежнее видео уже не про то.
+            video = nil
+            videoProgress = nil
+        }
     }
 
     private var scrim: some View {
@@ -65,6 +72,7 @@ struct ExportSheet: View {
             picker(ExportFormat.allCases, selection: $format) { $0.title }
 
             shareButton
+            videoButton
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
@@ -228,6 +236,77 @@ struct ExportSheet: View {
             rendered = Image(uiImage: image)
         }
         isRendering = false
+    }
+
+    // MARK: - Видео
+
+    /// Карта, которая заполняется на глазах.
+    ///
+    /// Отдельной кнопкой, а не вместо картинки: видео собирается несколько
+    /// секунд, и заставлять ждать того, кому нужна просто картинка, незачем.
+    @ViewBuilder
+    private var videoButton: some View {
+        if let video {
+            ShareLink(item: video) {
+                HStack(spacing: DS.Space.xs) {
+                    Image(systemName: "film")
+                        .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                    Text("Поделиться видео")
+                }
+            }
+            .buttonStyle(DSButtonStyle(.secondary, fullWidth: true))
+            .simultaneousGesture(TapGesture().onEnded { Haptics.shared.tap(.light) })
+        } else if let videoProgress {
+            VStack(spacing: DS.Space.xxs) {
+                ProgressView(value: videoProgress)
+                    .tint(theme.accent)
+                Text("Собираем видео")
+                    .font(DS.Font.micro)
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+            .frame(height: DS.Size.controlHeight)
+        } else {
+            PillButton("Сделать видео", icon: "film", kind: .secondary, fullWidth: true) {
+                Task { await renderVideo() }
+            }
+            .disabled(rendered == nil)
+            .opacity(rendered == nil ? 0.4 : 1)
+        }
+    }
+
+    private func renderVideo() async {
+        videoProgress = 0
+
+        let size = format.pixelSize
+        let camera = self.camera
+        let fullOverlay = overlay
+        let fullStats = statistics
+
+        let url = try? await VideoExporter.render(
+            size: size,
+            frameCount: ExportAnimation.frameCount,
+            fps: ExportAnimation.fps,
+            makeFrame: { index in
+                let progress = ExportAnimation.progress(frame: index)
+                let renderer = ImageRenderer(content: ExportCard(
+                    template: template,
+                    format: format,
+                    theme: theme,
+                    geometry: geometry,
+                    overlay: ExportAnimation.overlay(fullOverlay, at: progress),
+                    camera: camera,
+                    statistics: ExportAnimation.statistics(fullStats, at: progress),
+                    route: route,
+                    homeCity: homeCity
+                ))
+                renderer.scale = 3
+                return renderer.uiImage
+            },
+            onProgress: { value in videoProgress = value }
+        )
+
+        video = url
+        videoProgress = nil
     }
 
     private var dismissDrag: some Gesture {

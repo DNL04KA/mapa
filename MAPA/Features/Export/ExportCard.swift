@@ -136,7 +136,13 @@ struct ExportCard: View {
             // Не «Из Рима»: склонять названия городов программно нельзя —
             // «из Осло» и «из Тбилиси» не меняются, «из Рима» меняется.
             // Метка без падежа работает для любого города.
-            Text(homeCity.map { "Дом · \($0)" } ?? "Мир открыт на")
+            // Подстановка явная, а не через догадку компилятора.
+            // `Text("Дом · \(город)")` компилятор волен прочитать и как ключ
+            // перевода, и как готовую строку; в карточке, которую рисует
+            // ImageRenderer в отрыве от окружения, он выбирал английскую
+            // таблицу — и в русском видео появлялось «HOME · ВАРШАВА».
+            Text(homeCity.map { String(format: NSLocalizedString("Дом · %@", comment: ""), $0) }
+                 ?? NSLocalizedString("Мир открыт на", comment: ""))
                 .font(.system(size: size.width * 0.035, weight: .semibold))
                 .tracking(1.6)
                 .textCase(.uppercase)
@@ -167,7 +173,9 @@ struct ExportCard: View {
 
     private var routeCaption: some View {
         VStack(alignment: .leading, spacing: size.width * 0.02) {
-            Text("Маршрут")
+            // Та же причина, что и у подписи дома: карточка рисуется
+            // в отрыве от окружения, и ключ надо разрешать самим.
+            Text(NSLocalizedString("Маршрут", comment: ""))
                 .font(.system(size: size.width * 0.035, weight: .semibold))
                 .tracking(1.6)
                 .textCase(.uppercase)
