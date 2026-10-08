@@ -91,3 +91,18 @@ SwiftData требует iOS 17 и Xcode 15, которых на этой маш
 3. Материал (`.ultraThinMaterial`) всегда идёт с непрозрачным запасным вариантом
    для Reduce Transparency.
 4. Стандартные `List` и `Form` не используются.
+
+## Проверки
+
+```bash
+# Тесты (19 штук): проекция, камера, чтение старых маршрутов,
+# статистика, целостность справочников.
+xcodebuild test -project MAPA.xcodeproj -scheme MAPA \
+  -destination 'platform=iOS Simulator,name=iPhone 14 Pro'
+
+# Города против границ стран: одна столица на страну, координаты в своей стране.
+python3 Tools/check_cities.py
+
+# Строки интерфейса: собрать ru-таблицу и показать, чего нет в английской.
+python3 Tools/extract_strings.py
+```

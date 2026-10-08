@@ -92,6 +92,10 @@
 		A0FDE13D1B485E86A39E555A /* Localizable.strings in Build */ = {isa = PBXBuildFile; fileRef = 89FB315F689F4BA4D931538F /* Localizable.strings */; };
 		F8B8FE6F6B945B878D02CFA6 /* Localizable.stringsdict in Build */ = {isa = PBXBuildFile; fileRef = 39DF6907A45B0BBBE9EB3930 /* Localizable.stringsdict */; };
 		6C1D122A93652E160B229984 /* world_110m.geojson in Build */ = {isa = PBXBuildFile; fileRef = CFAA830D39C6E07434B35774 /* world_110m.geojson */; };
+		68D0F1B68AB6AB0D16E718F7 /* CatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B6D5F15CDF08251DDA2B09 /* CatalogTests.swift */; };
+		E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */; };
+		C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C98420008F958B62B6FF46 /* RouteCodableTests.swift */; };
+		CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -181,10 +185,22 @@
 		39DF6907A45B0BBBE9EB3930 /* Localizable.stringsdict */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; path = Localizable.stringsdict; sourceTree = "<group>"; };
 		CFAA830D39C6E07434B35774 /* world_110m.geojson */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = world_110m.geojson; sourceTree = "<group>"; };
 		0CBA1D5C642CF0B183DF08CA /* MAPA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MAPA.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		09B6D5F15CDF08251DDA2B09 /* CatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogTests.swift; sourceTree = "<group>"; };
+		3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryTests.swift; sourceTree = "<group>"; };
+		70C98420008F958B62B6FF46 /* RouteCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCodableTests.swift; sourceTree = "<group>"; };
+		91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsTests.swift; sourceTree = "<group>"; };
+		E16DD6CC4D7483ABC0CDDEFB /* MAPATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MAPATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		349B578E88FC623128D2018B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		69CA44652DCC81AB90B541FD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -522,6 +538,7 @@
 			isa = PBXGroup;
 			children = (
 				0CBA1D5C642CF0B183DF08CA /* MAPA.app */,
+				E16DD6CC4D7483ABC0CDDEFB /* MAPATests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -530,8 +547,20 @@
 			isa = PBXGroup;
 			children = (
 				7545E07AFDDEBBA744DEA6C4 /* MAPA */,
+				4C2E69BE65B9334F17F0B373 /* MAPATests */,
 				2A2867539EA83D400F8CF0DA /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		4C2E69BE65B9334F17F0B373 /* MAPATests */ = {
+			isa = PBXGroup;
+			children = (
+				09B6D5F15CDF08251DDA2B09 /* CatalogTests.swift */,
+				3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */,
+				70C98420008F958B62B6FF46 /* RouteCodableTests.swift */,
+				91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */,
+			);
+			path = MAPATests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -554,7 +583,42 @@
 			productReference = 0CBA1D5C642CF0B183DF08CA /* MAPA.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7ECCA21CF856BB7B6A72B599 /* MAPATests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 67F48DEC961392B30CBD4613 /* Build configuration list for PBXNativeTarget "MAPATests" */;
+			buildPhases = (
+				5E8093D281449259159BBB92 /* Sources */,
+				69CA44652DCC81AB90B541FD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4714879DE1F8FED2090FF6A3 /* PBXTargetDependency */,
+			);
+			name = MAPATests;
+			productName = MAPATests;
+			productReference = E16DD6CC4D7483ABC0CDDEFB /* MAPATests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		8E011D6F3E5740638303368E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D407542D668603B7DC2B6DF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 21ADF072C172F062A5CF8D2B;
+			remoteInfo = MAPA;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		4714879DE1F8FED2090FF6A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 21ADF072C172F062A5CF8D2B /* MAPA */;
+			targetProxy = 8E011D6F3E5740638303368E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		0D407542D668603B7DC2B6DF /* Project object */ = {
@@ -584,6 +648,7 @@
 			projectRoot = "";
 			targets = (
 				21ADF072C172F062A5CF8D2B /* MAPA */,
+				7ECCA21CF856BB7B6A72B599 /* MAPATests */,
 			);
 		};
 /* End PBXProject section */
@@ -688,6 +753,17 @@
 				644B9A95B247A9EBC96A839E /* RoutesSheet.swift */,
 				8A7CF0654BADFCA4A83E6173 /* WorldStatsPanel.swift */,
 				71D3A907F58494B928F5C328 /* ThemePicker.swift */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E8093D281449259159BBB92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68D0F1B68AB6AB0D16E718F7 /* CatalogTests.swift in Sources */,
+				E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */,
+				C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */,
+				CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -807,6 +883,38 @@
 			};
 			name = Release;
 		};
+		6D5801FF148701E3499464BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mapa.app.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MAPA.app/MAPA";
+			};
+			name = Debug;
+		};
+		BBEBCCD3CA0F12BAC11C687F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mapa.app.tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MAPA.app/MAPA";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -824,6 +932,15 @@
 			buildConfigurations = (
 				9011A7135EF5D4B1E7724CDB /* Debug */,
 				566F25B78B7BF1713C71155C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		67F48DEC961392B30CBD4613 /* Build configuration list for PBXNativeTarget "MAPATests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D5801FF148701E3499464BF /* Debug */,
+				BBEBCCD3CA0F12BAC11C687F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

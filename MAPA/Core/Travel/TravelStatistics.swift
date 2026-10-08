@@ -85,7 +85,17 @@ struct TravelStatistics: Equatable {
             totalAreaPerContinent[continent, default: 0] += country.areaKm2
         }
 
-        let continents = Continent.travelable.compactMap { continent -> ContinentProgress? in
+        // Антарктида участвует, только если там кто-то был.
+        //
+        // В процент открытого мира она входит всегда — это честно: материк
+        // настоящий, и тот, кто туда добрался, заслужил свои восемь процентов.
+        // А вот строка «Антарктида 0/1» в таблице у всех остальных — шум.
+        // Пока её не отметили, строки нет; как отметили — появляется, и
+        // таблица снова сходится с числом над ней.
+        let listed = Continent.allCases.filter {
+            $0 != .antarctica || (exploredPerContinent[$0] ?? 0) > 0
+        }
+        let continents = listed.compactMap { continent -> ContinentProgress? in
             guard let total = totalPerContinent[continent], total > 0 else { return nil }
             return ContinentProgress(
                 continent: continent,

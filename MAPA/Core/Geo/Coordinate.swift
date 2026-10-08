@@ -28,8 +28,8 @@ public enum Continent: String, CaseIterable, Identifiable, Codable, Sendable {
 
     // Название на языке приложения живёт в AppLocale.swift.
 
-    /// Континенты, которые считаются «покрываемыми» в статистике.
-    /// Антарктида не в счёт: туда попадают единицы, и она бы портила прогресс.
+    /// Континенты, куда ездят. Антарктида появляется в статистике только
+    /// у того, кто там был, — решение живёт в `TravelStatistics`.
     public static var travelable: [Continent] {
         allCases.filter { $0 != .antarctica }
     }

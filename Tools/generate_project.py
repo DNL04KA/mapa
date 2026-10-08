@@ -21,6 +21,8 @@ DEPLOYMENT_TARGET = "16.0"   # поднимем до 17.0, когда встан
 MARKETING_VERSION = "0.1.0"
 
 SRC_ROOT = os.path.join(ROOT, APP)
+TESTS = APP + "Tests"
+TESTS_ROOT = os.path.join(ROOT, TESTS)
 PROJ_DIR = os.path.join(ROOT, APP + ".xcodeproj")
 
 SOURCE_EXT = {".swift"}
@@ -102,6 +104,213 @@ def emit_groups(node, lines, is_root):
         "\t\t\tsourceTree = \"<group>\";\n"
         "\t\t}};".format(gid=uid("group", node.path), name=node.name, kids=children_refs)
     )
+
+
+def insert_before(text: str, marker: str, block: str) -> str:
+    """Вставляет блок перед закрывающим маркером секции pbxproj."""
+    index = text.index(marker)
+    return text[:index] + block + "\n" + text[index:]
+
+
+def add_tests(pbx, names, app_target, project_id, main_group, products_group):
+    """Прицепляет цель юнит-тестов к уже собранному проекту.
+
+    Вставкой в готовый текст, а не ещё десятью подстановками в шаблон:
+    секции pbxproj размечены комментариями «Begin/End», и дописать блок
+    перед закрывающим маркером надёжнее, чем плодить плейсхолдеры.
+    """
+    t_target = uid("target", TESTS)
+    t_product = uid("product", TESTS)
+    t_group = uid("group", TESTS)
+    t_sources = uid("phase", "tests.sources")
+    t_frameworks = uid("phase", "tests.frameworks")
+    t_cfglist = uid("cfglist", "tests")
+    t_debug = uid("cfg", "tests.debug")
+    t_release = uid("cfg", "tests.release")
+    t_dep = uid("dep", TESTS)
+    t_proxy = uid("proxy", TESTS)
+
+    refs = []
+    builds = []
+    for name in names:
+        file_id = uid("file", TESTS + "/" + name)
+        build_id = uid("build", TESTS + "/" + name)
+        refs.append('\t\t{} /* {} */ = {{isa = PBXFileReference; lastKnownFileType = '
+                    'sourcecode.swift; path = {}; sourceTree = "<group>"; }};'
+                    .format(file_id, name, name))
+        builds.append('\t\t{} /* {} in Sources */ = {{isa = PBXBuildFile; fileRef = {} /* {} */; }};'
+                      .format(build_id, name, file_id, name))
+
+    refs.append('\t\t{} /* {}.xctest */ = {{isa = PBXFileReference; explicitFileType = '
+                'wrapper.cfbundle; includeInIndex = 0; path = {}.xctest; '
+                'sourceTree = BUILT_PRODUCTS_DIR; }};'.format(t_product, TESTS, TESTS))
+
+    pbx = insert_before(pbx, "/* End PBXFileReference section */", "\n".join(refs))
+    pbx = insert_before(pbx, "/* End PBXBuildFile section */", "\n".join(builds))
+
+    kids = "\n".join("\t\t\t\t{} /* {} */,".format(uid("file", TESTS + "/" + n), n)
+                     for n in names)
+    pbx = insert_before(pbx, "/* End PBXGroup section */",
+        "\t\t{gid} /* {t} */ = {{\n"
+        "\t\t\tisa = PBXGroup;\n"
+        "\t\t\tchildren = (\n{kids}\n\t\t\t);\n"
+        "\t\t\tpath = {t};\n"
+        "\t\t\tsourceTree = \"<group>\";\n"
+        "\t\t}};".format(gid=t_group, t=TESTS, kids=kids))
+
+    phase_files = "\n".join(
+        "\t\t\t\t{} /* {} in Sources */,".format(uid("build", TESTS + "/" + n), n)
+        for n in names)
+    pbx = insert_before(pbx, "/* End PBXSourcesBuildPhase section */",
+        "\t\t{sid} /* Sources */ = {{\n"
+        "\t\t\tisa = PBXSourcesBuildPhase;\n"
+        "\t\t\tbuildActionMask = 2147483647;\n"
+        "\t\t\tfiles = (\n{files}\n\t\t\t);\n"
+        "\t\t\trunOnlyForDeploymentPostprocessing = 0;\n"
+        "\t\t}};".format(sid=t_sources, files=phase_files))
+
+    pbx = insert_before(pbx, "/* End PBXFrameworksBuildPhase section */",
+        "\t\t{fid} /* Frameworks */ = {{\n"
+        "\t\t\tisa = PBXFrameworksBuildPhase;\n"
+        "\t\t\tbuildActionMask = 2147483647;\n"
+        "\t\t\tfiles = (\n\t\t\t);\n"
+        "\t\t\trunOnlyForDeploymentPostprocessing = 0;\n"
+        "\t\t}};".format(fid=t_frameworks))
+
+    pbx = insert_before(pbx, "/* End PBXNativeTarget section */",
+        "\t\t{tid} /* {t} */ = {{\n"
+        "\t\t\tisa = PBXNativeTarget;\n"
+        "\t\t\tbuildConfigurationList = {cfg} /* Build configuration list for PBXNativeTarget \"{t}\" */;\n"
+        "\t\t\tbuildPhases = (\n\t\t\t\t{sid} /* Sources */,\n\t\t\t\t{fid} /* Frameworks */,\n\t\t\t);\n"
+        "\t\t\tbuildRules = (\n\t\t\t);\n"
+        "\t\t\tdependencies = (\n\t\t\t\t{dep} /* PBXTargetDependency */,\n\t\t\t);\n"
+        "\t\t\tname = {t};\n"
+        "\t\t\tproductName = {t};\n"
+        "\t\t\tproductReference = {pid} /* {t}.xctest */;\n"
+        "\t\t\tproductType = \"com.apple.product-type.bundle.unit-test\";\n"
+        "\t\t}};".format(tid=t_target, t=TESTS, cfg=t_cfglist, sid=t_sources,
+                          fid=t_frameworks, dep=t_dep, pid=t_product))
+
+    settings = (
+        "\t\t\t\tALWAYS_SEARCH_USER_PATHS = NO;\n"
+        "\t\t\t\tBUNDLE_LOADER = \"$(TEST_HOST)\";\n"
+        "\t\t\t\tGENERATE_INFOPLIST_FILE = YES;\n"
+        "\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = {dt};\n"
+        "\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = \"{bid}.tests\";\n"
+        "\t\t\t\tPRODUCT_NAME = \"$(TARGET_NAME)\";\n"
+        "\t\t\t\tSWIFT_EMIT_LOC_STRINGS = NO;\n"
+        "\t\t\t\tSWIFT_VERSION = 5.0;\n"
+        "\t\t\t\tTARGETED_DEVICE_FAMILY = \"1,2\";\n"
+        "\t\t\t\tTEST_HOST = \"$(BUILT_PRODUCTS_DIR)/{app}.app/{app}\";\n"
+    ).format(dt=DEPLOYMENT_TARGET, bid=BUNDLE_ID, app=APP)
+
+    for cfg_id, name in ((t_debug, "Debug"), (t_release, "Release")):
+        pbx = insert_before(pbx, "/* End XCBuildConfiguration section */",
+            "\t\t{cid} /* {n} */ = {{\n"
+            "\t\t\tisa = XCBuildConfiguration;\n"
+            "\t\t\tbuildSettings = {{\n{s}\t\t\t}};\n"
+            "\t\t\tname = {n};\n"
+            "\t\t}};".format(cid=cfg_id, n=name, s=settings))
+
+    pbx = insert_before(pbx, "/* End XCConfigurationList section */",
+        "\t\t{cfg} /* Build configuration list for PBXNativeTarget \"{t}\" */ = {{\n"
+        "\t\t\tisa = XCConfigurationList;\n"
+        "\t\t\tbuildConfigurations = (\n"
+        "\t\t\t\t{d} /* Debug */,\n\t\t\t\t{r} /* Release */,\n\t\t\t);\n"
+        "\t\t\tdefaultConfigurationIsVisible = 0;\n"
+        "\t\t\tdefaultConfigurationName = Release;\n"
+        "\t\t}};".format(cfg=t_cfglist, t=TESTS, d=t_debug, r=t_release))
+
+    pbx = pbx.replace("/* Begin PBXProject section */",
+        "/* Begin PBXContainerItemProxy section */\n"
+        "\t\t{proxy} /* PBXContainerItemProxy */ = {{\n"
+        "\t\t\tisa = PBXContainerItemProxy;\n"
+        "\t\t\tcontainerPortal = {proj} /* Project object */;\n"
+        "\t\t\tproxyType = 1;\n"
+        "\t\t\tremoteGlobalIDString = {app_target};\n"
+        "\t\t\tremoteInfo = {app};\n"
+        "\t\t}};\n"
+        "/* End PBXContainerItemProxy section */\n\n"
+        "/* Begin PBXTargetDependency section */\n"
+        "\t\t{dep} /* PBXTargetDependency */ = {{\n"
+        "\t\t\tisa = PBXTargetDependency;\n"
+        "\t\t\ttarget = {app_target} /* {app} */;\n"
+        "\t\t\ttargetProxy = {proxy} /* PBXContainerItemProxy */;\n"
+        "\t\t}};\n"
+        "/* End PBXTargetDependency section */\n\n"
+        "/* Begin PBXProject section */".format(proxy=t_proxy, proj=project_id,
+                                                app_target=app_target, app=APP, dep=t_dep))
+
+    pbx = pbx.replace(
+        "\t\t\t\t{} /* {}.app */,\n\t\t\t);\n\t\t\tname = Products;".format(
+            uid("product", APP), APP),
+        "\t\t\t\t{} /* {}.app */,\n\t\t\t\t{} /* {}.xctest */,\n\t\t\t);\n\t\t\tname = Products;".format(
+            uid("product", APP), APP, t_product, TESTS))
+
+    pbx = pbx.replace(
+        "\t\t\t\t{} /* {} */,\n\t\t\t\t{} /* Products */,".format(
+            uid("group", APP), APP, products_group),
+        "\t\t\t\t{} /* {} */,\n\t\t\t\t{} /* {} */,\n\t\t\t\t{} /* Products */,".format(
+            uid("group", APP), APP, t_group, TESTS, products_group))
+
+    pbx = pbx.replace(
+        "\t\t\t\t{} /* {} */,\n\t\t\t);\n\t\t}};\n/* End PBXProject section */".format(app_target, APP),
+        "\t\t\t\t{} /* {} */,\n\t\t\t\t{} /* {} */,\n\t\t\t);\n\t\t}};\n/* End PBXProject section */".format(
+            app_target, APP, t_target, TESTS))
+
+    return pbx
+
+
+def write_scheme(with_tests: bool):
+    """Общая схема с действием «тесты».
+
+    Своя, а не автоматическая: `xcodebuild test` ищет в схеме TestAction,
+    а автосхема его может не содержать — и тесты молча не запускаются,
+    сообщая «успех».
+    """
+    folder = os.path.join(PROJ_DIR, "xcshareddata", "xcschemes")
+    os.makedirs(folder, exist_ok=True)
+    testables = ""
+    if with_tests:
+        testables = (
+            '      <TestableReference skipped = "NO">\n'
+            '         <BuildableReference BuildableIdentifier = "primary" '
+            'BlueprintIdentifier = "{tid}" BuildableName = "{t}.xctest" '
+            'BlueprintName = "{t}" ReferencedContainer = "container:{app}.xcodeproj">'
+            '</BuildableReference>\n'
+            '      </TestableReference>\n'.format(tid=uid("target", TESTS), t=TESTS, app=APP)
+        )
+
+    scheme = """<?xml version="1.0" encoding="UTF-8"?>
+<Scheme LastUpgradeVersion = "1420" version = "1.7">
+   <BuildAction parallelizeBuildables = "YES" buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" buildForArchiving = "YES" buildForAnalyzing = "YES">
+            <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "{app_target}" BuildableName = "{app}.app" BlueprintName = "{app}" ReferencedContainer = "container:{app}.xcodeproj"></BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+{testables}      </Testables>
+   </TestAction>
+   <LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">
+      <BuildableProductRunnable runnableDebuggingMode = "0">
+         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "{app_target}" BuildableName = "{app}.app" BlueprintName = "{app}" ReferencedContainer = "container:{app}.xcodeproj"></BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ProfileAction buildConfiguration = "Release" shouldUseLaunchSchemeArgsEnv = "YES" savedToolIdentifier = "" useCustomWorkingDirectory = "NO" debugDocumentVersioning = "YES">
+      <BuildableProductRunnable runnableDebuggingMode = "0">
+         <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "{app_target}" BuildableName = "{app}.app" BlueprintName = "{app}" ReferencedContainer = "container:{app}.xcodeproj"></BuildableReference>
+      </BuildableProductRunnable>
+   </ProfileAction>
+   <AnalyzeAction buildConfiguration = "Debug"></AnalyzeAction>
+   <ArchiveAction buildConfiguration = "Release" revealArchiveInOrganizer = "YES"></ArchiveAction>
+</Scheme>
+""".format(app=APP, app_target=uid("target", APP), testables=testables)
+
+    with open(os.path.join(folder, APP + ".xcscheme"), "w") as fh:
+        fh.write(scheme)
 
 
 def generate():
@@ -398,6 +607,13 @@ def generate():
         tgt_release=uid("cfg", "target.release"),
     )
 
+    test_sources = sorted(
+        name for name in os.listdir(TESTS_ROOT) if name.endswith(".swift")
+    ) if os.path.isdir(TESTS_ROOT) else []
+    if test_sources:
+        pbx = add_tests(pbx, test_sources, target_id, project_id,
+                        main_group_id, products_group_id)
+
     if os.path.isdir(PROJ_DIR):
         shutil.rmtree(PROJ_DIR)
     os.makedirs(os.path.join(PROJ_DIR, "project.xcworkspace", "xcshareddata"))
@@ -420,7 +636,11 @@ def generate():
             '</dict>\n</plist>\n'
         )
 
-    print("MAPA.xcodeproj пересобран: {} исходников, {} ресурсов".format(len(sources), len(resources)))
+    if test_sources:
+        write_scheme(bool(test_sources))
+
+    print("MAPA.xcodeproj пересобран: {} исходников, {} ресурсов, {} тестов"
+          .format(len(sources), len(resources), len(test_sources)))
 
 
 if __name__ == "__main__":
