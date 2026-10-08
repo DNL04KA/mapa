@@ -86,6 +86,10 @@ def main():
         if path.name in SKIP:
             continue
         for value in literals(path.read_text(encoding="utf-8")):
+            # Одиночная буква — это не текст интерфейса, а константа кода:
+            # так в таблицу попали «е» и «ё» из замены букв в поиске.
+            if len(value.strip()) < 2:
+                continue
             if CYRILLIC.search(value):
                 keys.setdefault(value, set()).add(path.name)
 

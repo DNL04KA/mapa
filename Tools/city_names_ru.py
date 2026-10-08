@@ -289,3 +289,24 @@ CITY_NAMES_RU.update({
     "Zaporizhzhya": "Запорожье", "Zaragoza": "Сарагоса", "Zhongli": "Чжунли",
     "Łódź": "Лодзь", "Ṭarābulus": "Триполи",
 })
+
+# Европа, которой не хватало. Нашлось поиском: тест искал Кёльн
+# и не находил — города попросту не было в списке, потому что у него
+# не было русского имени.
+CITY_NAMES_RU.update({
+    "Augsburg": "Аугсбург", "Bari": "Бари", "Bologna": "Болонья",
+    "Bonn": "Бонн", "Bournemouth": "Борнмут", "Bradford": "Брадфорд",
+    "Bremen": "Бремен", "Brighton": "Брайтон", "Bristol": "Бристоль",
+    "Bydgoszcz": "Быдгощ", "Catania": "Катания", "Cologne": "Кёльн",
+    "Coventry": "Ковентри", "Dortmund": "Дортмунд", "Genoa": "Генуя",
+    "Gliwice": "Гливице", "Grenoble": "Гренобль", "Hanover": "Ганновер",
+    "Heidelberg": "Гейдельберг", "Karlsruhe": "Карлсруэ", "La Coruña": "Ла-Корунья",
+    "Leicester": "Лестер", "Leipzig": "Лейпциг", "Liverpool": "Ливерпуль",
+    "Lublin": "Люблин", "Metz": "Мец", "Middlesbrough": "Мидлсбро",
+    "Nürnberg": "Нюрнберг", "Palma": "Пальма", "Portsmouth": "Портсмут",
+    "Poznań": "Познань", "Reading": "Рединг", "Saarbrücken": "Саарбрюккен",
+    "San Sebastián": "Сан-Себастьян", "Southampton": "Саутгемптон", "Southend-on-Sea": "Саутенд-он-Си",
+    "Stoke": "Сток-он-Трент", "Sunderland": "Сандерленд", "Szczecin": "Щецин",
+    "Toulon": "Тулон", "Wiesbaden": "Висбаден", "Wrocław": "Вроцлав",
+    "Wuppertal": "Вупперталь",
+})

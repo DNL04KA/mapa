@@ -66,6 +66,7 @@
 "Закрыть город" = "Close city";
 "Закрыть карточку" = "Close card";
 "Закрыть маршруты" = "Close routes";
+"Закрыть поиск" = "Close search";
 "Закрыть профиль" = "Close profile";
 "Закрыть экспорт" = "Close export";
 "Заливка страны" = "Country fill";
@@ -120,9 +121,11 @@
 "На симуляторе не ощущается — нужен телефон" = "Cannot be felt in the simulator — you need a phone";
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
+"Найти страну или город" = "Find a country or city";
 "Не удалось нарисовать кадр" = "Could not draw a frame";
 "Не удалось начать запись видео" = "Could not start recording the video";
 "Неон" = "Neon";
+"Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
 "Один цвет на всю карту" = "One colour for the whole map";
@@ -142,6 +145,7 @@
 "Оформление" = "Appearance";
 "Оценить маршрут" = "Rate the route";
 "Оценка %@ из пяти" = "Rating %@ out of five";
+"Очистить" = "Clear";
 "Ошибка" = "Error";
 "ПРОДОЛЖИТЬ" = "CONTINUE";
 "Панели, смена состояния, шиты" = "Panels, state changes, sheets";
@@ -198,6 +202,7 @@
 "Советуют заложить" = "Suggested to allow";
 "Сохранить" = "Save";
 "Сохранить имя" = "Save name";
+"Страна или город" = "Country or city";
 "Строки развёртки" = "Scan lines";
 "Сумерки перед рассветом" = "Dusk before dawn";
 "Тапни пресет — увидишь его характер" = "Tap a preset to feel its character";

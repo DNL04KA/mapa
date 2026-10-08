@@ -11,6 +11,7 @@ struct WorldMapView: View {
     @State private var statsExpanded = false
     @State private var showsThemes = false
     @State private var showsAccount = false
+    @State private var showsSearch = false
     /// Платное полотно или палитра, которые сейчас примеряют.
     /// Живёт только пока открыта панель.
     @State private var previewChoice: ThemePreview?
@@ -33,13 +34,7 @@ struct WorldMapView: View {
         ZStack {
             mapLayer
             overlays
-            statusSheet
-            citySheet
-            routePanel
-            routesSheet
-            exportSheet
-            themeSheet
-            accountSheet
+            sheets
             countryCard
         }
         .environment(\.mapTheme, activeTheme)
@@ -296,6 +291,51 @@ struct WorldMapView: View {
             cardCountry = nil
         }
         model.dismissSelection(reduceMotion: motion.reduceMotion)
+    }
+
+    /// Все выезжающие панели одной стопкой.
+    ///
+    /// Собраны в группу не ради порядка: `ZStack` принимает не больше
+    /// десяти дочерних вью, и одиннадцатая ломает сборку сообщением
+    /// «лишний аргумент», по которому причину не угадать.
+    @ViewBuilder
+    private var sheets: some View {
+        statusSheet
+        citySheet
+        routePanel
+        routesSheet
+        exportSheet
+        themeSheet
+        accountSheet
+        searchSheet
+    }
+
+    /// Поиск страны или города.
+    @ViewBuilder
+    private var searchSheet: some View {
+        if showsSearch, let geometry = model.geometry {
+            SearchSheet(
+                index: SearchIndex(countries: geometry.countries, cities: model.cities),
+                accent: activeTheme.accent,
+                countryName: { geometry.country(id: $0)?.displayName ?? "" },
+                onPick: { result in
+                    closeSearch()
+                    switch result {
+                    case let .country(country):
+                        model.select(country, reduceMotion: motion.reduceMotion)
+                    case let .city(city):
+                        model.focus(on: city, reduceMotion: motion.reduceMotion)
+                    }
+                },
+                onDismiss: { closeSearch() }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(5)
+        }
+    }
+
+    private func closeSearch() {
+        withAnimation(motion.animation(.smooth)) { showsSearch = false }
     }
 
     @ViewBuilder
@@ -595,6 +635,14 @@ struct WorldMapView: View {
     /// из неё кусок. Читаемость держит тень под самой иконкой.
     private var zoomControls: some View {
         VStack(spacing: DS.Space.xxs) {
+            // Поиск — первым: без него до половины приложения не дойти,
+            // и это чаще нужно, чем зум.
+            MapControlButton(icon: "magnifyingglass", isActive: showsSearch,
+                             tint: activeTheme.accent) {
+                withAnimation(motion.animation(.smooth)) { showsSearch = true }
+            }
+            .accessibilityLabel("Найти страну или город")
+
             // «Где я» — управление картой, а не раздел приложения: его место
             // рядом с зумом, а не в нижней панели между профилем и маршрутами.
             MapControlButton(

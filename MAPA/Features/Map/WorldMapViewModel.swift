@@ -285,6 +285,24 @@ final class WorldMapViewModel: ObservableObject {
         move(to: MapCamera.world.clamped(in: viewport), reduceMotion: reduceMotion)
     }
 
+    /// Выбрать страну не пальцем, а из списка — например, из поиска.
+    ///
+    /// Приводит ровно к тому же состоянию, что и тап по карте: страна
+    /// выбрана, подсвечена, карта подъехала. Если бы поиск городил своё,
+    /// две дороги к одному экрану разошлись бы при первой же правке.
+    func select(_ country: Country, reduceMotion: Bool) {
+        let animation = reduceMotion
+            ? DS.Motion.Preset.smooth.reducedAnimation
+            : DS.Motion.Preset.smooth.animation
+        withAnimation(animation) {
+            selectedCity = nil
+            selectedCountry = country
+            overlay.highlight = country.path
+            mapShift = shiftNeeded(for: country)
+        }
+        focus(on: country, reduceMotion: reduceMotion)
+    }
+
     func focus(on country: Country, reduceMotion: Bool) {
         move(to: camera.focused(on: country, in: viewport), reduceMotion: reduceMotion)
     }
