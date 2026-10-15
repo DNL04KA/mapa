@@ -7,16 +7,17 @@ Built with SwiftUI. The map is drawn from scratch — no MapKit, no tiles: count
 polygons are rendered in a `Canvas`, so the whole world works offline and the
 look is fully ours.
 
-<!-- Screenshots go here, as a section right below this line. Suggested order:
-     the world map with countries filled in, a country card, a route with
-     photos, the statistics panel, a frame from the exported video.
-
 ## Screenshots
+
+<img src="docs/screenshots/map.png" alt="The world map with visited countries filled in" width="320">
+
+<!-- More screenshots go in the table below once captured: a country card, a
+     route with photos, the statistics panel, a frame from the exported video.
 
 | | |
 | --- | --- |
-| ![Map](docs/screenshots/map.png) | ![Country](docs/screenshots/country.png) |
-| ![Route](docs/screenshots/route.png) | ![Stats](docs/screenshots/stats.png) |
+| ![Country](docs/screenshots/country.png) | ![Route](docs/screenshots/route.png) |
+| ![Stats](docs/screenshots/stats.png) | ![Export](docs/screenshots/export.png) |
 -->
 
 ## Features
