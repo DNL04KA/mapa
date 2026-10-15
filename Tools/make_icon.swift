@@ -1,16 +1,20 @@
 // Иконка приложения.
 //
 // Рисуется кодом, а не лежит картинкой: иконку придётся править — сдвинуть
-// глобус, сменить оттенок, добавить отмеченную страну, — и каждый раз
-// повторять это руками в редакторе значит однажды получить другую иконку.
-// Здесь же видно, из чего она собрана, и пересобрать можно одной командой.
-//
-// Земля настоящая: те же границы, что и в приложении, в ортографической
-// проекции с центром на Европе и Африке — то, что человек узнаёт глобусом.
-// Четыре страны закрашены цветами приложения: иконка показывает ровно то,
-// чем приложение занимается, — закрашенный мир.
+// точку, сменить оттенок, — и каждый раз повторять это руками в редакторе
+// значит однажды получить другую иконку. Здесь видно, из чего она собрана,
+// и пересобрать можно одной командой.
 //
 //     swift Tools/make_icon.swift
+//
+// Знак — маршрут из пяти остановок, сложенный в букву M: и название, и то,
+// чем приложение занимается, в одной фигуре. До него тут был настоящий
+// глобус с настоящими границами; он честно показывал карту и так же честно
+// превращался в тёмное пятно среди ярких соседей по экрану. В шестьдесят
+// пикселей выживает одна толстая фигура, а не география.
+//
+// Названия внутри нет намеренно: iOS подписывает «MAPA» под значком сама,
+// и надпись в такой плитке превращается в грязную полоску.
 //
 // Результат: MAPA/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png
 
@@ -21,11 +25,8 @@ import UniformTypeIdentifiers
 
 let side = 1024.0
 let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-let bordersURL = root.appendingPathComponent("MAPA/Resources/world_110m.geojson")
 let outURL = root.appendingPathComponent(
     "MAPA/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png")
-
-// MARK: - Цвета приложения
 
 func rgb(_ hex: UInt32, _ alpha: Double = 1) -> CGColor {
     CGColor(red: Double((hex >> 16) & 0xFF) / 255,
@@ -34,85 +35,10 @@ func rgb(_ hex: UInt32, _ alpha: Double = 1) -> CGColor {
             alpha: alpha)
 }
 
-let void = rgb(0x06070C)
-let abyss = rgb(0x0B0D15)
-let ocean = rgb(0x0D1220)
-let land = rgb(0x2B3250)
-let indigo = rgb(0x6C5CFF)
-let mint = rgb(0x5FE3B4)
-let lagoon = rgb(0x22A7C9)
-let magenta = rgb(0xE86FD1)
-
-/// Закрашенные страны. Четыре и по разным материкам: иконка должна читаться
-/// как «мир», а не как «Европа».
-let marked: [String: CGColor] = [
-    "ITA": indigo, "ESP": magenta, "EGY": mint, "ZAF": lagoon, "SAU": rgb(0x9B8CFF),
-]
-
-// MARK: - Проекция
-
-/// Ортографическая проекция — глобус, как его рисуют на карте мира.
-/// Центр смещён на восток и к северу: так в круг попадают Европа, Африка
-/// и край Азии, а не пустая Атлантика.
-let lat0 = 12.0 * .pi / 180
-let lon0 = 18.0 * .pi / 180
-let globeRadius = side * 0.40
-let center = CGPoint(x: side / 2, y: side / 2)
-
-func project(lon: Double, lat: Double) -> CGPoint? {
-    let φ = lat * .pi / 180
-    let λ = lon * .pi / 180 - lon0
-    guard sin(lat0) * sin(φ) + cos(lat0) * cos(φ) * cos(λ) > 0 else { return nil }
-    let x = cos(φ) * sin(λ)
-    let y = cos(lat0) * sin(φ) - sin(lat0) * cos(φ) * cos(λ)
-    return CGPoint(x: center.x + x * globeRadius, y: center.y + y * globeRadius)
-}
-
-// MARK: - Границы
-
-struct Feature {
-    let id: String
-    let rings: [[CGPoint]]
-}
-
-func loadFeatures() -> [Feature] {
-    guard let data = try? Data(contentsOf: bordersURL),
-          let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-          let features = root["features"] as? [[String: Any]] else {
-        FileHandle.standardError.write(Data("нет файла границ\n".utf8))
-        exit(1)
-    }
-
-    return features.compactMap { feature in
-        guard let props = feature["properties"] as? [String: Any],
-              let id = props["id"] as? String,
-              let geometry = feature["geometry"] as? [String: Any],
-              let type = geometry["type"] as? String else { return nil }
-
-        // Полигон и мультиполигон приводим к одному виду: список колец.
-        var raw: [[[Double]]] = []
-        if type == "Polygon", let p = geometry["coordinates"] as? [[[Double]]] {
-            raw = p
-        } else if type == "MultiPolygon", let m = geometry["coordinates"] as? [[[[Double]]]] {
-            raw = m.flatMap { $0 }
-        }
-
-        let rings = raw.compactMap { ring -> [CGPoint]? in
-            // Кольцо, у которого часть точек за горизонтом, рвать нельзя:
-            // получится клякса через весь глобус. Берём только целые.
-            var points: [CGPoint] = []
-            for pair in ring where pair.count >= 2 {
-                guard let p = project(lon: pair[0], lat: pair[1]) else { return nil }
-                points.append(p)
-            }
-            return points.count >= 3 ? points : nil
-        }
-
-        return rings.isEmpty ? nil : Feature(id: id, rings: rings)
-    }
-}
-
-// MARK: - Рисование
+// Цвета приложения: индиго переходит в сирень, остановки — акценты палитры.
+let gradientTop: UInt32 = 0x3B2BD9
+let gradientBottom: UInt32 = 0x8B3BD6
+let stopColors: [UInt32] = [0xE86FD1, 0x22A7C9, 0x5FE3B4, 0x9B8CFF, 0xE86FD1]
 
 let space = CGColorSpaceCreateDeviceRGB()
 guard let ctx = CGContext(data: nil, width: Int(side), height: Int(side),
@@ -121,85 +47,73 @@ guard let ctx = CGContext(data: nil, width: Int(side), height: Int(side),
     exit(1)
 }
 
-// Фон — ночное полотно приложения, от края к центру светлее.
-ctx.setFillColor(void)
-ctx.fill(CGRect(x: 0, y: 0, width: side, height: side))
+// Фон.
 if let gradient = CGGradient(colorsSpace: space,
-                             colors: [abyss, void] as CFArray,
+                             colors: [rgb(gradientTop), rgb(gradientBottom)] as CFArray,
                              locations: [0, 1]) {
-    ctx.drawRadialGradient(gradient, startCenter: center, startRadius: 0,
-                           endCenter: center, endRadius: side * 0.72,
+    ctx.drawLinearGradient(gradient,
+                           start: CGPoint(x: 0, y: side),
+                           end: CGPoint(x: side, y: 0),
                            options: [])
 }
 
-// Свечение под глобусом: без него шар лежит на фоне плоской наклейкой.
-ctx.saveGState()
-ctx.setShadow(offset: .zero, blur: side * 0.11, color: indigo.copy(alpha: 0.5))
-ctx.setFillColor(ocean)
-ctx.fillEllipse(in: CGRect(x: center.x - globeRadius, y: center.y - globeRadius,
-                           width: globeRadius * 2, height: globeRadius * 2))
-ctx.restoreGState()
-
-// Сетка меридианов и параллелей — она же говорит «карта».
-ctx.saveGState()
-ctx.addEllipse(in: CGRect(x: center.x - globeRadius, y: center.y - globeRadius,
-                          width: globeRadius * 2, height: globeRadius * 2))
-ctx.clip()
-ctx.setStrokeColor(rgb(0xFFFFFF, 0.07))
+// Сетка — тихий намёк на карту под маршрутом. Настолько тихий, что в
+// размере значка её не видно; она работает только на большой плитке в
+// магазине, и это нормально.
+ctx.setStrokeColor(rgb(0xFFFFFF, 0.08))
 ctx.setLineWidth(side * 0.004)
-for lat in stride(from: -60.0, through: 60.0, by: 30.0) {
-    var started = false
-    for lon in stride(from: -180.0, through: 180.0, by: 2.0) {
-        guard let p = project(lon: lon, lat: lat) else { started = false; continue }
-        if started { ctx.addLine(to: p) } else { ctx.move(to: p); started = true }
-    }
-}
-for lon in stride(from: -180.0, through: 180.0, by: 30.0) {
-    var started = false
-    for lat in stride(from: -90.0, through: 90.0, by: 2.0) {
-        guard let p = project(lon: lon, lat: lat) else { started = false; continue }
-        if started { ctx.addLine(to: p) } else { ctx.move(to: p); started = true }
-    }
+for step in stride(from: 0.0, through: side, by: side / 8) {
+    ctx.move(to: CGPoint(x: step, y: 0)); ctx.addLine(to: CGPoint(x: step, y: side))
+    ctx.move(to: CGPoint(x: 0, y: step)); ctx.addLine(to: CGPoint(x: side, y: step))
 }
 ctx.strokePath()
 
-// Суша.
-let features = loadFeatures()
-for feature in features where marked[feature.id] == nil {
-    ctx.setFillColor(land)
-    for ring in feature.rings {
-        ctx.addLines(between: ring)
-        ctx.closePath()
-    }
-    ctx.fillPath()
+// Затемнение по углам: без него плитка выглядит плоской наклейкой.
+if let vignette = CGGradient(colorsSpace: space,
+                             colors: [rgb(0x1A0B4A, 0), rgb(0x1A0B4A, 0.35)] as CFArray,
+                             locations: [0.45, 1]) {
+    let center = CGPoint(x: side / 2, y: side / 2)
+    ctx.drawRadialGradient(vignette, startCenter: center, startRadius: 0,
+                           endCenter: center, endRadius: side * 0.78, options: [])
 }
 
-// Отмеченные страны поверх — со своим свечением, как на карте.
-for feature in features {
-    guard let color = marked[feature.id] else { continue }
-    ctx.saveGState()
-    ctx.setShadow(offset: .zero, blur: side * 0.02, color: color.copy(alpha: 0.9))
-    ctx.setFillColor(color)
-    for ring in feature.rings {
-        ctx.addLines(between: ring)
-        ctx.closePath()
-    }
-    ctx.fillPath()
-    ctx.restoreGState()
-}
+// Маршрут. Пять остановок: левая ножка, подъём, середина, подъём, правая.
+let stops = [
+    CGPoint(x: side * 0.293, y: side * 0.293),
+    CGPoint(x: side * 0.293, y: side * 0.707),
+    CGPoint(x: side * 0.500, y: side * 0.459),
+    CGPoint(x: side * 0.707, y: side * 0.707),
+    CGPoint(x: side * 0.707, y: side * 0.293),
+]
+
+ctx.saveGState()
+ctx.setLineJoin(.round)
+ctx.setLineCap(.round)
+ctx.setShadow(offset: CGSize(width: 0, height: -side * 0.012),
+              blur: side * 0.05, color: rgb(0x1A0B4A, 0.45))
+ctx.setStrokeColor(rgb(0xFFFFFF))
+ctx.setLineWidth(side * 0.078)
+ctx.addLines(between: stops)
+ctx.strokePath()
 ctx.restoreGState()
 
-// Край шара: тонкий светлый ободок отделяет глобус от фона.
-ctx.setStrokeColor(rgb(0xFFFFFF, 0.14))
-ctx.setLineWidth(side * 0.006)
-ctx.strokeEllipse(in: CGRect(x: center.x - globeRadius, y: center.y - globeRadius,
-                             width: globeRadius * 2, height: globeRadius * 2))
-
-// MARK: - Запись
+// Остановки: белый кружок с цветной серединой — ровно так они выглядят
+// на самой карте.
+for (index, stop) in stops.enumerated() {
+    let outer = side * 0.058
+    ctx.setFillColor(rgb(0xFFFFFF))
+    ctx.fillEllipse(in: CGRect(x: stop.x - outer, y: stop.y - outer,
+                               width: outer * 2, height: outer * 2))
+    let inner = side * 0.029
+    ctx.setFillColor(rgb(stopColors[index % stopColors.count]))
+    ctx.fillEllipse(in: CGRect(x: stop.x - inner, y: stop.y - inner,
+                               width: inner * 2, height: inner * 2))
+}
 
 guard let image = ctx.makeImage(),
-      let dest = CGImageDestinationCreateWithURL(outURL as CFURL, UTType.png.identifier as CFString, 1, nil)
+      let dest = CGImageDestinationCreateWithURL(
+        outURL as CFURL, UTType.png.identifier as CFString, 1, nil)
 else { exit(1) }
 CGImageDestinationAddImage(dest, image, nil)
 guard CGImageDestinationFinalize(dest) else { exit(1) }
-print("иконка: \(outURL.path), стран на глобусе: \(features.count)")
+print("иконка: \(outURL.path)")

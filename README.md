@@ -130,9 +130,9 @@ open MAPA.xcodeproj
 
 ## App icon
 
-Drawn by a script from the same borders the app ships, in an orthographic
-projection, with a few countries filled in the app's own colours. Rerun it
-after changing the palette or the marked countries:
+A route of five stops folded into the letter M — the name and what the app
+does in one shape. Drawn by a script, not stored as a picture, so the colours
+stay tied to the palette and the icon can be changed in one line:
 
 ```bash
 swift Tools/make_icon.swift
