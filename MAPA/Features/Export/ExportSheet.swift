@@ -76,7 +76,7 @@ struct ExportSheet: View {
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
-        .padding(.bottom, DS.Space.xl)
+        .padding(.bottom, DS.Space.xl + DS.Space.xs)
         .frame(maxWidth: .infinity)
         .background {
             UnevenRoundedTopShape(radius: DS.Radius.xl)

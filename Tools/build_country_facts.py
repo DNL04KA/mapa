@@ -22,6 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wikidata as wd
+from build_city_facts import country_extents
 
 ROOT = Path(__file__).resolve().parent.parent
 BORDERS = ROOT / "MAPA" / "Resources" / "world_110m.geojson"
@@ -40,6 +41,7 @@ def main():
     # у них есть и класс «сооружение», и высокая известность.
     skip = {c["name_ru"] for c in cities} | set(country_names.values())
 
+    extents = country_extents()
     include, exclude, strong = wd.classifiers()
     print(f"классов: смотрим {len(include)}, пропускаем {len(exclude)}, "
           f"прощаем {len(strong)}", flush=True)
@@ -49,7 +51,9 @@ def main():
 
     found, missed = {}, 0
     for index, city in enumerate(cities, start=1):
-        data = wd.near_city(city)
+        # Тот же ограничитель радиуса, что и у городов: без него в списке
+        # Ватикана первым местом стоял Колизей.
+        data = wd.near_city(city, cap=extents.get(city["country"]))
         if data is None:
             missed += 1
             continue

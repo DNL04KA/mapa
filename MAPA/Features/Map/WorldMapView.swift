@@ -43,8 +43,36 @@ struct WorldMapView: View {
             guard phase != .active else { return }
             Task { await model.flushPendingSaves() }
         }
-        .task { await model.load() }
+        .task {
+            await model.load()
+            #if DEBUG
+            openScreenFromEnvironment()
+            #endif
+        }
     }
+
+    #if DEBUG
+    /// Открыть панель по переменной окружения.
+    ///
+    /// У симулятора в командной строке нет пальцев: нажать «Маршруты» и
+    /// снять, как это выглядит, нельзя. Запуск с `MAPA_SCREEN=routes`
+    /// открывает нужную панель сразу. Данные при этом настоящие —
+    /// это только замена нажатию, и в сборку для магазина не попадает.
+    private func openScreenFromEnvironment() {
+        switch ProcessInfo.processInfo.environment["MAPA_SCREEN"] {
+        case "routes": showsRoutes = true
+        case "account": showsAccount = true
+        case "theme": showsThemes = true
+        case "search": showsSearch = true
+        case "export": showsExport = true
+        case let id? where id.hasPrefix("card-"):
+            guard let country = model.geometry?.country(id: String(id.dropFirst(5))) else { return }
+            model.select(country, reduceMotion: true)
+            cardCountry = country
+        default: break
+        }
+    }
+    #endif
 
     /// Карта — во весь экран, включая вырез и полосу внизу.
     ///
@@ -444,7 +472,9 @@ struct WorldMapView: View {
             .ignoresSafeArea(edges: .top)
 
             VStack(spacing: DS.Space.sm) {
-                if model.state == .ready {
+                // Поиск открывается ровно там, где лежит панель мира, и
+                // «МИР ОТКРЫТ НА 2.5%» читалось сквозь поле ввода.
+                if model.state == .ready, !showsSearch {
                     WorldStatsPanel(
                         statistics: model.statistics,
                         theme: activeTheme,
@@ -640,46 +670,61 @@ struct WorldMapView: View {
 
     /// Кнопки без подложек: на карте во весь экран любая плашка вырезает
     /// из неё кусок. Читаемость держит тень под самой иконкой.
+    ///
+    /// Два смысловых блока с заметным зазором между ними: сверху «найти» и
+    /// «где я» — это переход к месту, снизу зум и «весь мир» — это масштаб.
+    /// Пока они шли одним столбиком через четыре точки, колонка читалась
+    /// как шесть случайных значков.
     private var zoomControls: some View {
-        VStack(spacing: DS.Space.xxs) {
-            // Поиск — первым: без него до половины приложения не дойти,
-            // и это чаще нужно, чем зум.
-            MapControlButton(icon: "magnifyingglass", isActive: showsSearch,
-                             tint: activeTheme.accent) {
-                withAnimation(motion.animation(.smooth)) { showsSearch = true }
-            }
-            .accessibilityLabel("Найти страну или город")
+        VStack(spacing: DS.Space.md) {
+            VStack(spacing: 0) {
+                // Поиск — первым: без него до половины приложения не дойти,
+                // и это чаще нужно, чем зум.
+                MapControlButton(icon: "magnifyingglass", isActive: showsSearch,
+                                 tint: activeTheme.accent) {
+                    withAnimation(motion.animation(.smooth)) { showsSearch = true }
+                }
+                .accessibilityLabel("Найти страну или город")
 
-            // «Где я» — управление картой, а не раздел приложения: его место
-            // рядом с зумом, а не в нижней панели между профилем и маршрутами.
-            MapControlButton(
-                icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
-                isActive: model.currentCoordinate != nil,
-                tint: activeTheme.accent
-            ) {
-                model.locateMe()
+                // «Где я» — управление картой, а не раздел приложения: его
+                // место рядом с поиском, а не в нижней панели между профилем
+                // и маршрутами.
+                MapControlButton(
+                    icon: model.locationAccess == .denied ? "location.slash" : "location.fill",
+                    isActive: model.currentCoordinate != nil,
+                    tint: activeTheme.accent
+                ) {
+                    model.locateMe()
+                }
+                .accessibilityLabel("Показать, где я")
             }
-            .accessibilityLabel("Показать, где я")
 
+            VStack(spacing: 0) {
+                MapControlButton(icon: "plus") {
+                    model.zoomIn(reduceMotion: motion.reduceMotion)
+                }
+                .accessibilityLabel("Приблизить")
+
+                MapControlButton(icon: "minus") {
+                    model.zoomOut(reduceMotion: motion.reduceMotion)
+                }
+                .accessibilityLabel("Отдалить")
+
+                MapControlButton(icon: "globe.europe.africa") {
+                    model.resetToWorld(reduceMotion: motion.reduceMotion)
+                }
+                .accessibilityLabel("Показать весь мир")
+            }
+
+            #if DEBUG
+            // Панель замеров — инструмент разработки, и в сборке для
+            // магазина её нет: пользователю спидометр в ряду с зумом
+            // ничего не объясняет.
             MapControlButton(icon: "speedometer", isActive: showsDebug) {
                 withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
             }
             .accessibilityLabel("Панель замеров")
-
-            MapControlButton(icon: "plus") {
-                model.zoomIn(reduceMotion: motion.reduceMotion)
-            }
-            .accessibilityLabel("Приблизить")
-
-            MapControlButton(icon: "minus") {
-                model.zoomOut(reduceMotion: motion.reduceMotion)
-            }
-            .accessibilityLabel("Отдалить")
-
-            MapControlButton(icon: "globe.europe.africa") {
-                model.resetToWorld(reduceMotion: motion.reduceMotion)
-            }
-            .accessibilityLabel("Показать весь мир")
+            #endif
         }
     }
 }

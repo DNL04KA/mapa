@@ -71,6 +71,19 @@ struct RoutesSheet: View {
             // сами: иначе под тремя строками оставалась ладонь пустоты.
             .frame(height: contentHeight)
             .scrollIndicators(.hidden)
+            // Нижний край растворяется: обрезанная ровно пополам карточка
+            // выглядит сломанной вёрсткой, а не продолжением списка.
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black, location: 0),
+                        .init(color: .black, location: 0.93),
+                        .init(color: .clear, location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
 
             PillButton("Новый маршрут", icon: "plus",
                        kind: .tinted(accent), fullWidth: true, action: onCreate)

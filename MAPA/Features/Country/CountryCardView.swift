@@ -87,16 +87,87 @@ struct CountryCardView: View {
             // обложка растягивается, а не отрывается от края.
             let offset = proxy.frame(in: .named("card")).minY
             let stretch = max(0, offset)
+            let size = CGSize(width: proxy.size.width, height: heroHeight + stretch)
 
-            CountryHeroArt(country: country, status: status, accent: theme.accent)
-                .padding(.horizontal, DS.Space.xxl)
-                .padding(.vertical, DS.Space.xl)
-                .frame(width: proxy.size.width, height: heroHeight + stretch)
-                .offset(y: -stretch)
-                // Параллакс: содержимое уезжает быстрее обложки.
-                .opacity(1 - min(1, max(0, -offset) / 260))
+            Group {
+                if let cover = heroPhoto {
+                    photoHero(cover, size: size)
+                } else {
+                    // Фотографии нет — остаётся силуэт. Он честнее стока:
+                    // это ровно та страна, которую ты трогал пальцем.
+                    // Сверху отступ больше: силуэт занимает всю выделенную
+                    // высоту, и у вытянутых стран вроде Доминики макушка
+                    // уезжала под «остров» и строку состояния.
+                    CountryHeroArt(country: country, status: status, accent: theme.accent)
+                        .padding(.horizontal, DS.Space.xxl)
+                        .padding(.top, DS.Space.xxl + DS.Space.sm)
+                        .padding(.bottom, DS.Space.lg)
+                        .frame(width: size.width, height: size.height)
+                }
+            }
+            .offset(y: -stretch)
+            // Параллакс: содержимое уезжает быстрее обложки.
+            .opacity(1 - min(1, max(0, -offset) / 260))
         }
         .frame(height: heroHeight)
+    }
+
+    private var heroPhoto: Landmark? { CountryLandmarks.cover(for: country.id) }
+
+    /// Обложка-фотография.
+    ///
+    /// Силуэт остаётся, но размером с печать в углу: он нужен как связь с
+    /// картой, а не как картинка. У Ватикана и Сингапура контур — это
+    /// шестиугольник во весь экран, и смотреть на него незачем, когда есть
+    /// собор Святого Петра.
+    ///
+    /// Снимок не обрезается по нижнему краю, а растворяется в фоне карточки:
+    /// жёсткая линия обреза делит экран пополам, и заголовок оказывается
+    /// под ней отдельной страницей. Размер задаётся прямоугольнику, а
+    /// подпись вешается поверх него — иначе фотография раздувает стопку
+    /// и подпись уезжает за край экрана.
+    private func photoHero(_ cover: Landmark, size: CGSize) -> some View {
+        Rectangle()
+            .fill(tint.opacity(0.16))
+            .frame(width: size.width, height: size.height)
+            .overlay { RemoteImage(url: cover.large ?? cover.small) }
+            .clipped()
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black, location: 0),
+                        .init(color: .black, location: 0.74),
+                        .init(color: .clear, location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .overlay(alignment: .bottomLeading) { heroCaption(cover) }
+    }
+
+    private func heroCaption(_ cover: Landmark) -> some View {
+        HStack(alignment: .bottom, spacing: DS.Space.sm) {
+            CountryHeroArt(country: country, status: status, accent: theme.accent)
+                .frame(width: 54, height: 38)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(cover.name)
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.ink)
+                    .lineLimit(1)
+                if let credit = cover.credit {
+                    Text(credit)
+                        .font(.system(size: 9))
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, DS.Space.screen)
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: - Содержимое
@@ -121,12 +192,12 @@ struct CountryCardView: View {
             }
             // «Что посмотреть» есть почти у каждой страны: это данные.
             // Архитектура и советы — только там, где они написаны руками.
-            if !countryLandmarks.isEmpty {
+            if !stripLandmarks.isEmpty {
                 landmarks
             }
             if let facts {
                 architecture(facts)
-            } else if countryLandmarks.isEmpty {
+            } else if stripLandmarks.isEmpty, heroPhoto == nil {
                 missingFacts
             }
             community
@@ -295,9 +366,11 @@ struct CountryCardView: View {
             if let cover = CityFacts.cover(for: city.id) {
                 RemoteImage(url: cover.small)
             } else {
-                Image(systemName: city.isCapital ? "star.fill" : "mappin")
+                // Всегда булавка: звезда у столицы и так стоит рядом с
+                // названием, и в пустом квадратике она читалась как оценка.
+                Image(systemName: "mappin")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(city.isCapital ? tint : DS.Color.inkTertiary)
+                    .foregroundStyle(DS.Color.inkTertiary)
             }
         }
         .frame(width: 44, height: 44)
@@ -306,6 +379,13 @@ struct CountryCardView: View {
     }
 
     private var countryLandmarks: [Landmark] { CountryLandmarks.all(for: country.id) }
+
+    /// Лента «что посмотреть» без того места, что уже стоит на обложке:
+    /// одна и та же фотография дважды на экране выглядит ошибкой загрузки.
+    private var stripLandmarks: [Landmark] {
+        guard let hero = heroPhoto else { return countryLandmarks }
+        return countryLandmarks.filter { $0.id != hero.id }
+    }
 
     /// Что посмотреть в стране — лентой с фотографиями.
     ///
@@ -317,7 +397,7 @@ struct CountryCardView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: DS.Space.sm) {
-                    ForEach(Array(countryLandmarks.enumerated()), id: \.element.id) { index, place in
+                    ForEach(Array(stripLandmarks.enumerated()), id: \.element.id) { index, place in
                         VStack(alignment: .leading, spacing: 5) {
                             ZStack {
                                 Rectangle().fill(tint.opacity(0.14))
@@ -420,7 +500,13 @@ struct CountryCardView: View {
                     .font(.system(size: DS.Size.iconSm, weight: .bold))
                     .foregroundStyle(DS.Color.ink)
                     .frame(width: DS.Size.hitTarget, height: DS.Size.hitTarget)
-                    .background(Circle().fill(.black.opacity(0.35)))
+                    // Стекло, а не серый кружок: кнопка лежит на фотографии,
+                    // и плотная плашка выглядит на ней заплаткой.
+                    .background {
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                            .overlay { Circle().strokeBorder(DS.Color.hairline, lineWidth: 1) }
+                    }
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
