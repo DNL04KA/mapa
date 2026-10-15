@@ -41,6 +41,13 @@ struct RootView: View {
         }
         .onAppear {
             Haptics.shared.prepare()
+            #if DEBUG
+            // Полотно и палитра из переменных окружения — чтобы снимать
+            // тёмную карту, не воюя с кэшем настроек симулятора.
+            let env = ProcessInfo.processInfo.environment
+            if let id = env["MAPA_SURFACE"] { settings.select(MapSurface.surface(id: id)) }
+            if let id = env["MAPA_PALETTE"] { settings.select(MapPalette.palette(id: id)) }
+            #endif
         }
     }
 
