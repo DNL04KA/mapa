@@ -1,35 +1,93 @@
 # MAPA
 
-Кинематографичная карта путешествий с маршрутами от сообщества.
+A cinematic travel map for iOS: mark the countries you have seen, plan routes
+city by city, and watch your share of the world fill in.
 
-## Как открыть проект
+Built with SwiftUI. The map is drawn from scratch — no MapKit, no tiles: country
+polygons are rendered in a `Canvas`, so the whole world works offline and the
+look is fully ours.
 
-`MAPA.xcodeproj` **генерируется** из содержимого папки `MAPA/`:
+<!-- Screenshots go here, as a section right below this line. Suggested order:
+     the world map with countries filled in, a country card, a route with
+     photos, the statistics panel, a frame from the exported video.
 
-```bash
-python3 Tools/generate_project.py
-open MAPA.xcodeproj
-```
+## Screenshots
 
-Добавил или удалил файл — просто перезапусти генератор. Так мы не правим
-`project.pbxproj` руками и не ловим конфликты в git.
+| | |
+| --- | --- |
+| ![Map](docs/screenshots/map.png) | ![Country](docs/screenshots/country.png) |
+| ![Route](docs/screenshots/route.png) | ![Stats](docs/screenshots/stats.png) |
+-->
 
-## Структура
+## Features
+
+- **World map** — 176 countries drawn as vector polygons, pan and pinch with a
+  clamped camera, country and city markers that appear with zoom.
+- **Travel status** — every country is *visited*, *living* or *wishlist*.
+  Wishlist never counts towards progress: it is a wish, not a fact.
+- **Statistics** — the share of the world's land you have explored, measured by
+  **area** rather than country count, with per-continent progress.
+- **Country cards** — a silhouette of the country, facts for 128 countries and
+  things to see in 412 cities.
+- **Routes** — multi-stop routes with days, a budget per stop in euros, notes, a
+  photo per point, visited flags, and reviews with a 1–5 rating.
+- **Search** — countries and cities by name, in both languages.
+- **Video export** — a vertical 1080×1920 clip of your map for social networks,
+  rendered frame by frame straight to disk.
+- **Profile** — avatar from a built-in icon set or your own photo; the backend is
+  optional (see below).
+- **Localization** — Russian and English, including plural rules.
+- **Accessibility** — Reduce Motion and Reduce Transparency are respected by
+  construction, see the design-system rules below.
+
+## Architecture
 
 ```
 MAPA/
-  App/            точка входа и корневой экран
-  Core/           модели и сервисы, не зависящие от UI
-  DesignSystem/   токены, движение, хаптика, компоненты
-  Features/       экраны
-  Resources/      ассеты
-Tools/            генератор Xcode-проекта
+  App/            entry point and root view
+  Core/           models and services, no UI
+  DesignSystem/   tokens, motion, haptics, components
+  Features/       screens (Map, Country, City, Route, Stats, Search,
+                  Export, Account, Theme, Gallery)
+  Resources/      geodata, facts, localization, assets
+MAPATests/        27 unit tests
+Tools/            Xcode project generator and data builders
+supabase/         optional backend: schema and setup notes
 ```
 
-## Границы стран
+Two ideas hold the project together.
 
-В бандле лежит `MAPA/Resources/world_110m.geojson` — это обработанный
-Natural Earth 1:110m (public domain). Пересобрать:
+**Storage sits behind protocols.** `TravelLogStorage` and `RouteStorage` are
+protocols; today both are backed by JSON files in Application Support with
+atomic writes and a `version` field in the payload, so moving a store to
+SwiftData or to a server is a one-line change at the call site and a one-off
+migration, not a rewrite. Marks and routes deliberately use *separate* stores:
+routes are meant to become shared, marks stay private.
+
+**Screens never hardcode style.** Colours, sizes, typography and animation all
+come from `DS.*`; every animation goes through `@Environment(\.dsMotion)`, which
+is how Reduce Motion works everywhere at once. Any `.ultraThinMaterial` ships
+with an opaque fallback for Reduce Transparency. Standard `List` and `Form` are
+not used.
+
+Route points store their own coordinates instead of referencing a city id, so a
+route survives any rebuild of the city catalogue and reads correctly even when
+shown without the map. Photos are referenced by file id — a route travels as
+JSON, and inlined megabytes would turn every read into a visible pause.
+
+## Data
+
+Both datasets come from [Natural Earth](https://www.naturalearthdata.com)
+(public domain) and are preprocessed into the bundle.
+
+| File | What it is |
+| --- | --- |
+| `Resources/world_110m.geojson` | 176 countries, 10 298 points, 200 KB — Natural Earth 1:110m with 163 of 168 attributes dropped, coordinates rounded, contours simplified, area computed per country |
+| `Resources/cities.json` | 871 cities from Natural Earth 1:50m, up to six per country, each with a Russian name |
+| `Resources/country-facts.json` | facts for 128 countries |
+| `Resources/city-facts.json` | things to see in 412 cities |
+
+Rebuild the borders:
 
 ```bash
 curl -L -o /tmp/ne_110m.geojson \
@@ -37,72 +95,66 @@ curl -L -o /tmp/ne_110m.geojson \
 python3 Tools/build_borders.py /tmp/ne_110m.geojson
 ```
 
-Скрипт выбрасывает 163 ненужных атрибута из 168, округляет координаты,
-слегка упрощает контуры и считает площадь каждой страны: 819 КБ → 197 КБ,
-176 стран, 10 298 точек.
-
-Данные 1:110m держат зум примерно до 14× — дальше береговая линия
-распадается на видимые отрезки. Отсюда `MapCamera.maxZoom`. Переход
-на 1:50m поднимет потолок ценой веса бандла.
-
-## Города
-
-`MAPA/Resources/cities.json` — 541 город из Natural Earth 1:50m
-(public domain), до шести на страну, все с русскими названиями. Пересобрать:
+Rebuild the cities:
 
 ```bash
-curl -L -o /tmp/ne_cities.geojson \\
+curl -L -o /tmp/ne_cities.geojson \
   https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_populated_places_simple.geojson
 cd Tools && python3 build_cities.py /tmp/ne_cities.geojson
 ```
 
-Русские названия лежат в `Tools/city_names_ru.py` — в исходных данных их нет.
-Скрипт сообщает, если в бандл попал город без перевода.
+Cities are picked six per country by significance, with capitals weighted four
+times by population. Russian names live in `Tools/city_names_ru.py` — the source
+data has none — and the script reports any city that reaches the bundle without
+a translation. City-states (Singapore, Monaco, Vatican) are skipped: the 1:110m
+borders give them no polygon to attach to. Antarctic stations are skipped too.
 
-Отбор: по шесть самых значимых городов на страну (столица весит вчетверо
-по населению). Полторы тысячи записей ради невидимого хвоста не нужны —
-на экране всё равно показывается не больше шести.
+The 1:110m data holds up to roughly 14× zoom; beyond that the coastline breaks
+into visible segments, which is what `MapCamera.maxZoom` is set from. Moving to
+1:50m would raise the ceiling at the cost of bundle size.
 
-Пропущены города-государства (Сингапур, Монако, Ватикан) — в границах 1:110m
-у них нет полигона, привязать их не к чему, — и антарктические станции.
+## Build and run
 
-## Хранение отметок
+Requirements: Xcode 14.2 or newer, iOS 16.0 deployment target.
 
-Отметки лежат за протоколом `TravelLogStorage`. Сейчас реализация одна —
-`FileTravelLogStorage`: JSON в Application Support, атомарная запись.
-
-SwiftData требует iOS 17 и Xcode 15, которых на этой машине пока нет.
-Когда они появятся, добавляется `SwiftDataTravelLogStorage`, и меняется
-одна строка — значение по умолчанию в `WorldMapViewModel.init`.
-Формат файла содержит поле `version`, так что перенос данных из JSON
-в SwiftData будет разовой миграцией, а не потерей.
-
-## Требования
-
-- Сейчас: Xcode 14.2, цель сборки iOS 16.0
-- Начиная с 4-го этапа (SwiftData) понадобится Xcode 15+ и macOS 13.5+;
-  тогда `DEPLOYMENT_TARGET` в `Tools/generate_project.py` поднимается до `17.0`.
-
-## Правила дизайн-системы
-
-1. В экранах нет литеральных цветов, размеров и `Animation` — только `DS.*`.
-2. Любая анимация проходит через `@Environment(\.dsMotion)`, чтобы Reduce Motion
-   работал сам собой.
-3. Материал (`.ultraThinMaterial`) всегда идёт с непрозрачным запасным вариантом
-   для Reduce Transparency.
-4. Стандартные `List` и `Form` не используются.
-
-## Проверки
+`MAPA.xcodeproj` is generated from the contents of `MAPA/` — the committed copy
+is there so the project opens in one click, but the generator is the source of
+truth. After adding or removing a file, rerun it instead of editing
+`project.pbxproj` by hand:
 
 ```bash
-# Тесты (19 штук): проекция, камера, чтение старых маршрутов,
-# статистика, целостность справочников.
+python3 Tools/generate_project.py
+open MAPA.xcodeproj
+```
+
+## Checks
+
+```bash
+# 27 unit tests: projection, camera, reading older route files,
+# statistics, catalogue integrity, search.
 xcodebuild test -project MAPA.xcodeproj -scheme MAPA \
   -destination 'platform=iOS Simulator,name=iPhone 14 Pro'
 
-# Города против границ стран: одна столица на страну, координаты в своей стране.
+# Cities against country borders: one capital per country, coordinates inside
+# the right country.
 python3 Tools/check_cities.py
 
-# Строки интерфейса: собрать ru-таблицу и показать, чего нет в английской.
+# Interface strings: build the Russian table and report what the English one
+# is missing.
 python3 Tools/extract_strings.py
 ```
+
+## Backend (optional)
+
+The app is fully usable with no server at all: map, routes and ratings live on
+the device. A Supabase project adds only what needs a second person — shared
+routes, avatars, photos.
+
+Credentials are read at runtime from `MAPA/Resources/Supabase.plist`, which is
+**not** in the repository and must not be: the key belongs to one project, and
+keeping it in shared code is how keys end up public. Setup steps and the SQL
+schema are in [`supabase/README.md`](supabase/README.md).
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). The bundled Natural Earth data is public domain.
