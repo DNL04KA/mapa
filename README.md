@@ -128,10 +128,20 @@ python3 Tools/generate_project.py
 open MAPA.xcodeproj
 ```
 
+## App icon
+
+Drawn by a script from the same borders the app ships, in an orthographic
+projection, with a few countries filled in the app's own colours. Rerun it
+after changing the palette or the marked countries:
+
+```bash
+swift Tools/make_icon.swift
+```
+
 ## Checks
 
 ```bash
-# 27 unit tests: projection, camera, reading older route files,
+# 34 unit tests: projection, camera, hit testing, reading older route files,
 # statistics, catalogue integrity, search.
 xcodebuild test -project MAPA.xcodeproj -scheme MAPA \
   -destination 'platform=iOS Simulator,name=iPhone 14 Pro'

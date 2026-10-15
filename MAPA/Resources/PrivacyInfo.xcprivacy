@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Отслеживания нет: ни рекламных сетей, ни идентификаторов,
+	     ни обмена данными с кем бы то ни было. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!-- Ничего не собираем. Отметки, маршруты и дом лежат на телефоне,
+	     наружу уходит только запрос фотографии на Викисклад — без
+	     идентификаторов и без того, кто её попросил. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<!-- API, для которых Apple требует назвать причину. -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<!-- UserDefaults: выбранное полотно, палитра и отметка о том,
+			     что первый запуск уже показан. Только внутри приложения. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -87,6 +87,7 @@
 		8A7CF0654BADFCA4A83E6173 /* WorldStatsPanel.swift in Build */ = {isa = PBXBuildFile; fileRef = 0FED3F1BE9EFC9EB630FAAA0 /* WorldStatsPanel.swift */; };
 		71D3A907F58494B928F5C328 /* ThemePicker.swift in Build */ = {isa = PBXBuildFile; fileRef = 218AE410B899D1F5B775F724 /* ThemePicker.swift */; };
 		AEFBC57F2BF28BB25D74EFA5 /* Assets.xcassets in Build */ = {isa = PBXBuildFile; fileRef = B7E0C136091E39F127AF9EE0 /* Assets.xcassets */; };
+		9F734576494B54EA8763A7C3 /* PrivacyInfo.xcprivacy in Build */ = {isa = PBXBuildFile; fileRef = AA5BD43C2A78FF9EB59C01F8 /* PrivacyInfo.xcprivacy */; };
 		0434ACC9431334B508D47030 /* cities.json in Build */ = {isa = PBXBuildFile; fileRef = A67808D66A0DB355339DFE92 /* cities.json */; };
 		52E3B2F21CDF832E23C2CCF9 /* city-facts.json in Build */ = {isa = PBXBuildFile; fileRef = 1E69D57D5746703406DD49DD /* city-facts.json */; };
 		AFD99FB5F2DBB3FEC8468971 /* country-facts.json in Build */ = {isa = PBXBuildFile; fileRef = 5A867409473657AAADA831EC /* country-facts.json */; };
@@ -183,6 +184,7 @@
 		0FED3F1BE9EFC9EB630FAAA0 /* WorldStatsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldStatsPanel.swift; sourceTree = "<group>"; };
 		218AE410B899D1F5B775F724 /* ThemePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePicker.swift; sourceTree = "<group>"; };
 		B7E0C136091E39F127AF9EE0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA5BD43C2A78FF9EB59C01F8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A67808D66A0DB355339DFE92 /* cities.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cities.json; sourceTree = "<group>"; };
 		1E69D57D5746703406DD49DD /* city-facts.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = city-facts.json; sourceTree = "<group>"; };
 		5A867409473657AAADA831EC /* country-facts.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = country-facts.json; sourceTree = "<group>"; };
@@ -547,6 +549,7 @@
 			isa = PBXGroup;
 			children = (
 				B7E0C136091E39F127AF9EE0 /* Assets.xcassets */,
+				AA5BD43C2A78FF9EB59C01F8 /* PrivacyInfo.xcprivacy */,
 				A67808D66A0DB355339DFE92 /* cities.json */,
 				1E69D57D5746703406DD49DD /* city-facts.json */,
 				5A867409473657AAADA831EC /* country-facts.json */,
@@ -695,6 +698,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AEFBC57F2BF28BB25D74EFA5 /* Assets.xcassets */,
+				9F734576494B54EA8763A7C3 /* PrivacyInfo.xcprivacy */,
 				0434ACC9431334B508D47030 /* cities.json */,
 				52E3B2F21CDF832E23C2CCF9 /* city-facts.json */,
 				AFD99FB5F2DBB3FEC8468971 /* country-facts.json */,

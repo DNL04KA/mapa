@@ -27,7 +27,7 @@ PROJ_DIR = os.path.join(ROOT, APP + ".xcodeproj")
 
 SOURCE_EXT = {".swift"}
 RESOURCE_EXT = {".xcassets", ".json", ".geojson", ".strings", ".stringsdict",
-                ".xcstrings", ".ttf", ".otf", ".png"}
+                ".xcstrings", ".ttf", ".otf", ".png", ".xcprivacy"}
 BUNDLE_DIRS = {".xcassets"}          # папки, которые Xcode видит как единый файл
 SKIP = {".DS_Store"}
 
@@ -73,6 +73,7 @@ def file_type(name: str) -> str:
         ".stringsdict": "text.plist.stringsdict",
         ".xcstrings": "text.json.xcstrings",
         ".png": "image.png",
+        ".xcprivacy": "text.xml",
         ".ttf": "file",
         ".otf": "file",
     }.get(ext, "text")
