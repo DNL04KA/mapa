@@ -69,4 +69,24 @@ final class SearchTests: XCTestCase {
             XCTAssertFalse(found.isEmpty, "по запросу «\(query)» ничего")
         }
     }
+
+    /// Первый запуск спрашивает город, где человек живёт, и ищет его тем же
+    /// индексом. Если столица не находится по собственному названию, шаг
+    /// бесполезен — а проверить руками сто девяносто семь столиц нельзя.
+    func testКаждаяСтолицаНаходитсяПоСвоемуНазванию() async throws {
+        let world = try await WorldGeometryLoader.loadFromBundle().geometry
+        let cities = try CityLoader.loadFromBundle()
+        let index = SearchIndex(countries: world.countries, cities: cities)
+
+        var lost: [String] = []
+        for city in cities where city.isCapital {
+            // Три первых: по запросу «Сингапур» страна законно идёт
+            // впереди города, а «Виктория» есть и на Сейшелах, и в Канаде.
+            let top = index.search(city.nameRU).prefix(3)
+            if !top.contains(where: { $0 == .city(city) }) {
+                lost.append(city.nameRU)
+            }
+        }
+        XCTAssertTrue(lost.isEmpty, "не находятся: \(lost.sorted())")
+    }
 }

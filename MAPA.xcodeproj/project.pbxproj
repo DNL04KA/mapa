@@ -79,6 +79,7 @@
 		5D63D16135F0B75038906148 /* MapMarkersLayer.swift in Build */ = {isa = PBXBuildFile; fileRef = E13BB4155573412560D686E5 /* MapMarkersLayer.swift */; };
 		5A31581C31A5F54295D538F1 /* WorldMapView.swift in Build */ = {isa = PBXBuildFile; fileRef = B2054ABE1A780B8A367FB958 /* WorldMapView.swift */; };
 		409398A61BFD5D7EF67F3F75 /* WorldMapViewModel.swift in Build */ = {isa = PBXBuildFile; fileRef = DD1C20F75781418CD8F49B1A /* WorldMapViewModel.swift */; };
+		4862264EDC307E5C1E0392E5 /* OnboardingView.swift in Build */ = {isa = PBXBuildFile; fileRef = 9741BFDFBD10242692546840 /* OnboardingView.swift */; };
 		F30305ABE93A38888CBBF795 /* RatingStars.swift in Build */ = {isa = PBXBuildFile; fileRef = 4E11AD648F2CB36EAD376AEC /* RatingStars.swift */; };
 		1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift in Build */ = {isa = PBXBuildFile; fileRef = 0850B19A6F2435CAC30DD278 /* RoutePanel.swift */; };
 		644B9A95B247A9EBC96A839E /* RoutesSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */; };
@@ -174,6 +175,7 @@
 		E13BB4155573412560D686E5 /* MapMarkersLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapMarkersLayer.swift; sourceTree = "<group>"; };
 		B2054ABE1A780B8A367FB958 /* WorldMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldMapView.swift; sourceTree = "<group>"; };
 		DD1C20F75781418CD8F49B1A /* WorldMapViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldMapViewModel.swift; sourceTree = "<group>"; };
+		9741BFDFBD10242692546840 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4E11AD648F2CB36EAD376AEC /* RatingStars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingStars.swift; sourceTree = "<group>"; };
 		0850B19A6F2435CAC30DD278 /* RoutePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePanel.swift; sourceTree = "<group>"; };
 		16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesSheet.swift; sourceTree = "<group>"; };
@@ -463,6 +465,14 @@
 			path = Map;
 			sourceTree = "<group>";
 		};
+		EBF1A55518912ED7622846DD /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				9741BFDFBD10242692546840 /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
 		1384448E1BCD81507781F281 /* Route */ = {
 			isa = PBXGroup;
 			children = (
@@ -506,6 +516,7 @@
 				935A1D23F486F234CC406266 /* Export */,
 				C16A42EA4F357C26DDD6F68D /* Gallery */,
 				7BAA875475B7F22BF4305057 /* Map */,
+				EBF1A55518912ED7622846DD /* Onboarding */,
 				1384448E1BCD81507781F281 /* Route */,
 				5A6D9DAD263B138D6E3D0426 /* Search */,
 				789F485B252C9FA66D92CCB7 /* Stats */,
@@ -774,6 +785,7 @@
 				5D63D16135F0B75038906148 /* MapMarkersLayer.swift */,
 				5A31581C31A5F54295D538F1 /* WorldMapView.swift */,
 				409398A61BFD5D7EF67F3F75 /* WorldMapViewModel.swift */,
+				4862264EDC307E5C1E0392E5 /* OnboardingView.swift */,
 				F30305ABE93A38888CBBF795 /* RatingStars.swift */,
 				1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift */,
 				644B9A95B247A9EBC96A839E /* RoutesSheet.swift */,

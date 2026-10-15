@@ -8,6 +8,8 @@ struct WorldMapView: View {
     @Environment(\.dsMotion) private var motion
 
     @State private var showsDebug = false
+    /// Первый запуск показывается один раз и больше не возвращается.
+    @AppStorage("onboarding.done") private var onboardingDone = false
     @State private var statsExpanded = false
     @State private var showsThemes = false
     @State private var showsAccount = false
@@ -36,6 +38,7 @@ struct WorldMapView: View {
             overlays
             sheets
             countryCard
+            onboarding
         }
         .environment(\.mapTheme, activeTheme)
         .onChange(of: scenePhase) { phase in
@@ -343,6 +346,30 @@ struct WorldMapView: View {
         themeSheet
         accountSheet
         searchSheet
+    }
+
+    /// Первый запуск: зачем это всё и откуда ты.
+    @ViewBuilder
+    private var onboarding: some View {
+        if !onboardingDone, model.state == .ready, let geometry = model.geometry {
+            OnboardingView(
+                index: SearchIndex(countries: geometry.countries, cities: model.cities),
+                accent: activeTheme.accent,
+                countryName: { geometry.country(id: $0)?.displayName ?? "" },
+                onPickHome: { city in
+                    model.setHome(at: city, reduceMotion: motion.reduceMotion)
+                    // Камера едет на страну, а не на сам город: дом надо
+                    // увидеть на карте, а не упереться в него носом.
+                    if let country = geometry.country(id: city.countryID) {
+                        model.focus(on: country, reduceMotion: motion.reduceMotion)
+                    }
+                },
+                onFinish: {
+                    withAnimation(motion.animation(.smooth)) { onboardingDone = true }
+                }
+            )
+            .zIndex(6)
+        }
     }
 
     /// Поиск страны или города.
