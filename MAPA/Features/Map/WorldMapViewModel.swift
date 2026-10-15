@@ -595,6 +595,37 @@ final class WorldMapViewModel: ObservableObject {
         rebuildRouteLine()
     }
 
+    /// Наброски по странам, которые человек отметил.
+    ///
+    /// Сначала «хочу»: набросок полезнее всего там, куда ещё собираешься.
+    /// Потом «был» — по ним ездят второй раз и достраивают маршрут.
+    /// Страны без городов и с одной точкой отсеиваются: маршрут из одного
+    /// города — это не маршрут.
+    var suggestedCountryRoutes: [CountrySuggestion] {
+        guard let geometry else { return [] }
+
+        let order: [TravelStatus] = [.wishlist, .visited, .living]
+        let marked = travelLog.statuses
+            .compactMap { id, status -> (Country, TravelStatus)? in
+                geometry.country(id: id).map { ($0, status) }
+            }
+            .sorted { lhs, rhs in
+                let left = order.firstIndex(of: lhs.1) ?? order.count
+                let right = order.firstIndex(of: rhs.1) ?? order.count
+                if left != right { return left < right }
+                return lhs.0.areaKm2 > rhs.0.areaKm2
+            }
+
+        var result: [CountrySuggestion] = []
+        for (country, _) in marked {
+            let stops = CountryRoutePlanner.suggest(for: cities(of: country))
+            guard stops.count > 1 else { continue }
+            result.append(CountrySuggestion(country: country, stops: stops))
+            if result.count == 6 { break }
+        }
+        return result
+    }
+
     /// Взять набросок по стране себе.
     ///
     /// Сразу сохраняем, а не оставляем «черновиком до закрытия»: человек уже

@@ -110,3 +110,12 @@ enum CountryRoutePlanner {
         )
     }
 }
+
+/// Набросок по конкретной стране — то, что показывает список маршрутов.
+struct CountrySuggestion: Identifiable, Equatable {
+    let country: Country
+    let stops: [CountryRoutePlanner.Stop]
+
+    var id: String { country.id }
+    var totalDays: Int { stops.reduce(0) { $0 + $1.days } }
+}

@@ -25,6 +25,7 @@
 "В бандле нет файла cities.json" = "cities.json is missing from the bundle";
 "Весь мир" = "Whole world";
 "Весь мир: %@ процента" = "Whole world: %@ percent";
+"Взять маршрут по стране: %@" = "Take the route for %@";
 "Взять себе" = "Make it mine";
 "Винтаж" = "Vintage";
 "Волны дюн" = "Dune waves";
@@ -154,6 +155,7 @@
 "Переставить %@" = "Move %@";
 "Платное. Коснись, чтобы примерить" = "Paid. Tap to try it on";
 "Плетение холста" = "Canvas weave";
+"По странам" = "By country";
 "Поделиться" = "Share";
 "Поделиться видео" = "Share video";
 "Подробнее о стране" = "More about the country";
@@ -199,6 +201,7 @@
 "Снять отметку" = "Remove the mark";
 "Собираем видео" = "Building the video";
 "Собираем мир" = "Assembling the world";
+"Собрано из главных городов" = "Built from the main cities";
 "Советуют заложить" = "Suggested to allow";
 "Сохранить" = "Save";
 "Сохранить имя" = "Save name";
@@ -227,7 +230,9 @@
 "Убрать отметку" = "Remove the mark";
 "Убрать отметку дома" = "Remove the home mark";
 "Уголь" = "Charcoal";
+"Удалить" = "Delete";
 "Удалить маршрут" = "Delete route";
+"Удалить маршрут?" = "Delete this route?";
 "Удалить отзыв" = "Delete review";
 "Уже видел своими глазами" = "Already seen with my own eyes";
 "Успех" = "Success";

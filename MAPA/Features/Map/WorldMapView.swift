@@ -200,6 +200,7 @@ struct WorldMapView: View {
         if showsRoutes {
             RoutesSheet(
                 routes: model.routes,
+                suggestions: model.suggestedCountryRoutes,
                 accent: activeTheme.accent,
                 onOpen: { route in
                     withAnimation(motion.animation(.smooth)) { showsRoutes = false }
@@ -212,6 +213,12 @@ struct WorldMapView: View {
                     model.startRoute(reduceMotion: motion.reduceMotion)
                 },
                 onDelete: { model.deleteRoute($0) },
+                onTakeSuggestion: { suggestion in
+                    withAnimation(motion.animation(.smooth)) { showsRoutes = false }
+                    model.takeSuggestedRoute(suggestion.stops, for: suggestion.country,
+                                             reduceMotion: motion.reduceMotion)
+                    routeExpanded = true
+                },
                 onDismiss: { withAnimation(motion.animation(.smooth)) { showsRoutes = false } }
             )
             .themedPanel(activeTheme)
