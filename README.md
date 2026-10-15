@@ -141,8 +141,8 @@ swift Tools/make_icon.swift
 ## Checks
 
 ```bash
-# 34 unit tests: projection, camera, hit testing, reading older route files,
-# statistics, catalogue integrity, search.
+# 39 unit tests: projection, camera, hit testing, type scale, reading older
+# route files, statistics, catalogue integrity, search.
 xcodebuild test -project MAPA.xcodeproj -scheme MAPA \
   -destination 'platform=iOS Simulator,name=iPhone 14 Pro'
 

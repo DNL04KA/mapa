@@ -134,6 +134,16 @@ struct WorldMapView: View {
                         NoiseOverlay(opacity: activeTheme.grain)
                     }
 
+                    // Карта нарисована в `Canvas`, и для VoiceOver это одна
+                    // картинка: ткнуть в Италию на ощупь невозможно. Пусть
+                    // она хотя бы честно скажет, что это карта, и отправит
+                    // туда, где страну можно открыть без прицеливания.
+                    Color.clear
+                        .allowsHitTesting(false)
+                        .accessibilityElement()
+                        .accessibilityLabel("Карта мира")
+                        .accessibilityHint("Чтобы открыть страну или город, воспользуйся поиском")
+
                     CityMarkersLayer(
                         camera: model.camera,
                         cities: model.citiesOfSelectedCountry,
@@ -612,13 +622,19 @@ struct WorldMapView: View {
                 Image(systemName: icon)
                     .font(.system(size: 17, weight: .medium))
                 Text(title)
-                    .font(.system(size: 10, weight: .medium))
+                    // Растёт вместе с настройкой телефона, но не до конца:
+                    // панель лежит поверх карты, и выше трети экрана ей
+                    // забираться незачем.
+                    .font(DS.FontStyle(10, .medium, .default, .caption2, cap: 1.2))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.75)
+                    // Зазор между подписями: на крупном шрифте «Поделиться»
+                    // и «Оформление» слипались в одно слово.
+                    .padding(.horizontal, 3)
             }
             .foregroundStyle(isActive ? activeTheme.accent : activeTheme.mapInk.opacity(0.68))
             .frame(maxWidth: .infinity)
-            .frame(height: 42)
+            .frame(minHeight: 42)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -663,7 +679,7 @@ struct WorldMapView: View {
                     Text(routeSummary(route))
                         .font(DS.Font.micro)
                         .foregroundStyle(activeTheme.mapInk.opacity(0.6))
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
 
                 Spacer(minLength: 0)

@@ -130,9 +130,12 @@ struct WorldStatsPanel: View {
             HStack(alignment: .firstTextBaseline, spacing: theme.isLight ? 3 : 1) {
                 AnimatedNumber(
                     value: statistics.worldPercent,
+                    // Самое крупное число в приложении: растёт вместе с
+                    // настройкой шрифта, но заметно медленнее остального —
+                    // иначе проценты выдавливают с экрана всё остальное.
                     font: theme.isLight
-                        ? .system(size: 62, weight: .light)
-                        : .system(size: 58, weight: .bold, design: .rounded),
+                        ? DS.FontStyle(62, .light, .default, .largeTitle, cap: 1.25)
+                        : DS.FontStyle(58, .bold, .rounded, .largeTitle, cap: 1.25),
                     style: theme.isLight
                         ? AnyShapeStyle(theme.mapInk)
                         : AnyShapeStyle(

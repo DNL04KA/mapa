@@ -134,7 +134,7 @@ struct GradientSection: View {
 
 struct TypographySection: View {
 
-    private let samples: [(String, Font)] = [
+    private let samples: [(String, DS.FontStyle)] = [
         ("hero · 56", DS.Font.hero),
         ("display · 36", DS.Font.display),
         ("title · 26", DS.Font.title),

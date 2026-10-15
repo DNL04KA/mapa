@@ -235,7 +235,10 @@ struct CountryCardView: View {
         var parts: [String] = []
         if let continent = country.continent { parts.append(continent.title) }
         if country.areaKm2 > 0 {
-            parts.append("\(Self.areaFormatter.string(from: NSNumber(value: country.areaKm2)) ?? "") км²")
+            let area = Self.areaFormatter.string(from: NSNumber(value: country.areaKm2)) ?? ""
+            // Единица площади переводится: на английском телефоне в подписи
+            // к стране стояло «404 322 км²».
+            parts.append(String(format: NSLocalizedString("%@ км²", comment: ""), area))
         }
         parts.append(country.name)
         return parts.joined(separator: " · ")
@@ -261,19 +264,28 @@ struct CountryCardView: View {
         }
     }
 
-    private func tile(value: String, unit: String, caption: String, icon: String) -> some View {
+    /// `LocalizedStringKey`, а не `String`: `Text` со строковой переменной
+    /// перевод не ищет, и на английском телефоне в карточке страны стояло
+    /// «дней» и «Советуют заложить» — при том, что перевод лежал рядом.
+    private func tile(value: String, unit: LocalizedStringKey,
+                      caption: LocalizedStringKey, icon: String) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             Image(systemName: icon)
                 .font(.system(size: DS.Size.iconSm, weight: .semibold))
                 .foregroundStyle(tint)
 
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value)
-                    .font(DS.Font.numeral)
-                    .foregroundStyle(DS.Color.ink)
-                Text(unit)
-                    .font(DS.Font.caption)
-                    .foregroundStyle(DS.Color.inkSecondary)
+            // На крупном шрифте «€90–160» и «в день» в одну строку не
+            // помещаются, и цена превращалась в «€90…». Если не влезает —
+            // единица уходит под число, а не обрезается.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    tileValue(value)
+                    tileUnit(unit)
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    tileValue(value)
+                    tileUnit(unit)
+                }
             }
             .lineLimit(1)
             .minimumScaleFactor(0.6)
@@ -286,6 +298,18 @@ struct CountryCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .dsGlass(radius: DS.Radius.md, shadow: .low)
         .accessibilityElement(children: .combine)
+    }
+
+    private func tileValue(_ value: String) -> some View {
+        Text(value)
+            .font(DS.Font.numeral)
+            .foregroundStyle(DS.Color.ink)
+    }
+
+    private func tileUnit(_ unit: LocalizedStringKey) -> some View {
+        Text(unit)
+            .font(DS.Font.caption)
+            .foregroundStyle(DS.Color.inkSecondary)
     }
 
     /// Города страны. Отсюда можно провалиться в город — карта подъедет,

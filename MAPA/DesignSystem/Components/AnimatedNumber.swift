@@ -12,14 +12,14 @@ public struct AnimatedNumber: View, Animatable {
 
     private var value: Double
     private let format: (Double) -> String
-    private let font: Font
+    private let font: DS.FontStyle
     /// Не `Color`, а `AnyShapeStyle`: главное число на карте залито градиентом,
     /// и ради него не хочется заводить второй почти такой же компонент.
     private let style: AnyShapeStyle
 
     public init(
         value: Double,
-        font: Font = DS.Font.display,
+        font: DS.FontStyle = DS.Font.display,
         style: AnyShapeStyle = AnyShapeStyle(DS.Color.ink),
         format: @escaping (Double) -> String = { String(Int($0.rounded())) }
     ) {
@@ -47,7 +47,7 @@ public extension AnimatedNumber {
     /// Процент с одним знаком после запятой — формат статистики «% мира».
     static func percent(
         _ value: Double,
-        font: Font = DS.Font.hero,
+        font: DS.FontStyle = DS.Font.hero,
         style: AnyShapeStyle = AnyShapeStyle(DS.Color.ink)
     ) -> AnimatedNumber {
         AnimatedNumber(value: value, font: font, style: style) { number in

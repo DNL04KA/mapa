@@ -101,6 +101,7 @@
 		C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C98420008F958B62B6FF46 /* RouteCodableTests.swift */; };
 		7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54AB977091945F179EC0145 /* SearchTests.swift */; };
 		CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */; };
+		C40BBF34D2A60A57BB75ED9F /* TypographyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C12976E3B9D85867F2A8F4 /* TypographyTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -199,6 +200,7 @@
 		70C98420008F958B62B6FF46 /* RouteCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCodableTests.swift; sourceTree = "<group>"; };
 		E54AB977091945F179EC0145 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
 		91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsTests.swift; sourceTree = "<group>"; };
+		F0C12976E3B9D85867F2A8F4 /* TypographyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypographyTests.swift; sourceTree = "<group>"; };
 		E16DD6CC4D7483ABC0CDDEFB /* MAPATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MAPATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -598,6 +600,7 @@
 				70C98420008F958B62B6FF46 /* RouteCodableTests.swift */,
 				E54AB977091945F179EC0145 /* SearchTests.swift */,
 				91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */,
+				F0C12976E3B9D85867F2A8F4 /* TypographyTests.swift */,
 			);
 			path = MAPATests;
 			sourceTree = "<group>";
@@ -808,6 +811,7 @@
 				C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */,
 				7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */,
 				CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */,
+				C40BBF34D2A60A57BB75ED9F /* TypographyTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

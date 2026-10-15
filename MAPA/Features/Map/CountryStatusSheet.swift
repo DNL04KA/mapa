@@ -105,7 +105,10 @@ struct CountryStatusSheet: View {
             parts.append(continent.title)
         }
         if country.areaKm2 > 0 {
-            parts.append("\(Self.areaFormatter.string(from: NSNumber(value: country.areaKm2)) ?? "") км²")
+            let area = Self.areaFormatter.string(from: NSNumber(value: country.areaKm2)) ?? ""
+            // Единица площади переводится: на английском телефоне в подписи
+            // к стране стояло «404 322 км²».
+            parts.append(String(format: NSLocalizedString("%@ км²", comment: ""), area))
         }
         return parts.joined(separator: " · ")
     }

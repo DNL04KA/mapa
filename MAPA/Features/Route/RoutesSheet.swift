@@ -10,6 +10,7 @@ import SwiftUI
 struct RoutesSheet: View {
 
     @Environment(\.dsMotion) private var motion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     let routes: [Route]
     /// Наброски по странам, которые человек отметил.
@@ -116,7 +117,10 @@ struct RoutesSheet: View {
     private var contentHeight: CGFloat {
         let own = routes.isEmpty ? 120 : CGFloat(routes.count) * 84 + 34
         let country = suggestions.isEmpty ? 0 : CGFloat(suggestions.count) * 84 + 58
-        return min(430, own + country + 210)
+        // На крупном шрифте строка занимает полторы высоты, и в прежние
+        // четыреста тридцать точек помещалось полторы карточки.
+        let ceiling: CGFloat = typeSize.isAccessibilitySize ? 560 : 430
+        return min(ceiling, own + country + 210)
     }
 
     private var panelFill: AnyShapeStyle {
