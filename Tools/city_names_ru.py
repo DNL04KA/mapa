@@ -310,3 +310,18 @@ CITY_NAMES_RU.update({
     "Toulon": "Тулон", "Wiesbaden": "Висбаден", "Wrocław": "Вроцлав",
     "Wuppertal": "Вупперталь",
 })
+
+# Столицы островов и карликовых государств, которые наконец появились
+# на карте: Сингапур, Мальдивы, Мальта, Монако и прочие.
+CITY_NAMES_RU.update({
+    "Andorra": "Андорра-ла-Велья", "Apia": "Апиа", "Bridgetown": "Бриджтаун",
+    "Castries": "Кастри", "Curepipe": "Кюрпип", "Hong Kong": "Гонконг",
+    "Kingstown": "Кингстаун", "Koror": "Корор", "Macau": "Макао",
+    "Malé": "Мале", "Manama": "Манама", "Melekeok": "Мелекеок",
+    "Mindelo": "Минделу", "Monaco": "Монако", "Oranjestad": "Ораньестад",
+    "Papeete": "Папеэте", "Port Louis": "Порт-Луи", "Praia": "Прая",
+    "Roseau": "Розо", "Saint George's": "Сент-Джорджес", "Saint John's": "Сент-Джонс",
+    "San Marino": "Сан-Марино", "Singapore": "Сингапур", "Vaduz": "Вадуц",
+    "Valletta": "Валлетта", "Vatican City": "Ватикан", "Victoria": "Виктория",
+    "Willemstad": "Виллемстад",
+})

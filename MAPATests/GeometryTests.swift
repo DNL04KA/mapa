@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import MAPA
 
@@ -64,5 +65,44 @@ final class GeometryTests: XCTestCase {
 
         XCTAssertEqual(back.x, unit.x, accuracy: 0.0001)
         XCTAssertEqual(back.y, unit.y, accuracy: 0.0001)
+    }
+
+    // MARK: - Попадание по мелким странам
+
+    /// Две страны: большая и вложенная в неё крошечная — как Ватикан в Риме.
+    private func nested() -> WorldGeometry {
+        func square(_ box: CGRect) -> Path { Path(box) }
+        let big = CGRect(x: 0.4, y: 0.4, width: 0.2, height: 0.2)
+        let tiny = CGRect(x: 0.49, y: 0.49, width: 0.002, height: 0.002)
+        return WorldGeometry(countries: [
+            Country(id: "BIG", name: "Big", nameRU: "Большая", continent: .europe,
+                    areaKm2: 500_000, flagHue: nil, path: square(big), bounds: big,
+                    mainBounds: big, anchor: CGPoint(x: 0.5, y: 0.5), pointCount: 4),
+            Country(id: "TNY", name: "Tiny", nameRU: "Крошечная", continent: .europe,
+                    areaKm2: 2, flagHue: nil, path: square(tiny), bounds: tiny,
+                    mainBounds: tiny, anchor: CGPoint(x: 0.491, y: 0.491), pointCount: 4)
+        ])
+    }
+
+    func testВложеннаяСтранаВыигрываетУБольшой() {
+        // Точка внутри обеих. Раньше побеждала та, что встретилась первой,
+        // и во Ватикан нельзя было попасть никогда.
+        let hit = nested().country(at: CGPoint(x: 0.4905, y: 0.4905), tolerance: 0)
+        XCTAssertEqual(hit?.id, "TNY")
+    }
+
+    func testМелкойСтранеДаютПлощадкуСПалец() {
+        // Зум, на котором крошечная страна — семь точек экрана: мимо неё
+        // легко промахнуться, и промах рядом должен достаться ей.
+        let tolerance: CGFloat = 0.002 / 7 * 20
+        let hit = nested().country(at: CGPoint(x: 0.4925, y: 0.491), tolerance: tolerance)
+        XCTAssertEqual(hit?.id, "TNY")
+    }
+
+    func testНаКартеМираМелкаяСтранаНеКрадётТап() {
+        // Тот же промах, но на карте мира: крошечная страна там меньше
+        // точки, и отдавать ей половину большой страны нельзя.
+        let hit = nested().country(at: CGPoint(x: 0.45, y: 0.45), tolerance: 0.05)
+        XCTAssertEqual(hit?.id, "BIG")
     }
 }

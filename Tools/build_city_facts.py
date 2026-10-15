@@ -21,9 +21,39 @@ import wikidata as wd
 
 ROOT = Path(__file__).resolve().parent.parent
 CITIES = ROOT / "MAPA" / "Resources" / "cities.json"
+BORDERS = ROOT / "MAPA" / "Resources" / "world_110m.geojson"
 OUT = ROOT / "MAPA" / "Resources" / "city-facts.json"
 
 PER_CITY = 4
+
+
+def country_extents():
+    """Половина охвата страны в градусах — чтобы не заглядывать за границу.
+
+    Нужно только карликам: у Люксембурга охват вдвое больше любого радиуса
+    и ничего не меняет, а у Монако и Ватикана он и есть весь радиус.
+    """
+    data = json.loads(BORDERS.read_text(encoding="utf-8"))
+    out = {}
+    for feature in data["features"]:
+        xs, ys = [], []
+        stack = [feature["geometry"]["coordinates"]]
+        while stack:
+            node = stack.pop()
+            if node and isinstance(node[0], (int, float)):
+                xs.append(node[0]); ys.append(node[1])
+            else:
+                stack.extend(node)
+        if xs:
+            out[feature["properties"]["id"]] = max(
+                (max(xs) - min(xs)) / 2, (max(ys) - min(ys)) / 2)
+    return out
+
+
+def country_names():
+    data = json.loads(BORDERS.read_text(encoding="utf-8"))
+    return {f["properties"]["name_ru"] for f in data["features"]
+            if f["properties"].get("name_ru")}
 
 
 def main():
@@ -37,20 +67,25 @@ def main():
     if limit:
         cities = cities[:limit]
 
+    extents = country_extents()
+    # Названия стран — не достопримечательности: в списке Рима первым
+    # местом стоял «Ватикан», который у нас и сам страна на карте.
+    countries = country_names()
     include, exclude, strong = wd.classifiers()
     print(f"классов: смотрим {len(include)}, пропускаем {len(exclude)}, "
           f"прощаем {len(strong)}", flush=True)
 
     raw, done = {}, 0
     for city in cities:
-        data = wd.near_city(city)
+        data = wd.near_city(city, cap=extents.get(city["country"]))
         done += 1
         if data is None:
             continue
 
         items, seen = [], set()
         for row in data.get("results", {}).get("bindings", []):
-            item = wd.accept(row, include, exclude, strong, skip_names={city["name_ru"]})
+            item = wd.accept(row, include, exclude, strong,
+                             skip_names=countries | {city["name_ru"]})
             if not item or item["ru"] in seen:
                 continue
             seen.add(item["ru"])

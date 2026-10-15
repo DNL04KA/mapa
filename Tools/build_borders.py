@@ -11,8 +11,15 @@
     curl -L -o ne_110m.geojson \\
       https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson
 
+Отдельная беда — Сингапур, Мальдивы, Мальта, Ватикан и ещё двадцать
+островных и карликовых государств. В масштабе 1:110m у них просто нет
+полигона, и отметить их на карте было нельзя вовсе. Они добираются из
+подробного набора 1:50m вторым аргументом: берутся только те, кого нет
+в основном файле, и упрощаются мягче — обычный порог стёр бы Ватикан
+целиком.
+
 Запуск:
-    python3 Tools/build_borders.py ne_110m.geojson
+    python3 Tools/build_borders.py ne_110m.geojson [ne_50m.geojson]
 """
 
 import json
@@ -83,18 +90,57 @@ def douglas_peucker(points, epsilon):
     return [p for p, k in zip(points, keep) if k]
 
 
-def clean_ring(ring):
+# Кого добираем из подробного набора.
+#
+# Список именной, а не «всё, чего нет»: в 1:50m лежит ещё полсотни
+# территорий вроде Британской территории в Индийском океане, и вместе они
+# засыпали бы карту крапинками, в которые невозможно попасть пальцем.
+# Здесь только места, куда ездят: острова, курорты и карликовые государства,
+# которые человек захочет отметить.
+SUPPLEMENT_IDS = {
+    "SGP",  # Сингапур
+    "HKG", "MAC",                      # Гонконг и Макао
+    "MDV", "MUS", "SYC", "MLT", "CPV",  # острова-курорты
+    "BRB", "LCA", "VCT", "ATG", "DMA", "GRD", "CUW", "ABW",  # Карибы
+    "PYF", "WSM", "PLW",               # Океания
+    "BHR",                             # Бахрейн
+    "MCO", "AND", "VAT", "SMR", "LIE",  # карликовые государства Европы
+}
+
+# Материк для тех, кому Natural Earth его не дал.
+#
+# Мальдивы, Маврикий и Сейшелы там числятся по разряду «открытый океан» —
+# и наш отбор справедливо выбрасывал их как «не страна». Но без материка
+# они ломали бы статистику: площадь попадала бы в процент открытого мира,
+# а строки в таблице по континентам у них не было бы.
+SUPPLEMENT_CONTINENTS = {
+    "MDV": "Asia",
+    "MUS": "Africa",
+    "SYC": "Africa",
+}
+
+# Для добранных малюток — своя точность, и никакого упрощения.
+# Ватикан поперёк меньше километра, атоллы Мальдив — сотни метров:
+# при общих настройках от них не остаётся ничего, и кольца выбрасываются
+# как артефакты.
+SMALL_PRECISION = 5
+SMALL_EPSILON = 0.0
+SMALL_MIN_RING_POINTS = 3
+
+
+def clean_ring(ring, precision=PRECISION, epsilon=EPSILON,
+               min_points=MIN_RING_POINTS):
     """Округляет, убирает дубли подряд и замыкает кольцо."""
-    rounded = [(round(x, PRECISION), round(y, PRECISION)) for x, y in ring]
+    rounded = [(round(x, precision), round(y, precision)) for x, y in ring]
 
     deduped = [rounded[0]]
     for point in rounded[1:]:
         if point != deduped[-1]:
             deduped.append(point)
 
-    simplified = douglas_peucker(deduped, EPSILON)
+    simplified = douglas_peucker(deduped, epsilon)
 
-    if len(simplified) < MIN_RING_POINTS:
+    if len(simplified) < min_points:
         return None
     if simplified[0] != simplified[-1]:
         simplified.append(simplified[0])
@@ -132,10 +178,26 @@ def main():
     points_after = 0
     skipped = []
 
-    for feature in data["features"]:
+    supplement = []
+    if len(sys.argv) > 2:
+        with open(sys.argv[2]) as fh:
+            supplement = json.load(fh)["features"]
+
+    for feature in list(data["features"]) + supplement:
         props = feature["properties"]
         continent = props.get("CONTINENT") or ""
-        if continent in SKIP_CONTINENTS:
+
+        code_now = props.get("ISO_A3")
+        code_now = code_now if code_now and code_now != "-99" else props.get("ADM0_A3")
+        small = feature in supplement
+        if small and code_now not in SUPPLEMENT_IDS:
+            continue
+        if small:
+            continent = SUPPLEMENT_CONTINENTS.get(code_now, continent)
+
+        # Проверку «не страна» применяем только к основному набору:
+        # добранные перечислены поимённо, и решение по ним уже принято.
+        if not small and continent in SKIP_CONTINENTS:
             skipped.append(props.get("NAME"))
             continue
 
@@ -152,7 +214,12 @@ def main():
             rings = []
             for index, ring in enumerate(polygon):
                 points_before += len(ring)
-                cleaned = clean_ring(ring)
+                cleaned = clean_ring(
+                    ring,
+                    precision=SMALL_PRECISION if small else PRECISION,
+                    epsilon=SMALL_EPSILON if small else EPSILON,
+                    min_points=SMALL_MIN_RING_POINTS if small else MIN_RING_POINTS,
+                )
                 if cleaned is None:
                     continue
                 points_after += len(cleaned)
@@ -171,6 +238,11 @@ def main():
         # ADM0_A3 заполнен всегда — он и становится нашим идентификатором.
         iso = props.get("ISO_A3")
         code = iso if iso and iso != "-99" else props.get("ADM0_A3")
+
+        # Из добавки берём только тех, кого нет в основном файле: иначе
+        # подробная геометрия перетрёт упрощённую и файл вырастет вчетверо.
+        if small and any(f["properties"]["id"] == code for f in features):
+            continue
 
         features.append({
             "type": "Feature",
