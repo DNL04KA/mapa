@@ -20,6 +20,8 @@ struct CountryCardView: View {
     let onSelectStatus: (TravelStatus) -> Void
     let onClose: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     @State private var dragOffset: CGFloat = 0
 
     private var facts: CountryFacts? { CountryFacts.facts(for: country.id) }
@@ -223,15 +225,31 @@ struct CountryCardView: View {
                 }
             }
 
-            Text(subtitle)
-                .font(DS.Font.callout)
-                .foregroundStyle(DS.Color.inkSecondary)
+            // На крупном шрифте строка «Азия · 404 322 км² · Japan» рвётся
+            // где придётся, и вторая строка начинается с точки-разделителя.
+            // Поэтому там она разбирается на отдельные строки.
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(subtitleParts, id: \.self) { part in
+                        Text(part)
+                            .font(DS.Font.callout)
+                            .foregroundStyle(DS.Color.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            } else {
+                Text(subtitle)
+                    .font(DS.Font.callout)
+                    .foregroundStyle(DS.Color.inkSecondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
-    private var subtitle: String {
+    private var subtitle: String { subtitleParts.joined(separator: " · ") }
+
+    private var subtitleParts: [String] {
         var parts: [String] = []
         if let continent = country.continent { parts.append(continent.title) }
         if country.areaKm2 > 0 {
@@ -241,13 +259,13 @@ struct CountryCardView: View {
             parts.append(String(format: NSLocalizedString("%@ км²", comment: ""), area))
         }
         parts.append(country.name)
-        return parts.joined(separator: " · ")
+        return parts
     }
 
     private var statusRow: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
             SectionHeader("Твоя отметка")
-            HStack(spacing: DS.Space.xs) {
+            DS.Reflow(spacing: DS.Space.xs) {
                 ForEach(TravelStatus.allCases) { option in
                     StatusOptionCard(status: option, isSelected: status == option) {
                         onSelectStatus(option)
@@ -258,7 +276,7 @@ struct CountryCardView: View {
     }
 
     private func tiles(_ facts: CountryFacts) -> some View {
-        HStack(spacing: DS.Space.sm) {
+        DS.Reflow(spacing: DS.Space.sm) {
             tile(value: facts.daysText, unit: "дней", caption: "Советуют заложить", icon: "calendar")
             tile(value: facts.budgetText, unit: "в день", caption: "Примерная оценка", icon: "creditcard")
         }

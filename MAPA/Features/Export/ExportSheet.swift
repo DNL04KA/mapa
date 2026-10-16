@@ -202,8 +202,14 @@ struct ExportSheet: View {
                     Text(title(item))
                         .font(DS.Font.caption)
                         .foregroundStyle(isSelected ? DS.Color.inkOnAccent : DS.Color.inkSecondary)
+                        // На крупном шрифте «Истории» превращалось в
+                        // «Истор…»: три слова в один ряд не помещаются,
+                        // а обрезанное слово хуже слегка сжатого.
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .padding(.horizontal, DS.Space.xxs)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 34)
+                        .frame(minHeight: 34)
                         .background(isSelected ? DS.Color.ink : Color.white.opacity(0.06))
                         .clipShape(Capsule(style: .continuous))
                         .contentShape(Rectangle())

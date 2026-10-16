@@ -132,7 +132,7 @@ struct CountryStatusSheet: View {
     }
 
     private var options: some View {
-        HStack(spacing: DS.Space.xs) {
+        DS.Reflow(spacing: DS.Space.xs) {
             ForEach(TravelStatus.allCases) { status in
                 StatusOptionCard(
                     status: status,
@@ -231,6 +231,7 @@ struct CountryStatusSheet: View {
 struct StatusOptionCard: View {
 
     @Environment(\.dsMotion) private var motion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     let status: TravelStatus
     let isSelected: Bool
@@ -238,17 +239,9 @@ struct StatusOptionCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: DS.Space.xs) {
-                Image(systemName: status.icon)
-                    .font(.system(size: DS.Size.iconLg, weight: .semibold))
-                    .foregroundStyle(isSelected ? DS.Gradient.statusForeground(status) : DS.Color.inkSecondary)
-
-                Text(status.title)
-                    .font(DS.Font.subhead)
-                    .foregroundStyle(isSelected ? DS.Gradient.statusForeground(status) : DS.Color.ink)
-            }
+            label
             .frame(maxWidth: .infinity)
-            .frame(height: 96)
+            .frame(height: typeSize.isAccessibilitySize ? nil : 96)
             .background {
                 if isSelected {
                     DS.Gradient.status(status)
@@ -274,6 +267,43 @@ struct StatusOptionCard: View {
         .accessibilityLabel(status.title)
         .accessibilityHint(status.subtitle)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    /// Значок над подписью — или рядом с ней.
+    ///
+    /// На крупном шрифте «Был», «Живу» и «Хочу» в три плитки по ширине
+    /// экрана уже не помещаются: подпись упирается в края и начинает
+    /// жаться. Поэтому плитки превращаются в строки — так же, как это
+    /// делает сам iOS в своих списках.
+    @ViewBuilder
+    private var label: some View {
+        if typeSize.isAccessibilitySize {
+            HStack(spacing: DS.Space.sm) {
+                icon
+                title
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, DS.Space.md)
+            .padding(.vertical, DS.Space.sm)
+        } else {
+            VStack(spacing: DS.Space.xs) {
+                icon
+                title
+            }
+        }
+    }
+
+    private var icon: some View {
+        Image(systemName: status.icon)
+            .font(.system(size: DS.Size.iconLg, weight: .semibold))
+            .foregroundStyle(isSelected ? DS.Gradient.statusForeground(status) : DS.Color.inkSecondary)
+    }
+
+    private var title: some View {
+        Text(status.title)
+            .font(DS.Font.subhead)
+            .foregroundStyle(isSelected ? DS.Gradient.statusForeground(status) : DS.Color.ink)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 

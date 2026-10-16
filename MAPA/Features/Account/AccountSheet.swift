@@ -20,11 +20,18 @@ struct AccountSheet: View {
     @State private var dragOffset: CGFloat = 0
     @State private var isPickingAvatar = false
     @FocusState private var nameFocused: Bool
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         ZStack(alignment: .bottom) {
             scrim
-            panel
+
+            // Полоса сверху, за которую панель не заходит: иначе на крупном
+            // шрифте она дорастает до «острова» и имя оказывается под ним.
+            VStack(spacing: 0) {
+                Spacer(minLength: 96)
+                panel
+            }
 
             if isPickingAvatar {
                 AvatarPicker(
@@ -56,24 +63,20 @@ struct AccountSheet: View {
     }
 
     private var panel: some View {
-        VStack(spacing: DS.Space.md) {
-            Capsule()
-                .fill(DS.Color.borderStrong)
-                .frame(width: 38, height: 4)
-
-            header
-            whatSignInGives
-            providers
-
-            if !account.profile.isLocal {
-                PillButton("Выйти", kind: .secondary, fullWidth: true) {
-                    Task { await account.signOut() }
-                }
-            }
+        // На крупном шрифте содержимое панели перерастает экран: имя уходит
+        // под «остров», а строка про сервер обрезается полосой жестов.
+        // `ViewThatFits` показывает список как есть, пока он помещается, и
+        // включает прокрутку, когда перестал, — без ладони пустоты под
+        // короткой панелью, которую оставил бы `ScrollView` всегда.
+        ViewThatFits(in: .vertical) {
+            content
+            ScrollView { content }.scrollIndicators(.hidden)
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
-        .padding(.bottom, DS.Space.xl)
+        // Нижний отступ с запасом на полосу жестов: фон панели заходит под
+        // неё намеренно, а текст — нет.
+        .padding(.bottom, DS.Space.xl + DS.Space.lg)
         .frame(maxWidth: .infinity)
         .background {
             UnevenRoundedTopShape(radius: DS.Radius.xl)
@@ -94,6 +97,24 @@ struct AccountSheet: View {
         .transition(.move(edge: .bottom))
     }
 
+    private var content: some View {
+        VStack(spacing: DS.Space.md) {
+            Capsule()
+                .fill(DS.Color.borderStrong)
+                .frame(width: 38, height: 4)
+
+            header
+            whatSignInGives
+            providers
+
+            if !account.profile.isLocal {
+                PillButton("Выйти", kind: .secondary, fullWidth: true) {
+                    Task { await account.signOut() }
+                }
+            }
+        }
+    }
+
     private var panelFill: AnyShapeStyle {
         motion.reduceTransparency
             ? AnyShapeStyle(DS.Color.materialFallback)
@@ -103,51 +124,77 @@ struct AccountSheet: View {
     // MARK: - Шапка
 
     private var header: some View {
-        HStack(spacing: DS.Space.md) {
-            avatar
-
-            VStack(alignment: .leading, spacing: 2) {
-                if isEditingName {
-                    TextField("Имя", text: $draftName)
-                        .font(DS.Font.title)
-                        .foregroundStyle(DS.Color.ink)
-                        .focused($nameFocused)
-                        .submitLabel(.done)
-                        .onSubmit { commitName() }
-                } else {
-                    Text(account.profile.name)
-                        .font(DS.Font.title)
-                        .foregroundStyle(DS.Color.ink)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.65)
+        // На крупном шрифте имя не помещается рядом с аватаркой: «Путешест
+        // венник» — одно слово в двести точек, и ужимать его дальше некуда.
+        // Поэтому шапка перестраивается: аватарка с карандашом сверху, имя
+        // и подпись под ними во всю ширину.
+        Group {
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    HStack {
+                        avatar
+                        Spacer(minLength: 0)
+                        editButton
+                    }
+                    names
                 }
-
-                Text(account.profile.email ?? account.profile.provider.title)
-                    .font(DS.Font.caption)
-                    .foregroundStyle(DS.Color.inkTertiary)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: 0)
-
-            Button {
-                if isEditingName {
-                    commitName()
-                } else {
-                    draftName = account.profile.name
-                    withAnimation(motion.animation(.snap)) { isEditingName = true }
-                    nameFocused = true
+            } else {
+                HStack(spacing: DS.Space.md) {
+                    avatar
+                    names
+                    Spacer(minLength: 0)
+                    editButton
                 }
-            } label: {
-                Image(systemName: isEditingName ? "checkmark" : "pencil")
-                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
-                    .foregroundStyle(accent)
-                    .frame(width: DS.Size.hitTarget, height: DS.Size.hitTarget)
-                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(isEditingName ? "Сохранить имя" : "Изменить имя")
         }
+    }
+
+    private var names: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if isEditingName {
+                TextField("Имя", text: $draftName)
+                    .font(DS.Font.title)
+                    .foregroundStyle(DS.Color.ink)
+                    .focused($nameFocused)
+                    .submitLabel(.done)
+                    .onSubmit { commitName() }
+            } else {
+                // Имя — одно длинное слово, и переносить его нельзя:
+                // «Путешеств / енник» выглядит сломанным. Сжимается.
+                Text(account.profile.name)
+                    .font(DS.Font.title)
+                    .foregroundStyle(DS.Color.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+            }
+
+            // А это уже несколько слов — им перенос к лицу.
+            Text(account.profile.email ?? account.profile.provider.title)
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.inkTertiary)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var editButton: some View {
+        Button {
+            if isEditingName {
+                commitName()
+            } else {
+                draftName = account.profile.name
+                withAnimation(motion.animation(.snap)) { isEditingName = true }
+                nameFocused = true
+            }
+        } label: {
+            Image(systemName: isEditingName ? "checkmark" : "pencil")
+                .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                .foregroundStyle(accent)
+                .frame(width: DS.Size.hitTarget, height: DS.Size.hitTarget)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isEditingName ? "Сохранить имя" : "Изменить имя")
     }
 
     private func commitName() {
@@ -236,14 +283,19 @@ struct AccountSheet: View {
             HStack(spacing: DS.Space.xs) {
                 Image(systemName: provider.icon)
                     .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                // «Вход через Google» на крупном шрифте не умещался в
+                // пилюлю и обрывался на «Goo…». Кнопка растёт по высоте.
                 Text(signInTitle(provider))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
             }
             .font(DS.Font.subhead)
             .foregroundStyle(DS.Color.ink)
             .padding(.horizontal, DS.Space.md)
+            .padding(.vertical, DS.Space.xs)
             .frame(maxWidth: .infinity)
-            .frame(height: DS.Size.controlHeight)
+            .frame(minHeight: DS.Size.controlHeight)
             .background {
                 RoundedRectangle(cornerRadius: DS.Radius.pill, style: .continuous)
                     .fill(DS.Color.surfaceRaised.opacity(0.6))

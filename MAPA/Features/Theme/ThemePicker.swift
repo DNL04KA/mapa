@@ -54,10 +54,17 @@ struct ThemePicker: View {
         var id: String { rawValue }
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     @State private var tab: Tab = .surface
     @State private var dragOffset: CGFloat = 0
 
-    private let columns = [GridItem(.adaptive(minimum: 100), spacing: DS.Space.sm)]
+    /// На крупном шрифте — один столбец: в трёх по сто точек «Глубокая
+    /// синяя ночь» превращалась в «Глубокая с…».
+    private var columns: [GridItem] {
+        [GridItem(.adaptive(minimum: typeSize.isAccessibilitySize ? 260 : 100),
+                  spacing: DS.Space.sm)]
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -269,43 +276,61 @@ struct ThemePicker: View {
         @ViewBuilder art: () -> Art,
         tap: @escaping () -> Void
     ) -> some View {
-        Button(action: tap) {
-            VStack(spacing: DS.Space.xs) {
-                ZStack {
-                    art()
-                        .frame(height: 78)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
-                                .strokeBorder(
-                                    isSelected || isPreviewing ? accent : DS.Color.border,
-                                    lineWidth: isSelected || isPreviewing ? 2 : 1
-                                )
-                        }
-
-                    if isPreviewing {
-                        badge("eye.fill", size: DS.Size.iconMd)
-                    } else if isPremium {
-                        badge("lock.fill", size: DS.Size.iconSm)
-                    } else if isSelected {
-                        badge("checkmark", size: DS.Size.iconMd)
-                    }
+        let swatch = ZStack {
+            art()
+                .frame(height: 78)
+                .overlay {
+                    RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                        .strokeBorder(
+                            isSelected || isPreviewing ? accent : DS.Color.border,
+                            lineWidth: isSelected || isPreviewing ? 2 : 1
+                        )
                 }
 
-                VStack(spacing: 0) {
-                    // Названия полотен и палитр лежат в модели обычными
-                    // строками, но в таблице переводов они есть — поэтому
-                    // оборачиваем в ключ, а не показываем как есть.
-                    Text(LocalizedStringKey(name))
-                        .font(DS.Font.caption)
-                        .foregroundStyle(DS.Color.ink)
-                    if let subtitle {
-                        Text(LocalizedStringKey(subtitle))
-                            .font(DS.Font.micro)
-                            .foregroundStyle(DS.Color.inkTertiary)
+            if isPreviewing {
+                badge("eye.fill", size: DS.Size.iconMd)
+            } else if isPremium {
+                badge("lock.fill", size: DS.Size.iconSm)
+            } else if isSelected {
+                badge("checkmark", size: DS.Size.iconMd)
+            }
+        }
+
+        let caption = VStack(alignment: typeSize.isAccessibilitySize ? .leading : .center,
+                             spacing: 0) {
+            // Названия полотен и палитр лежат в модели обычными строками,
+            // но в таблице переводов они есть — поэтому оборачиваем в ключ,
+            // а не показываем как есть.
+            Text(LocalizedStringKey(name))
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.ink)
+            if let subtitle {
+                Text(LocalizedStringKey(subtitle))
+                    .font(DS.Font.micro)
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+        }
+        .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
+        .fixedSize(horizontal: false, vertical: true)
+        .minimumScaleFactor(0.7)
+
+        return Button(action: tap) {
+            // Плитка — пока подпись помещается под образцом. На крупном
+            // шрифте она становится строкой: образец слева, название с
+            // описанием справа. Иначе «Глубокая синяя ночь» превращалась
+            // в «Глубокая с…», и выбирать приходилось вслепую.
+            Group {
+                if typeSize.isAccessibilitySize {
+                    HStack(spacing: DS.Space.sm) {
+                        swatch.frame(width: 110)
+                        caption.frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } else {
+                    VStack(spacing: DS.Space.xs) {
+                        swatch
+                        caption
                     }
                 }
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
             }
         }
         .buttonStyle(.plain)
