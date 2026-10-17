@@ -138,6 +138,16 @@ stay tied to the palette and the icon can be changed in one line:
 swift Tools/make_icon.swift
 ```
 
+## Store materials
+
+`store/` holds the App Store listing in both languages, and `docs/` holds the
+privacy and support pages the submission form requires as URLs. Screenshots
+are generated, not stored — Apple wants 1290×2796, five per language:
+
+```bash
+Tools/make_screenshots.sh screenshots
+```
+
 ## Checks
 
 ```bash

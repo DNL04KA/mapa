@@ -27,3 +27,6 @@ Secrets.xcconfig
 .claude/launch.json
 .missing-en.txt
 Supabase.plist
+
+# Снимки для магазина — собираются Tools/make_screenshots.sh
+/screenshots/

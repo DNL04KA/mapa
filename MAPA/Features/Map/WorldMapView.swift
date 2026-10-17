@@ -762,11 +762,14 @@ struct WorldMapView: View {
             #if DEBUG
             // Панель замеров — инструмент разработки, и в сборке для
             // магазина её нет: пользователю спидометр в ряду с зумом
-            // ничего не объясняет.
-            MapControlButton(icon: "speedometer", isActive: showsDebug) {
-                withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
+            // ничего не объясняет. При съёмке экранов её тоже не видно —
+            // снимки должны показывать то же, что увидит человек.
+            if ProcessInfo.processInfo.environment["MAPA_SCREEN"] == nil {
+                MapControlButton(icon: "speedometer", isActive: showsDebug) {
+                    withAnimation(motion.animation(.smooth)) { showsDebug.toggle() }
+                }
+                .accessibilityLabel("Панель замеров")
             }
-            .accessibilityLabel("Панель замеров")
             #endif
         }
     }
