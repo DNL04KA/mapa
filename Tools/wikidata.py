@@ -73,7 +73,7 @@ SKIP_ITEMS = {"Тилафуши", "Кайтак", "Обама"}
 JUNK_NAME = re.compile(
     r"аэропорт|вокзал|станция метро|метрополитен|университет|больница|тюрьма|"
     r"кладбище|стадион|автодром|ипподром|электростанц|водохранилищ|"
-    r"посольств|тюрем", re.I)
+    r"посольств|тюрем|взлётно-посадочн|взлетно-посадочн|\bГЭС\b", re.I)
 
 JUNK_FILE = re.compile(
     r"(?:^|[\W_])(?:map|karte|flag|coat[\W_]of[\W_]arms|logo|seal|emblem|diagram|"
@@ -218,8 +218,66 @@ LIMIT 60
 """)
 
 
-def accept(row, include, exclude, strong, skip_names=()):
-    """Годится ли находка. Возвращает запись или `None`."""
+def inside_box(west, south, east, north, min_links=12, limit=60):
+    """Известные объекты внутри прямоугольника — запрос по стране целиком.
+
+    Нужен там, где смотреть едут не в город. У Танзании в списке «что
+    посмотреть» было пусто: Килиманджаро в сорока километрах от Моши,
+    Серенгети и Занзибар — ещё дальше, и ни один не попадал в радиус
+    вокруг города. Прямой вопрос «что известного лежит в этих границах»
+    находит их все.
+
+    Координаты возвращаются вместе с записью: прямоугольник страны задевает
+    соседей, и попадание в сам контур проверяет уже вызывающий.
+    """
+    return sparql(f"""
+SELECT ?item ?ru ?en ?img ?links ?loc (GROUP_CONCAT(DISTINCT ?class; separator=" ") AS ?classes)
+       (GROUP_CONCAT(DISTINCT ?heritage; separator=" ") AS ?heritages) WHERE {{
+  SERVICE wikibase:box {{
+    ?item wdt:P625 ?loc .
+    bd:serviceParam wikibase:cornerWest "Point({west:.4f} {south:.4f})"^^geo:wktLiteral .
+    bd:serviceParam wikibase:cornerEast "Point({east:.4f} {north:.4f})"^^geo:wktLiteral .
+  }}
+  ?item wikibase:sitelinks ?links .
+  FILTER(?links > {min_links})
+  ?item wdt:P31 ?class .
+  ?item rdfs:label ?ru . FILTER(LANG(?ru) = "ru")
+  ?item rdfs:label ?en . FILTER(LANG(?en) = "en")
+  OPTIONAL {{ ?item wdt:P18 ?img }}
+  OPTIONAL {{ ?item wdt:P1435 ?heritage }}
+}}
+GROUP BY ?item ?ru ?en ?img ?links ?loc
+ORDER BY DESC(?links)
+LIMIT {limit}
+""")
+
+
+def coordinate(row):
+    """«Point(37.6 55.75)» из ответа — в пару чисел."""
+    text = row.get("loc", {}).get("value", "")
+    match = re.match(r"Point\(([-0-9.]+) ([-0-9.]+)\)", text)
+    return (float(match.group(1)), float(match.group(2))) if match else None
+
+
+WORLD_HERITAGE = "http://www.wikidata.org/entity/Q9259"
+
+
+def is_world_heritage(row):
+    """Объект всемирного наследия ЮНЕСКО.
+
+    Признак точнее любого класса: старый Шибам, Забид и остров Мозамбик
+    по типу — обычные города, и в отбор «что посмотреть» их не пустить,
+    не пустив заодно все города мира. А список ЮНЕСКО — это ровно
+    «сюда стоит приехать», и он проверяем.
+    """
+    return WORLD_HERITAGE in row.get("heritages", {}).get("value", "").split()
+
+
+def accept(row, include, exclude, strong, skip_names=(), always=False):
+    """Годится ли находка. Возвращает запись или `None`.
+
+    `always` — пропустить проверку типа: так проходят объекты ЮНЕСКО,
+    чей тип сам по себе ничего не значит."""
     ru = row["ru"]["value"]
     if ru in skip_names or ru in SKIP_ITEMS or JUNK_NAME.search(ru):
         return None
@@ -229,10 +287,11 @@ def accept(row, include, exclude, strong, skip_names=()):
         return None
 
     classes = set(row.get("classes", {}).get("value", "").split())
-    if not classes & include:
-        return None
-    if classes & exclude and not classes & strong:
-        return None
+    if not always:
+        if not classes & include:
+            return None
+        if classes & exclude and not classes & strong:
+            return None
 
     image = row.get("img", {}).get("value", "")
     return {

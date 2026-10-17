@@ -32,6 +32,38 @@ OUT = ROOT / "MAPA" / "Resources" / "country-facts.json"
 PER_COUNTRY = 6
 
 
+def rings(geometry):
+    """Все внешние кольца контура — для проверки попадания точки."""
+    if geometry["type"] == "Polygon":
+        return [geometry["coordinates"][0]]
+    if geometry["type"] == "MultiPolygon":
+        return [poly[0] for poly in geometry["coordinates"]]
+    return []
+
+
+def contains(rings_, lon, lat):
+    """Лучевой алгоритм: точка внутри хотя бы одного кольца."""
+    for ring in rings_:
+        inside = False
+        count = len(ring)
+        for i in range(count):
+            x1, y1 = ring[i][0], ring[i][1]
+            x2, y2 = ring[(i + 1) % count][0], ring[(i + 1) % count][1]
+            if (y1 > lat) != (y2 > lat):
+                x = (x2 - x1) * (lat - y1) / (y2 - y1) + x1
+                if lon < x:
+                    inside = not inside
+        if inside:
+            return True
+    return False
+
+
+def bounds(rings_):
+    xs = [p[0] for ring in rings_ for p in ring]
+    ys = [p[1] for ring in rings_ for p in ring]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
 def main():
     features = json.loads(BORDERS.read_text(encoding="utf-8"))["features"]
     country_names = {f["properties"]["id"]: f["properties"]["name_ru"] for f in features}
@@ -66,6 +98,40 @@ def main():
 
     if missed:
         print(f"городов без данных в кэше: {missed} — сначала прогоните build_city_facts.py")
+
+    # Второй проход — по странам, где города не дали ничего.
+    #
+    # Смотреть едут не только в города: в Танзании это Килиманджаро,
+    # Серенгети и Занзибар, в Зимбабве — водопад Виктория, в Ботсване —
+    # Окаванго. Ни один из них не попадает в радиус вокруг столицы, и
+    # сорок три страны оставались с пустой карточкой при том, что данные
+    # о них есть.
+    #
+    # Прямоугольник страны задевает соседей, поэтому каждая находка
+    # проверяется на попадание в сам контур: иначе Лесото забрало бы себе
+    # половину ЮАР.
+    empty = [f for f in features if f["properties"]["id"] not in found]
+    print(f"стран без мест после городов: {len(empty)} — спрашиваем по границам",
+          flush=True)
+    for index, feature in enumerate(empty, start=1):
+        cid = feature["properties"]["id"]
+        outline = rings(feature["geometry"])
+        if not outline:
+            continue
+        west, south, east, north = bounds(outline)
+        data = wd.inside_box(west, south, east, north)
+        if data is None:
+            continue
+        for row in data.get("results", {}).get("bindings", []):
+            point = wd.coordinate(row)
+            if not point or not contains(outline, point[0], point[1]):
+                continue
+            item = wd.accept(row, include, exclude, strong, skip_names=skip,
+                             always=wd.is_world_heritage(row))
+            if item:
+                found.setdefault(cid, {}).setdefault(item["ru"], item)
+        if index % 10 == 0:
+            print(f"  {index}/{len(empty)}", flush=True)
 
     raw = {}
     for country, items in found.items():

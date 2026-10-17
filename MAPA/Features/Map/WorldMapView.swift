@@ -68,6 +68,12 @@ struct WorldMapView: View {
         case "theme": showsThemes = true
         case "search": showsSearch = true
         case "export": showsExport = true
+        case let id? where id.hasPrefix("city-"):
+            guard let city = model.cities.first(where: { $0.id == String(id.dropFirst(5)) }) else { return }
+            model.focus(on: city, reduceMotion: true)
+        case "route":
+            guard let route = model.routes.first else { return }
+            model.openRoute(route, reduceMotion: true)
         case let id? where id.hasPrefix("card-"):
             guard let country = model.geometry?.country(id: String(id.dropFirst(5))) else { return }
             model.select(country, reduceMotion: true)
@@ -544,7 +550,11 @@ struct WorldMapView: View {
                 // всегда и молча — непонятно было, что это и почему оно тут,
                 // тем более что маршруты и так открываются кнопкой ниже.
                 // Теперь у неё одна работа: вернуть туда, где ты остановился.
-                if model.state == .ready, let route = model.routes.first(where: \.isInProgress) {
+                // Пока маршрут открыт, карточка «продолжить» не нужна: она
+                // звала туда, где человек уже находится, и торчала краем
+                // из-под панели маршрута.
+                if model.state == .ready, model.editingRoute == nil,
+                   let route = model.routes.first(where: \.isInProgress) {
                     nextRouteCard(route)
                         .transition(motion.transition(.move(edge: .bottom).combined(with: .opacity)))
                 }

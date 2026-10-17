@@ -119,4 +119,29 @@ final class CatalogTests: XCTestCase {
         let sanMarino = MapProjection.unitPoint(longitude: 12.458, latitude: 43.936)
         XCTAssertEqual(world.country(at: sanMarino, tolerance: close)?.id, "SMR")
     }
+
+    func testБольшинствуСтранЕстьЧтоПоказать() async throws {
+        // Сто пятьдесят восемь стран из двухсот одной — это каждая пятая
+        // карточка с пустотой, и так было, пока места искались только
+        // вокруг городов. Проверка держит планку: если отбор снова
+        // сломается, это будет видно здесь, а не в магазине.
+        let world = try await WorldGeometryLoader.loadFromBundle().geometry
+        let withPlaces = world.countries.filter { !CountryLandmarks.all(for: $0.id).isEmpty }
+        XCTAssertGreaterThanOrEqual(withPlaces.count, 190,
+                                    "стран с местами стало меньше: \(withPlaces.count)")
+    }
+
+    func testУМестОткудаОниВзялисьЕстьПодпись() throws {
+        // Фотографии с Викисклада идут под лицензией, которая требует
+        // называть автора. Снимок без подписи показывать нельзя.
+        let cities = try CityLoader.loadFromBundle()
+        var checked = 0
+        for city in cities {
+            for place in CityFacts.landmarks(for: city.id) where place.small != nil {
+                XCTAssertNotNil(place.credit, "\(place.ru): фотография без подписи")
+                checked += 1
+            }
+        }
+        XCTAssertGreaterThan(checked, 500)
+    }
 }
