@@ -252,6 +252,30 @@ left join public.route_saves   s  on s.route_id  = r.id
 where r.is_published
 group by r.id, r.author_id, r.title, r.country_id, r.published_at, o.mean;
 
+-- ───────────────────────── Топ авторов ─────────────────────────
+--
+-- Автор ценен не количеством маршрутов, а тем, как их оценили. Поэтому в
+-- основе та же сглаженная оценка, что и у маршрутов: пока отзывов мало,
+-- автор держится около общей средней и не взлетает с одной пятёркой.
+--
+-- Маршруты без единого отзыва в счёт идут, но вес им даёт только
+-- сохранение: их кто-то забрал себе, значит они не пустые.
+
+create view public.popular_authors as
+select
+  p.id,
+  p.handle,
+  p.name,
+  p.avatar_path,
+  p.bio,
+  count(distinct pr.id)                                   as routes_count,
+  coalesce(sum(pr.reviews_count), 0)                      as reviews_count,
+  coalesce(sum(pr.saves_count), 0)                        as saves_count,
+  round(avg(pr.score)::numeric, 3)                        as score
+from public.profiles p
+join public.popular_routes pr on pr.author_id = p.id
+group by p.id, p.handle, p.name, p.avatar_path, p.bio;
+
 -- ─────────────────── Профиль при регистрации ───────────────────
 --
 -- Создаём строку профиля сразу после регистрации, а не при первом открытии

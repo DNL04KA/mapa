@@ -13,6 +13,9 @@ struct WorldMapView: View {
     @State private var statsExpanded = false
     @State private var showsThemes = false
     @State private var showsPlus = false
+    @State private var showsCommunity = false
+    /// Человек, чью страницу открыли из топа.
+    @State private var person: PublicAuthor?
     @State private var showsAccount = false
     @State private var showsSearch = false
     /// Платное полотно или палитра, которые сейчас примеряют.
@@ -70,6 +73,20 @@ struct WorldMapView: View {
         case "account": showsAccount = true
         case "theme": showsThemes = true
         case "plus": showsPlus = true
+        case "community": showsCommunity = true
+        #if DEBUG
+        case "person":
+            // Снимок страницы человека: список приходит из того же
+            // показа, что и топ.
+            showsCommunity = true
+            Task {
+                let store = CommunityStore()
+                await store.load()
+                if case let .loaded(authors) = store.authors, let first = authors.first {
+                    person = first
+                }
+            }
+        #endif
         case "search": showsSearch = true
         case "export": showsExport = true
         case let id? where id.hasPrefix("city-"):
@@ -276,6 +293,12 @@ struct WorldMapView: View {
                                              reduceMotion: motion.reduceMotion)
                     routeExpanded = true
                 },
+                onOpenCommunity: {
+                    withAnimation(motion.animation(.smooth)) {
+                        showsRoutes = false
+                        showsCommunity = true
+                    }
+                },
                 onDismiss: { withAnimation(motion.animation(.smooth)) { showsRoutes = false } }
             )
             .themedPanel(activeTheme)
@@ -366,6 +389,7 @@ struct WorldMapView: View {
     private var sheets: some View {
         statusSheet
         plusSheet
+        communitySheets
         citySheet
         routePanel
         routesSheet
@@ -396,6 +420,38 @@ struct WorldMapView: View {
                 }
             )
             .zIndex(6)
+        }
+    }
+
+    /// Сообщество: топ маршрутов, топ людей и страница человека.
+    @ViewBuilder
+    private var communitySheets: some View {
+        if showsCommunity {
+            CommunitySheet(
+                accent: activeTheme.accent,
+                countryName: { model.geometry?.country(id: $0)?.displayName ?? "" },
+                onOpenAuthor: { author in
+                    withAnimation(motion.animation(.smooth)) { person = author }
+                },
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { showsCommunity = false }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(8)
+        }
+
+        if let person {
+            PersonSheet(
+                author: person,
+                accent: activeTheme.accent,
+                countryName: { model.geometry?.country(id: $0)?.displayName ?? "" },
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { self.person = nil }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(9)
         }
     }
 

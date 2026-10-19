@@ -1,0 +1,117 @@
+import SwiftUI
+
+/// Состояние экрана сообщества.
+///
+/// Три состояния, а не два: «загружаем», «вот список» и «сервера нет».
+/// Последнее — не ошибка и не пустота: показывать по нему «ничего не
+/// нашлось» значит врать, будто мы спросили и нам ответили.
+@MainActor
+final class CommunityStore: ObservableObject {
+
+    enum State<Item: Equatable>: Equatable {
+        case loading
+        case notConfigured
+        case failed(String)
+        case loaded([Item])
+    }
+
+    @Published private(set) var routes: State<PublicRoute> = .loading
+    @Published private(set) var authors: State<PublicAuthor> = .loading
+
+    private let source: CommunitySource
+
+    init(source: CommunitySource = .current) {
+        #if DEBUG
+        // Показ для снимков экрана: без сервера топ пуст, и увидеть
+        // вёрстку заполненной иначе нельзя. Включается только переменной
+        // окружения и только в отладочной сборке — в магазин этот путь
+        // не попадает, и человек этих строк никогда не увидит.
+        if ProcessInfo.processInfo.environment["MAPA_DEMO_COMMUNITY"] == "1" {
+            self.source = DemoCommunity()
+            return
+        }
+        #endif
+        self.source = source
+    }
+
+    var isConfigured: Bool { BackendConfig.isConfigured }
+
+    func load(limit: Int = 20) async {
+        async let routes = fetch { try await self.source.topRoutes(limit: limit) }
+        async let authors = fetch { try await self.source.topAuthors(limit: limit) }
+        self.routes = await routes
+        self.authors = await authors
+    }
+
+    /// Маршруты одного человека — для его страницы.
+    func routes(by author: PublicAuthor, limit: Int = 20) async -> State<PublicRoute> {
+        await fetch { try await self.source.routes(by: author.id, limit: limit) }
+    }
+
+    private func fetch<Item: Equatable>(
+        _ work: @escaping () async throws -> [Item]
+    ) async -> State<Item> {
+        do {
+            return .loaded(try await work())
+        } catch CommunityError.notConfigured {
+            return .notConfigured
+        } catch let CommunityError.network(reason) {
+            return .failed(reason)
+        } catch {
+            return .failed(error.localizedDescription)
+        }
+    }
+}
+
+#if DEBUG
+/// Данные для снимков экрана. Та же форма, что отдаёт сервер.
+private struct DemoCommunity: CommunitySource {
+
+    private static let json = """
+    [{"id":"r1","author_id":"a1","title":"Италия за две недели","country_id":"ITA",
+      "reviews_count":42,"saves_count":17,"rating":4.60,"score":4.520},
+     {"id":"r2","author_id":"a2","title":"Япония весной","country_id":"JPN",
+      "reviews_count":28,"saves_count":9,"rating":4.70,"score":4.470},
+     {"id":"r3","author_id":"a3","title":"Перу: Лима — Куско — Мачу-Пикчу","country_id":"PER",
+      "reviews_count":11,"saves_count":6,"rating":4.80,"score":4.350},
+     {"id":"r4","author_id":"a1","title":"Юг Испании за неделю","country_id":"ESP",
+      "reviews_count":7,"saves_count":4,"rating":4.40,"score":4.210}]
+    """
+
+    private static let authorsJSON = """
+    [{"id":"a1","handle":"nikita","name":"Никита","bio":"Сорок стран, половина пешком",
+      "avatar_path":null,"routes_count":2,"reviews_count":49,"saves_count":21,"score":4.365},
+     {"id":"a2","handle":"sato","name":"Сато","bio":null,"avatar_path":null,
+      "routes_count":1,"reviews_count":28,"saves_count":9,"score":4.470},
+     {"id":"a3","handle":"ana","name":"Ана","bio":"Горы и поезда","avatar_path":null,
+      "routes_count":1,"reviews_count":11,"saves_count":6,"score":4.350}]
+    """
+
+    private var routes: [PublicRoute] {
+        (try? JSONDecoder().decode([PublicRoute].self, from: Data(Self.json.utf8))) ?? []
+    }
+
+    private var authors: [PublicAuthor] {
+        (try? JSONDecoder().decode([PublicAuthor].self, from: Data(Self.authorsJSON.utf8))) ?? []
+    }
+
+    func topRoutes(limit: Int) async throws -> [PublicRoute] {
+        routes.sorted { $0.score > $1.score }
+    }
+
+    func topAuthors(limit: Int) async throws -> [PublicAuthor] {
+        authors.sorted { ($0.score ?? 0) > ($1.score ?? 0) }
+    }
+
+    func author(id: String) async throws -> PublicAuthor {
+        guard let found = authors.first(where: { $0.id == id }) else {
+            throw CommunityError.network("нет такого")
+        }
+        return found
+    }
+
+    func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] {
+        routes.filter { $0.authorID == authorID }
+    }
+}
+#endif

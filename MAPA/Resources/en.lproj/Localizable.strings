@@ -85,11 +85,14 @@
 "Закрыть маршруты" = "Close routes";
 "Закрыть поиск" = "Close search";
 "Закрыть профиль" = "Close profile";
+"Закрыть сообщество" = "Close community";
+"Закрыть страницу" = "Close page";
 "Закрыть фотографию" = "Close photo";
 "Закрыть экспорт" = "Close export";
 "Заливка страны" = "Country fill";
 "Заливка страны, награды" = "Country fill, awards";
 "Звёздное небо под картой" = "A starry sky beneath the map";
+"Здесь будут те, чьи маршруты оценили выше всего." = "This is where the people with the best-rated routes will be.";
 "Здесь мой дом" = "This is my home";
 "Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать." = "Routes by other people will appear here — with photos, budgets and reviews. We did not fill this section with invented ones: you cannot travel by those.";
 "зум" = "zoom";
@@ -106,6 +109,7 @@
 "Индиго" = "Indigo";
 "Истории" = "Stories";
 "кадр" = "frame";
+"Как только кто-нибудь опубликует свой — он появится здесь." = "As soon as someone publishes one, it shows up here.";
 "Карта" = "Map";
 "Карта и маршруты переедут на новый телефон" = "Your map and routes move to a new phone";
 "Карта мира" = "World map";
@@ -126,6 +130,9 @@
 "Ленты над водой" = "Ribbons over the water";
 "Лепестки на воде" = "Petals on the water";
 "Лес" = "Forest";
+"Лучшие маршруты и люди" = "Best routes and people";
+"Людей пока нет" = "No people yet";
+"Люди" = "People";
 "Маршрут" = "Route";
 "Маршрут по стране" = "A route across the country";
 "Маршрут — это города по порядку: куда сначала, куда потом и на сколько дней." = "A route is cities in order: where first, where next, and for how many days.";
@@ -148,9 +155,13 @@
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
 "Найти страну или город" = "Find a country or city";
 "не разобрана ни одна страна" = "not a single country was parsed";
+"Не удалось загрузить" = "Could not load";
+"Не удалось загрузить маршруты" = "Could not load the routes";
 "Не удалось нарисовать кадр" = "Could not draw a frame";
 "Не удалось начать запись видео" = "Could not start recording the video";
+"Неверный адрес" = "Bad address";
 "Неон" = "Neon";
+"нет такого" = "no such thing";
 "Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
@@ -160,6 +171,7 @@
 "ожидалась FeatureCollection" = "expected a FeatureCollection";
 "Океания" = "Oceania";
 "Описания пока нет" = "No description yet";
+"опубликовано" = "published";
 "Осака" = "Osaka";
 "от дома" = "from home";
 "От мелководья к глубине" = "From shallows to the deep";
@@ -178,6 +190,7 @@
 "Отмечай страны, где был, собирай маршруты по городам и смотри, сколько мира уже твоё." = "Mark the countries you've been to, build routes between cities and see how much of the world is already yours.";
 "Оформление" = "Appearance";
 "Оценить маршрут" = "Rate the route";
+"оценка" = "rating";
 "Оценка %@ из пяти" = "Rating %@ out of five";
 "Очистить" = "Clear";
 "Ошибка" = "Error";
@@ -216,7 +229,9 @@
 "Пройден целиком" = "Completed";
 "Пропустить" = "Skip";
 "Профиль" = "Profile";
+"Профиль не найден" = "Profile not found";
 "Пузырьки воздуха" = "Air bubbles";
+"Пустой ответ" = "Empty response";
 "Пустыня" = "Desert";
 "Путешественник" = "Traveller";
 "Пятнадцать полотен, где меняется не цвет, а материал карты, и восемь палитр к ним." = "Fifteen canvases where it is the material of the map that changes, not the colour, and eight palettes to go with them.";
@@ -235,6 +250,7 @@
 "Северное сияние" = "Northern lights";
 "Семантические роли, а не оттенки" = "Semantic roles, not shades";
 "Сервер ещё не подключён" = "The server is not connected yet";
+"Сервер ответил %@" = "The server answered %@";
 "Сетка" = "Grid";
 "Системный шрифт, масштабируется Dynamic Type" = "System font, scales with Dynamic Type";
 "скоро" = "soon";
@@ -244,6 +260,9 @@
 "Собираем мир" = "Assembling the world";
 "Собрано из главных городов" = "Built from the main cities";
 "Советуют заложить" = "Suggested to allow";
+"Сообщество" = "Community";
+"Сообщество ещё не подключено" = "The community is not connected yet";
+"сохранили" = "saves";
 "Сохранить" = "Save";
 "Сохранить имя" = "Save name";
 "среднее" = "average";
@@ -267,6 +286,7 @@
 "Тлеющие угли" = "Smouldering embers";
 "Толща океана" = "The ocean's depth";
 "Только на этом телефоне" = "Only on this phone";
+"Топ по оценкам тех, кто уже съездил" = "Ranked by the people who have been there";
 "точек" = "stops";
 "Тумблеры имитируют системные настройки" = "The switches mimic system settings";
 "Ты" = "You";
@@ -305,6 +325,7 @@
 "Что смотреть — расскажут те, кто был" = "Those who have been there will tell you what to see";
 "Что стоит знать тому, кто поедет за тобой?" = "What should the next traveller know?";
 "Чтобы открыть страну или город, воспользуйся поиском" = "To open a country or a city, use search";
+"Чужие маршруты и страницы людей живут на сервере — приложение к нему пока не подключено. Выдуманных авторов здесь нет и не будет: по их маршрутам нельзя поехать, а по оценкам нельзя выбрать." = "Other people's routes and pages live on a server, and the app is not connected to one yet. There are no invented authors here and there never will be: you cannot travel by their routes, and you cannot choose by their ratings.";
 "Чужие — сохранить и пройти" = "And save other people's routes to walk them";
 "Шаг 4pt — общий ритм интерфейса" = "A 4pt step — the shared rhythm of the interface";
 "Это твой дом" = "This is your home";

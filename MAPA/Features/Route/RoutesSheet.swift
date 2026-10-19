@@ -20,6 +20,7 @@ struct RoutesSheet: View {
     let onCreate: () -> Void
     let onDelete: (Route) -> Void
     let onTakeSuggestion: (CountrySuggestion) -> Void
+    let onOpenCommunity: () -> Void
     let onDismiss: () -> Void
 
     @State private var dragOffset: CGFloat = 0
@@ -331,28 +332,44 @@ struct RoutesSheet: View {
     /// Заполнять его выдуманными маршрутами выдуманных людей я не стал:
     /// человек начнёт их сохранять и планировать по ним поездку, а они
     /// ненастоящие. Пустой раздел честнее и заодно объясняет, чего ждать.
+    /// Вход в сообщество.
+    ///
+    /// Раньше здесь висела заглушка «пока никого нет». Теперь это дверь:
+    /// за ней топ маршрутов по оценкам и люди, которые их собрали. Если
+    /// сервер не подключён, об этом честно скажет тот экран, а не этот.
     private var community: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
-            SectionHeader("Маршруты сообщества")
+            SectionHeader("Сообщество")
 
-            VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                Image(systemName: "person.2")
-                    .font(.system(size: DS.Size.iconLg, weight: .light))
-                    .foregroundStyle(DS.Color.inkTertiary)
-                    .padding(.bottom, DS.Space.xxs)
+            Button(action: onOpenCommunity) {
+                HStack(spacing: DS.Space.sm) {
+                    Image(systemName: "trophy")
+                        .font(.system(size: DS.Size.iconMd, weight: .medium))
+                        .foregroundStyle(accent)
 
-                Text("Пока никого нет")
-                    .font(DS.Font.subhead)
-                    .foregroundStyle(DS.Color.ink)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Лучшие маршруты и люди")
+                            .font(DS.Font.body)
+                            .foregroundStyle(DS.Color.ink)
+                            .lineLimit(1)
+                        Text("Топ по оценкам тех, кто уже съездил")
+                            .font(DS.Font.micro)
+                            .foregroundStyle(DS.Color.inkTertiary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                Text("Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать.")
-                    .font(DS.Font.callout)
-                    .foregroundStyle(DS.Color.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(DS.Color.inkTertiary)
+                }
+                .padding(DS.Space.sm)
+                .dsGlass(radius: DS.Radius.md, shadow: .low)
+                .contentShape(Rectangle())
             }
-            .padding(DS.Space.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .dsGlass(radius: DS.Radius.md, shadow: .low)
+            .buttonStyle(.plain)
         }
     }
 
