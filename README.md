@@ -148,6 +148,18 @@ are generated, not stored — Apple wants 1290×2796, five per language:
 Tools/make_screenshots.sh screenshots
 ```
 
+## MAPA+
+
+One non-consumable purchase (`com.mapa.app.plus`) unlocks fifteen premium
+canvases and eight palettes. `MAPA/Resources/MAPA.storekit` is a local
+storefront so the flow builds, runs and is tested before anything exists in
+App Store Connect — the scheme points at it, and `ShopTests` buys and refunds
+through `SKTestSession`.
+
+Before release the same product id has to be created in App Store Connect,
+and the Paid Apps agreement signed. Until then the purchase works only
+against the local storefront, and the screen says so.
+
 ## Promo video
 
 A 26-second walkthrough, assembled from real screens of the running app:

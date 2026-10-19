@@ -12,6 +12,7 @@ struct RootView: View {
     @State private var previewReduceTransparency = false
     @State private var showsGallery = false
     @StateObject private var settings = AppSettings()
+    @StateObject private var shop = Shop()
 
     var body: some View {
         ZStack {
@@ -20,6 +21,7 @@ struct RootView: View {
             AuroraBackground(intensity: settings.theme.isLight ? 0 : 0.5, colors: settings.theme.auroraColors)
 
             WorldMapView(
+                shop: shop,
                 surface: settings.surface,
                 palette: settings.palette,
                 onSelectSurface: { settings.select($0) },
@@ -39,6 +41,12 @@ struct RootView: View {
         .sheet(isPresented: $showsGallery) {
             galleryScene
         }
+        .task {
+            // Магазин спрашиваем один раз за запуск: цена и покупка
+            // нужны раньше, чем человек дойдёт до оформления.
+            await shop.load()
+        }
+        .onChange(of: shop.isPlus) { settings.isPlus = $0 }
         .onAppear {
             Haptics.shared.prepare()
             #if DEBUG

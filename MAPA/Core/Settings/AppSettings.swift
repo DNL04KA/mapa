@@ -18,6 +18,12 @@ final class AppSettings: ObservableObject {
     @Published private(set) var surface: MapSurface
     @Published private(set) var palette: MapPalette
 
+    /// Куплен ли MAPA+. Ставится магазином при запуске и после покупки;
+    /// здесь не хранится — источник правды один, и он в `Shop`.
+    @Published var isPlus = false {
+        didSet { restoreChoiceIfPaid() }
+    }
+
     var theme: MapTheme { MapTheme(surface: surface, palette: palette) }
 
     private let defaults: UserDefaults
@@ -37,8 +43,25 @@ final class AppSettings: ObservableObject {
 
         // Если выбранное вдруг оказалось платным, а покупка не подтверждается —
         // откатываемся на открытое, а не показываем то, за что не заплачено.
+        // Выбор при этом остаётся записанным: магазин ответит через
+        // мгновение, и `restoreChoiceIfPaid` вернёт человеку его карту.
         surface = storedSurface.isPremium ? .night : storedSurface
         palette = storedPalette.isPremium ? .flags : storedPalette
+    }
+
+    /// Вернуть платный выбор, когда покупка подтвердилась.
+    ///
+    /// Магазин отвечает не мгновенно, и на первом кадре приложение честно
+    /// показывает бесплатное полотно. Если окажется, что MAPA+ куплен,
+    /// возвращаем то, что человек выбрал, — а не заставляем выбирать снова.
+    private func restoreChoiceIfPaid() {
+        guard isPlus else { return }
+        if let id = defaults.string(forKey: Key.surfaceID) {
+            surface = MapSurface.surface(id: id)
+        }
+        if let id = defaults.string(forKey: Key.paletteID) {
+            palette = MapPalette.palette(id: id)
+        }
     }
 
     /// Какой палитрой раньше рисовалось это полотно.
@@ -48,10 +71,11 @@ final class AppSettings: ObservableObject {
         surfaceID == MapSurface.paper.id ? MapPalette.ink.id : MapPalette.flags.id
     }
 
-    /// Возвращает `false`, если полотно платное — интерфейс покажет замок.
+    /// Возвращает `false`, если полотно платное и не куплено — интерфейс
+    /// покажет замок.
     @discardableResult
     func select(_ surface: MapSurface) -> Bool {
-        guard !surface.isPremium else { return false }
+        guard !surface.isPremium || isPlus else { return false }
         self.surface = surface
         defaults.set(surface.id, forKey: Key.surfaceID)
         return true
@@ -59,7 +83,7 @@ final class AppSettings: ObservableObject {
 
     @discardableResult
     func select(_ palette: MapPalette) -> Bool {
-        guard !palette.isPremium else { return false }
+        guard !palette.isPremium || isPlus else { return false }
         self.palette = palette
         defaults.set(palette.id, forKey: Key.paletteID)
         return true

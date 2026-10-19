@@ -12,6 +12,7 @@ struct WorldMapView: View {
     @AppStorage("onboarding.done") private var onboardingDone = false
     @State private var statsExpanded = false
     @State private var showsThemes = false
+    @State private var showsPlus = false
     @State private var showsAccount = false
     @State private var showsSearch = false
     /// Платное полотно или палитра, которые сейчас примеряют.
@@ -23,6 +24,8 @@ struct WorldMapView: View {
     @State private var showsExport = false
     @State private var routeExpanded = false
     @Environment(\.scenePhase) private var scenePhase
+
+    @ObservedObject var shop: Shop
 
     let surface: MapSurface
     let palette: MapPalette
@@ -66,6 +69,7 @@ struct WorldMapView: View {
         case "routes": showsRoutes = true
         case "account": showsAccount = true
         case "theme": showsThemes = true
+        case "plus": showsPlus = true
         case "search": showsSearch = true
         case "export": showsExport = true
         case let id? where id.hasPrefix("city-"):
@@ -361,6 +365,7 @@ struct WorldMapView: View {
     @ViewBuilder
     private var sheets: some View {
         statusSheet
+        plusSheet
         citySheet
         routePanel
         routesSheet
@@ -391,6 +396,22 @@ struct WorldMapView: View {
                 }
             )
             .zIndex(6)
+        }
+    }
+
+    /// Покупка MAPA+.
+    @ViewBuilder
+    private var plusSheet: some View {
+        if showsPlus {
+            PlusSheet(
+                shop: shop,
+                accent: activeTheme.accent,
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { showsPlus = false }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(7)
         }
     }
 
@@ -453,6 +474,10 @@ struct WorldMapView: View {
                 onOpenGallery: {
                     closeThemes()
                     onOpenGallery()
+                },
+                isPlus: shop.isPlus,
+                onOpenPlus: {
+                    withAnimation(motion.animation(.smooth)) { showsPlus = true }
                 }
             )
             .themedPanel(activeTheme)

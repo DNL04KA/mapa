@@ -1,0 +1,33 @@
+{
+  "identifier" : "A1B2C3D4",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "399",
+      "familyShareable" : true,
+      "internalID" : "MAPAPLUS01",
+      "localizations" : [
+        {
+          "description" : "Пятнадцать полотен и восемь палитр: пергамент, чертёж, звёздное небо под сушей. Один раз и навсегда.",
+          "displayName" : "MAPA+",
+          "locale" : "ru_RU"
+        },
+        {
+          "description" : "Fifteen canvases and eight palettes: parchment, blueprint, a starry sky under the land. Once and for good.",
+          "displayName" : "MAPA+",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.mapa.app.plus",
+      "referenceName" : "MAPA Plus",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "MAPA",
+    "_developerTeamID" : "",
+    "_lastSynchronizedDate" : 0
+  },
+  "subscriptionGroups" : [],
+  "version" : { "major" : 3, "minor" : 0 }
+}

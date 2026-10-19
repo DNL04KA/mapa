@@ -13,6 +13,8 @@
 "%@, точка %@" = "%@, stop %@";
 "%@: %@ из %@" = "%@: %@ of %@";
 "Core Haptics: щелчок + волна" = "Core Haptics: tap + wave";
+"MAPA+" = "MAPA+";
+"MAPA+ открыт" = "MAPA+ unlocked";
 "Аватарка" = "Avatar";
 "Азия" = "Asia";
 "Акцент" = "Accent";
@@ -30,9 +32,12 @@
 "Взять маршрут по стране: %@" = "Take the route for %@";
 "Взять себе" = "Make it mine";
 "Винтаж" = "Vintage";
+"Витрина недоступна. Проверь сеть и попробуй ещё раз." = "The store is not responding. Check your connection and try again.";
 "включено" = "on";
 "Волны дюн" = "Dune waves";
 "Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-colour charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
+"Восстановить покупку" = "Restore purchase";
+"Всё открыто — выбирай любое" = "Everything is unlocked — pick any";
 "Всё, что появится дальше — карта, карточки стран, маршруты — собирается только из этих токенов." = "Everything that follows — the map, country cards, routes — is built from these tokens alone.";
 "Вулкан" = "Volcano";
 "Вход заработает, когда подключим сервер. Пока карта, маршруты и оценки живут на этом телефоне и никуда не уходят." = "Sign-in will work once the server is connected. For now the map, routes and ratings live on this phone and go nowhere.";
@@ -79,6 +84,7 @@
 "Закрыть маршруты" = "Close routes";
 "Закрыть поиск" = "Close search";
 "Закрыть профиль" = "Close profile";
+"Закрыть фотографию" = "Close photo";
 "Закрыть экспорт" = "Close export";
 "Заливка страны" = "Country fill";
 "Заливка страны, награды" = "Country fill, awards";
@@ -101,6 +107,7 @@
 "кадр" = "frame";
 "Карта" = "Map";
 "Карта и маршруты переедут на новый телефон" = "Your map and routes move to a new phone";
+"Карта мира" = "World map";
 "Карта не открылась" = "The map did not open";
 "Карта откроется на твоём городе, а он станет точкой отсчёта для маршрутов." = "The map will open on your city, and your routes will start from there.";
 "Карта, переходы между экранами" = "Map, transitions between screens";
@@ -144,6 +151,7 @@
 "Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
+"Один раз и навсегда — это не подписка" = "Once and for good — this is not a subscription";
 "Один цвет на всю карту" = "One colour for the whole map";
 "Однажды доберусь" = "One day I will get there";
 "ожидалась FeatureCollection" = "expected a FeatureCollection";
@@ -155,8 +163,12 @@
 "Отдалить" = "Zoom out";
 "Отзывы" = "Reviews";
 "Откроются настройки приложения" = "App settings will open";
+"открыт" = "unlocked";
 "Открытая и весёлая" = "Open and cheerful";
 "Открыто" = "Unlocked";
+"открыть" = "unlock";
+"Открыть за %@" = "Unlock for %@";
+"Открыть фотографию" = "Open photo";
 "Отмена" = "Cancel";
 "Отметить пройденной" = "Mark as done";
 "Отметить страну" = "Mark the country";
@@ -169,6 +181,7 @@
 "Панели, смена состояния, шиты" = "Panels, state changes, sheets";
 "Панель замеров" = "Metrics panel";
 "Пергамент и перо" = "Parchment and quill";
+"Пергамент, чертёж, звёздное небо под сушей" = "Parchment, blueprint, a starry sky under the land";
 "Переставить %@" = "Move %@";
 "Платное. Коснись, чтобы примерить" = "Paid. Tap to try it on";
 "Плетение холста" = "Canvas weave";
@@ -181,6 +194,8 @@
 "Пока никто не оценивал" = "Nobody has rated it yet";
 "Показать весь мир" = "Show the whole world";
 "Показать, где я" = "Show where I am";
+"Покупка ждёт подтверждения" = "The purchase is awaiting approval";
+"Покупка не найдена" = "No purchase found";
 "Полотно" = "Canvas";
 "Попробовать снова" = "Try again";
 "Пост" = "Post";
@@ -201,7 +216,9 @@
 "Пузырьки воздуха" = "Air bubbles";
 "Пустыня" = "Desert";
 "Путешественник" = "Traveller";
+"Пятнадцать полотен, где меняется не цвет, а материал карты, и восемь палитр к ним." = "Fifteen canvases where it is the material of the map that changes, not the colour, and eight palettes to go with them.";
 "Пятнадцать полотен, где меняется не цвет, а материал карты: пергамент со штриховкой пером, миллиметровка чертежа, звёздное небо под сушей." = "Fifteen canvases where it is the material that changes, not the colour: parchment hatched with a quill, draughtsman's graph paper, a starry sky beneath the land.";
+"Работает на всех твоих устройствах" = "Works on all your devices";
 "Развернуть подробности" = "Expand details";
 "Рассвет" = "Dawn";
 "Рябь под закатом" = "Ripples at sunset";
@@ -229,6 +246,7 @@
 "среднее" = "average";
 "столица" = "capital";
 "стран" = "countries";
+"Страна" = "Country";
 "Страна или город" = "Country or city";
 "Строки развёртки" = "Scan lines";
 "Сумерки перед рассветом" = "Dusk before dawn";
@@ -241,6 +259,7 @@
 "Твоя отметка" = "Your mark";
 "Твоя оценка" = "Your rating";
 "Тень + светлая кромка + свечение" = "Shadow + light edge + glow";
+"Тестовая витрина: деньги не списываются" = "Test store: no money is charged";
 "Типографика" = "Typography";
 "Тлеющие угли" = "Smouldering embers";
 "Толща океана" = "The ocean's depth";
@@ -282,6 +301,7 @@
 "Что посмотреть" = "What to see";
 "Что смотреть — расскажут те, кто был" = "Those who have been there will tell you what to see";
 "Что стоит знать тому, кто поедет за тобой?" = "What should the next traveller know?";
+"Чтобы открыть страну или город, воспользуйся поиском" = "To open a country or a city, use search";
 "Чужие — сохранить и пройти" = "And save other people's routes to walk them";
 "Шаг 4pt — общий ритм интерфейса" = "A 4pt step — the shared rhythm of the interface";
 "Это твой дом" = "This is your home";

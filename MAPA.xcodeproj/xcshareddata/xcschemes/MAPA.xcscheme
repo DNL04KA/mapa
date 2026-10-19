@@ -15,6 +15,9 @@
       </Testables>
    </TestAction>
    <LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">
+      <!-- Локальная витрина: пока товар не заведён в App Store Connect,
+           без неё покупку нельзя ни собрать, ни проверить. -->
+      <StoreKitConfigurationFileReference identifier = "../../../MAPA/Resources/MAPA.storekit"></StoreKitConfigurationFileReference>
       <BuildableProductRunnable runnableDebuggingMode = "0">
          <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "21ADF072C172F062A5CF8D2B" BuildableName = "MAPA.app" BlueprintName = "MAPA" ReferencedContainer = "container:MAPA.xcodeproj"></BuildableReference>
       </BuildableProductRunnable>

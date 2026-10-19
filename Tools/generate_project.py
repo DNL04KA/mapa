@@ -27,7 +27,8 @@ PROJ_DIR = os.path.join(ROOT, APP + ".xcodeproj")
 
 SOURCE_EXT = {".swift"}
 RESOURCE_EXT = {".xcassets", ".json", ".geojson", ".strings", ".stringsdict",
-                ".xcstrings", ".ttf", ".otf", ".png", ".xcprivacy"}
+                ".xcstrings", ".ttf", ".otf", ".png", ".xcprivacy",
+                ".storekit"}
 BUNDLE_DIRS = {".xcassets"}          # папки, которые Xcode видит как единый файл
 SKIP = {".DS_Store"}
 
@@ -74,6 +75,7 @@ def file_type(name: str) -> str:
         ".xcstrings": "text.json.xcstrings",
         ".png": "image.png",
         ".xcprivacy": "text.xml",
+        ".storekit": "text.json",
         ".ttf": "file",
         ".otf": "file",
     }.get(ext, "text")
@@ -296,6 +298,9 @@ def write_scheme(with_tests: bool):
 {testables}      </Testables>
    </TestAction>
    <LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">
+      <!-- Локальная витрина: пока товар не заведён в App Store Connect,
+           без неё покупку нельзя ни собрать, ни проверить. -->
+      <StoreKitConfigurationFileReference identifier = "../../../MAPA/Resources/MAPA.storekit"></StoreKitConfigurationFileReference>
       <BuildableProductRunnable runnableDebuggingMode = "0">
          <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "{app_target}" BuildableName = "{app}.app" BlueprintName = "{app}" ReferencedContainer = "container:{app}.xcodeproj"></BuildableReference>
       </BuildableProductRunnable>

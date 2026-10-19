@@ -47,6 +47,10 @@ struct ThemePicker: View {
     let onPreview: (ThemePreview?) -> Void
     let onDismiss: () -> Void
     let onOpenGallery: () -> Void
+    /// MAPA+ куплен — замков нет, всё выбирается как обычное.
+    var isPlus: Bool = false
+    /// Открыть экран покупки.
+    var onOpenPlus: () -> Void = {}
 
     enum Tab: String, CaseIterable, Identifiable {
         case surface = "Полотно"
@@ -190,14 +194,14 @@ struct ThemePicker: View {
                         name: item.name,
                         subtitle: item.subtitle,
                         accent: item.accent,
-                        isPremium: item.isPremium,
+                        isPremium: item.isPremium && !isPlus,
                         isSelected: item.id == surface.id && preview == nil,
                         isPreviewing: preview == .surface(item)
                     ) {
                         RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                             .fill(item.previewGradient)
                     } tap: {
-                        choose(.surface(item), isFree: !item.isPremium) {
+                        choose(.surface(item), isFree: !item.isPremium || isPlus) {
                             onSelectSurface(item)
                         }
                     }
@@ -217,13 +221,13 @@ struct ThemePicker: View {
                         name: item.name,
                         subtitle: item.subtitle,
                         accent: item.previewColors.first ?? surface.accent,
-                        isPremium: item.isPremium,
+                        isPremium: item.isPremium && !isPlus,
                         isSelected: item.id == palette.id && preview == nil,
                         isPreviewing: preview == .palette(item)
                     ) {
                         paletteSwatch(item)
                     } tap: {
-                        choose(.palette(item), isFree: !item.isPremium) {
+                        choose(.palette(item), isFree: !item.isPremium || isPlus) {
                             onSelectPalette(item)
                         }
                     }
@@ -362,7 +366,7 @@ struct ThemePicker: View {
                         )
                     )
                 Spacer(minLength: 0)
-                Text("скоро")
+                Text(isPlus ? "открыт" : "открыть")
                     .font(DS.Font.micro)
                     .foregroundStyle(DS.Color.inkOnAccent)
                     .padding(.horizontal, DS.Space.xs)
@@ -378,12 +382,22 @@ struct ThemePicker: View {
                 .foregroundStyle(DS.Color.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Label("Коснись любого — примеришь на своей карте", systemImage: "hand.tap")
+            Label(isPlus ? "Всё открыто — выбирай любое"
+                         : "Коснись любого — примеришь на своей карте",
+                  systemImage: isPlus ? "checkmark.seal.fill" : "hand.tap")
                 .font(DS.Font.caption)
                 .foregroundStyle(DS.Palette.indigoSoft)
         }
         .padding(DS.Space.md)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard !isPlus else { return }
+            Haptics.shared.tap(.light)
+            onOpenPlus()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isPlus ? [] : .isButton)
         .background {
             RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
                 .fill(
