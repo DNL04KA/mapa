@@ -80,6 +80,19 @@
 			<key>other</key><string>%d точки</string>
 		</dict>
 	</dict>
+	<key>plural.routes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>d</string>
+			<key>one</key><string>%d маршрут</string>
+			<key>few</key><string>%d маршрута</string>
+			<key>many</key><string>%d маршрутов</string>
+			<key>other</key><string>%d маршрута</string>
+		</dict>
+	</dict>
 	<key>plural.reviews</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>

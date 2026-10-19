@@ -449,6 +449,22 @@ struct WorldMapView: View {
             AccountSheet(
                 account: account,
                 accent: activeTheme.accent,
+                statistics: model.statistics,
+                visited: model.countries(with: .visited),
+                wishlist: model.countries(with: .wishlist),
+                homeCity: model.travelLog.home?.cityName,
+                routeCount: model.routes.count,
+                onOpenCountry: { country in
+                    withAnimation(motion.animation(.smooth)) { showsAccount = false }
+                    model.select(country, reduceMotion: motion.reduceMotion)
+                    openCard(for: country)
+                },
+                onOpenRoutes: {
+                    withAnimation(motion.animation(.smooth)) {
+                        showsAccount = false
+                        showsRoutes = true
+                    }
+                },
                 onDismiss: {
                     withAnimation(motion.animation(.smooth)) { showsAccount = false }
                 }

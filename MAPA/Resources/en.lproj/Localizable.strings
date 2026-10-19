@@ -67,6 +67,7 @@
 "дней" = "days";
 "Дней в %@: %@" = "Days in %@: %@";
 "Добавить фото: %@" = "Add a photo: %@";
+"дом" = "home";
 "Дом · %@" = "Home · %@";
 "Доступность" = "Accessibility";
 "Европа" = "Europe";
@@ -134,6 +135,8 @@
 "Миллиметровка и пунктир" = "Graph paper and dashes";
 "Мир открыт на" = "World unlocked";
 "Мир открыт на %@ процента, " = "World unlocked %@ percent, ";
+"мира открыто" = "of the world";
+"Мои маршруты" = "My routes";
 "Море" = "Sea";
 "Моя карта MAPA" = "My MAPA map";
 "Мы не выдумываем достопримечательности. Про эту страну расскажут те, кто там был, — когда появятся маршруты сообщества." = "We do not invent landmarks. People who have been there will tell you about this country — once community routes arrive.";

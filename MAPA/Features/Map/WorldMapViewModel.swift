@@ -576,6 +576,18 @@ final class WorldMapViewModel: ObservableObject {
 
     // MARK: - Маршруты
 
+    /// Страны с заданной отметкой — от крупной к мелкой.
+    ///
+    /// Порядок по площади, а не по алфавиту: список «где я был» читают
+    /// глазами, и Россия с Бразилией в начале узнаются мгновенно, а
+    /// алфавит каждый раз приходится просматривать целиком.
+    func countries(with status: TravelStatus) -> [Country] {
+        guard let geometry else { return [] }
+        return travelLog.countryIDs(with: status)
+            .compactMap { geometry.country(id: $0) }
+            .sorted { $0.areaKm2 > $1.areaKm2 }
+    }
+
     func startRoute(reduceMotion: Bool) {
         Haptics.shared.tap(.light)
         withAnimation(reduceMotion ? DS.Motion.Preset.smooth.reducedAnimation : DS.Motion.Preset.smooth.animation) {

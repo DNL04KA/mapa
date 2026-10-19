@@ -13,6 +13,15 @@ struct AccountSheet: View {
     @ObservedObject var account: AccountStore
 
     let accent: Color
+    let statistics: TravelStatistics
+    /// Страны, которые человек отметил. Это и есть его профиль: имя и
+    /// аватарка без них — пустая форма.
+    let visited: [Country]
+    let wishlist: [Country]
+    let homeCity: String?
+    let routeCount: Int
+    let onOpenCountry: (Country) -> Void
+    let onOpenRoutes: () -> Void
     let onDismiss: () -> Void
 
     @State private var draftName: String = ""
@@ -104,6 +113,10 @@ struct AccountSheet: View {
                 .frame(width: 38, height: 4)
 
             header
+            summary
+            countrySection("Был", visited, status: .visited)
+            countrySection("Хочу", wishlist, status: .wishlist)
+            routesRow
             whatSignInGives
             providers
 
@@ -112,6 +125,111 @@ struct AccountSheet: View {
                     Task { await account.signOut() }
                 }
             }
+        }
+    }
+
+    /// Три числа, которыми человек и представляется: сколько мира, сколько
+    /// стран, откуда он.
+    private var summary: some View {
+        DS.Reflow(spacing: DS.Space.xs) {
+            summaryTile(String(format: "%.1f%%", statistics.worldPercent), "мира открыто")
+            summaryTile("\(statistics.exploredCount)", "стран")
+            summaryTile(homeCity ?? "—", "дом")
+        }
+    }
+
+    private func summaryTile(_ value: String, _ caption: LocalizedStringKey) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(DS.Font.numeral)
+                .foregroundStyle(DS.Color.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            Text(caption)
+                .font(DS.Font.micro)
+                .foregroundStyle(DS.Color.inkTertiary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DS.Space.sm)
+        .dsGlass(radius: DS.Radius.md, shadow: .low)
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Список стран с отметкой.
+    ///
+    /// То, ради чего в профиль и заходят: карта показывает цвет, а список
+    /// показывает счёт. Названия — кнопками: из профиля логично провалиться
+    /// в страну, а не возвращаться искать её на карте.
+    @ViewBuilder
+    private func countrySection(_ title: LocalizedStringKey,
+                                _ countries: [Country],
+                                status: TravelStatus) -> some View {
+        if !countries.isEmpty {
+            VStack(alignment: .leading, spacing: DS.Space.xs) {
+                SectionHeader(title, subtitle: Plural.countries(countries.count))
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: DS.Space.xs) {
+                        ForEach(countries) { country in
+                            Button {
+                                onOpenCountry(country)
+                            } label: {
+                                HStack(spacing: DS.Space.xxs) {
+                                    Circle()
+                                        .fill(DS.StatusColor.colors(status, flagHue: country.flagHue)[0])
+                                        .frame(width: 10, height: 10)
+                                    Text(country.displayName)
+                                        .font(DS.Font.caption)
+                                        .foregroundStyle(DS.Color.ink)
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, DS.Space.sm)
+                                .padding(.vertical, DS.Space.xs)
+                                .background {
+                                    Capsule(style: .continuous)
+                                        .fill(DS.Color.surfaceRaised.opacity(0.6))
+                                        .overlay {
+                                            Capsule(style: .continuous)
+                                                .strokeBorder(DS.Color.border, lineWidth: 1)
+                                        }
+                                }
+                                .contentShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, DS.Space.screen)
+                }
+                .padding(.horizontal, -DS.Space.screen)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var routesRow: some View {
+        if routeCount > 0 {
+            Button(action: onOpenRoutes) {
+                HStack(spacing: DS.Space.sm) {
+                    Image(systemName: "point.topleft.down.curvedto.point.bottomright.up")
+                        .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                        .foregroundStyle(accent)
+                    Text("Мои маршруты")
+                        .font(DS.Font.body)
+                        .foregroundStyle(DS.Color.ink)
+                    Spacer(minLength: 0)
+                    Text(Plural.routes(routeCount))
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(DS.Color.inkTertiary)
+                }
+                .padding(DS.Space.sm)
+                .dsGlass(radius: DS.Radius.md, shadow: .low)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 

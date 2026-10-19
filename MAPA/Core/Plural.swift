@@ -14,6 +14,7 @@ enum Plural {
     static func days(_ count: Int) -> String { localized("plural.days", count) }
     static func points(_ count: Int) -> String { localized("plural.points", count) }
     static func places(_ count: Int) -> String { localized("plural.places", count) }
+    static func routes(_ count: Int) -> String { localized("plural.routes", count) }
     static func reviews(_ count: Int) -> String { localized("plural.reviews", count) }
 
     private static func localized(_ key: String, _ count: Int) -> String {

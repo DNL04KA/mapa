@@ -93,6 +93,17 @@
 			<string>%d stops</string>
 		</dict>
 	</dict>
+	<key>plural.routes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>d</string>
+			<key>one</key><string>%d route</string>
+			<key>other</key><string>%d routes</string>
+		</dict>
+	</dict>
 	<key>plural.reviews</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
