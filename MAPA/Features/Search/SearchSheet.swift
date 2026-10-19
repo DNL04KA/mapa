@@ -16,8 +16,18 @@ struct SearchSheet: View {
     let onPick: (SearchResult) -> Void
     let onDismiss: () -> Void
 
-    @State private var query = ""
+    @State private var query = Self.firstQuery
     @FocusState private var fieldFocused: Bool
+
+    /// Запрос из переменной окружения — чтобы снять экран поиска
+    /// симулятором, которому нечем набрать слово. Только отладка.
+    private static var firstQuery: String {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["MAPA_SEARCH"] ?? ""
+        #else
+        ""
+        #endif
+    }
 
     private var results: [SearchResult] { index.search(query) }
 
@@ -38,7 +48,11 @@ struct SearchSheet: View {
             panel
         }
         .ignoresSafeArea(edges: .bottom)
-        .onAppear { fieldFocused = true }
+        .onAppear {
+            // При съёмке запрос уже набран, и клавиатура закрывала бы
+            // половину экрана.
+            fieldFocused = query.isEmpty
+        }
     }
 
     private var panel: some View {

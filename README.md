@@ -148,6 +148,17 @@ are generated, not stored — Apple wants 1290×2796, five per language:
 Tools/make_screenshots.sh screenshots
 ```
 
+## Promo video
+
+A 26-second walkthrough, assembled from real screens of the running app:
+screenshots are taken through the same environment-variable harness, frames
+are drawn by a Swift script (gradient, device, caption) and stitched by
+ffmpeg. Rebuild it after any visible change:
+
+```bash
+Tools/make_promo.sh build/promo
+```
+
 ## Checks
 
 ```bash
