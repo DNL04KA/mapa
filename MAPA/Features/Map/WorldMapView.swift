@@ -185,26 +185,13 @@ struct WorldMapView: View {
                 isHome: model.isSelectedCityHome,
                 accent: activeTheme.accent,
                 onSetHome: { model.setHome(at: city, reduceMotion: motion.reduceMotion) },
-                onAddToRoute: {
-                    // Нет открытого маршрута — начинаем новый прямо отсюда:
-                    // иначе до маршрута нужно идти через нижнюю панель и
-                    // искать этот же город заново.
-                    if model.editingRoute == nil {
-                        model.startRoute(reduceMotion: motion.reduceMotion)
-                        routeExpanded = false
-                    }
-                    model.add(city, reduceMotion: motion.reduceMotion)
-                    model.dismissCity(reduceMotion: motion.reduceMotion)
-                },
                 onOpenCountry: {
                     guard let country = model.geometry?.country(id: city.countryID) else { return }
                     model.dismissCity(reduceMotion: motion.reduceMotion)
                     model.select(country, reduceMotion: motion.reduceMotion)
                     openCard(for: country)
                 },
-                onDismiss: { model.dismissCity(reduceMotion: motion.reduceMotion) },
-                isInRoute: model.editingRoute?.points.contains { $0.cityID == city.id } ?? false,
-                hasOpenRoute: model.editingRoute != nil
+                onDismiss: { model.dismissCity(reduceMotion: motion.reduceMotion) }
             )
             .themedPanel(activeTheme)
             .zIndex(2)

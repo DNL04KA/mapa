@@ -15,16 +15,9 @@ struct CitySheet: View {
     let isHome: Bool
     let accent: Color
     let onSetHome: () -> Void
-    /// Добавить город в маршрут — открытый или новый.
-    let onAddToRoute: () -> Void
     /// Открыть страну, в которой город стоит.
     let onOpenCountry: () -> Void
     let onDismiss: () -> Void
-    /// Город уже в открытом маршруте.
-    var isInRoute: Bool = false
-    /// Маршрут сейчас открыт — значит, кнопка добавляет в него, а не
-    /// начинает новый.
-    var hasOpenRoute: Bool = false
 
     @State private var dragOffset: CGFloat = 0
     @State private var preview: Landmark?
@@ -64,7 +57,7 @@ struct CitySheet: View {
                 .frame(width: 38, height: 4)
 
             header
-            landmarks
+            walk
             facts
             actions
         }
@@ -126,73 +119,108 @@ struct CitySheet: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// Что посмотреть в городе — с настоящими фотографиями.
+    /// Прогулка по городу.
+    ///
+    /// Не просто список мест, а порядок, в котором их обходят: от центра к
+    /// ближайшему, потом к ближайшему из оставшихся. Ради этого в городе и
+    /// оказываешься — а «начать отсюда маршрут по стране» здесь было не к
+    /// месту и занимало половину панели.
     ///
     /// Под каждым снимком стоит имя автора и лицензия. Это не мелкий шрифт
     /// ради приличия: фотографии с Викисклада можно показывать именно при
     /// условии, что автора назвали.
     @ViewBuilder
-    private var landmarks: some View {
-        let places = CityFacts.landmarks(for: city.id)
-        let photos = places.filter { $0.small != nil }
+    private var walk: some View {
+        let plan = CityWalk.plan(for: city)
+        let steps = plan.steps.filter { $0.place.small != nil }
 
-        if !photos.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: DS.Space.sm) {
-                    ForEach(photos) { photo in
-                        VStack(alignment: .leading, spacing: 5) {
-                            // Снимок открывается целиком: разглядывать
-                            // Колизей в полтораста точек нечестно по
-                            // отношению и к Колизею, и к человеку.
-                            Button {
-                                Haptics.shared.tap(.light)
-                                withAnimation(motion.animation(.smooth)) { preview = photo }
-                            } label: {
-                                ZStack {
-                                    Rectangle().fill(accent.opacity(0.10))
-                                    RemoteImage(url: photo.small)
-                                }
-                                .frame(width: 152, height: 104)
-                                .clipped()
-                                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
-                                        .strokeBorder(DS.Color.hairline, lineWidth: 1)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(photo.name)
-                            .accessibilityHint("Открыть фотографию")
+        if !steps.isEmpty {
+            VStack(alignment: .leading, spacing: DS.Space.xs) {
+                SectionHeader("Что посмотреть", subtitle: walkSubtitle(plan))
 
-                            Text(photo.name)
-                                .font(DS.Font.caption)
-                                .foregroundStyle(DS.Color.ink)
-                                .lineLimit(1)
-
-                            if let credit = photo.credit {
-                                // Две строки, а не одна: обрезанное имя автора —
-                                // это уже не указание авторства.
-                                Text(credit)
-                                    .font(DS.Font.micro)
-                                    .foregroundStyle(DS.Color.inkTertiary)
-                                    .lineLimit(2)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: DS.Space.sm) {
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
+                            stepTile(step, number: index + 1)
                         }
-                        .frame(width: 152, alignment: .leading)
-                        .accessibilityElement(children: .combine)
                     }
+                    .padding(.horizontal, DS.Space.screen)
                 }
-                .padding(.horizontal, DS.Space.screen)
+                .padding(.horizontal, -DS.Space.screen)
             }
-            .padding(.horizontal, -DS.Space.screen)
-        } else if !places.isEmpty {
-            Text(places.map(\.name).joined(separator: " · "))
-                .font(DS.Font.caption)
-                .foregroundStyle(DS.Color.inkSecondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
+        } else {
+            let places = CityFacts.landmarks(for: city.id)
+            if !places.isEmpty {
+                Text(places.map(\.name).joined(separator: " · "))
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.inkSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
         }
+    }
+
+    /// «4 места · 5 км пешком». Расстояние показываем, только если оно
+    /// посчитано по настоящим координатам всех точек.
+    private func walkSubtitle(_ plan: CityWalk.Plan) -> String? {
+        let places = Plural.places(plan.steps.count)
+        guard !plan.isEmpty, plan.distance > 0.3,
+              plan.steps.allSatisfy({ $0.place.coordinate != nil }) else { return places }
+        return places + " · " + String(format: NSLocalizedString("%@ км пешком", comment: ""),
+                                       Self.walkFormatter.string(
+                                        from: NSNumber(value: plan.distance)) ?? "")
+    }
+
+    private func stepTile(_ step: CityWalk.Step, number: Int) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            // Снимок открывается целиком: разглядывать Колизей в полтораста
+            // точек нечестно по отношению и к Колизею, и к человеку.
+            Button {
+                Haptics.shared.tap(.light)
+                withAnimation(motion.animation(.smooth)) { preview = step.place }
+            } label: {
+                ZStack(alignment: .topLeading) {
+                    ZStack {
+                        Rectangle().fill(accent.opacity(0.10))
+                        RemoteImage(url: step.place.small)
+                    }
+                    .frame(width: 152, height: 104)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                            .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                    }
+
+                    Text("\(number)")
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkOnAccent)
+                        .frame(width: 22, height: 22)
+                        .background(Circle().fill(accent))
+                        .padding(6)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(number). \(step.place.name)")
+            .accessibilityHint("Открыть фотографию")
+
+            Text(step.place.name)
+                .font(DS.Font.caption)
+                .foregroundStyle(DS.Color.ink)
+                .lineLimit(1)
+
+            if let credit = step.place.credit {
+                // Две строки, а не одна: обрезанное имя автора — это уже
+                // не указание авторства.
+                Text(credit)
+                    .font(DS.Font.micro)
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(width: 152, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 
     private var facts: some View {
@@ -243,33 +271,19 @@ struct CitySheet: View {
 
     /// Что отсюда можно сделать.
     ///
-    /// Раньше здесь была одна кнопка — «сделать домом», — и экран города
-    /// оказывался тупиком: ты пришёл посмотреть на Рим, а предложили тебе
-    /// в нём поселиться. Главное действие теперь другое: взять город в
-    /// маршрут. Открытый — добавить, нет открытого — начать новый отсюда.
+    /// Две негромкие кнопки, а не одна большая: главное на этом экране —
+    /// места и порядок их обхода, а не кнопка. «Начать маршрут по стране»
+    /// отсюда убрана совсем: в городе она была не к месту и занимала
+    /// половину панели. Маршрут по-прежнему собирается касаниями по карте,
+    /// когда он открыт.
     private var actions: some View {
-        VStack(spacing: DS.Space.xs) {
-            PillButton(routeTitle, icon: routeIcon,
-                       kind: isInRoute ? .secondary : .tinted(accent),
-                       fullWidth: true, action: onAddToRoute)
-
-            DS.Reflow(spacing: DS.Space.xs) {
-                smallButton(countryName ?? "Страна", icon: "map", action: onOpenCountry)
-                smallButton(isHome ? "Твой дом здесь" : "Сделать домом",
-                            icon: isHome ? "house.fill" : "house",
-                            isOn: isHome,
-                            action: onSetHome)
-            }
+        DS.Reflow(spacing: DS.Space.xs) {
+            smallButton(countryName ?? "Страна", icon: "map", action: onOpenCountry)
+            smallButton(isHome ? "Твой дом здесь" : "Сделать домом",
+                        icon: isHome ? "house.fill" : "house",
+                        isOn: isHome,
+                        action: onSetHome)
         }
-    }
-
-    private var routeTitle: LocalizedStringKey {
-        if isInRoute { return "Убрать из маршрута" }
-        return hasOpenRoute ? "Добавить в маршрут" : "Маршрут отсюда"
-    }
-
-    private var routeIcon: String {
-        isInRoute ? "minus.circle" : "point.topleft.down.curvedto.point.bottomright.up"
     }
 
     private func smallButton(_ title: String, icon: String, isOn: Bool = false,
@@ -352,6 +366,15 @@ struct CitySheet: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = " "
+        return formatter
+    }()
+
+    /// «5,5 км» — с одним знаком после запятой: прогулка измеряется
+    /// шагами, а не метрами, и «5,485 км» здесь выглядит как опечатка.
+    private static let walkFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
         return formatter
     }()
 

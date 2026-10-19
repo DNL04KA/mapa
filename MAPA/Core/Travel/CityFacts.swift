@@ -13,8 +13,17 @@ struct Landmark: Decodable, Identifiable, Hashable {
     let large: URL?
     let author: String?
     let license: String?
+    /// Где это стоит. Есть не у всех: у части записей в Викиданных
+    /// координат нет вовсе.
+    let lon: Double?
+    let lat: Double?
 
     var id: String { ru }
+
+    var coordinate: Coordinate? {
+        guard let lon, let lat else { return nil }
+        return Coordinate(longitude: lon, latitude: lat)
+    }
 
     /// Название на языке приложения.
     var name: String { AppLocale.isRussian ? ru : en }

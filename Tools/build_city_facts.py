@@ -13,7 +13,7 @@
     python3 Tools/build_city_facts.py [--limit N]
 """
 
-import json, sys
+import json, math, re, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -25,6 +25,73 @@ BORDERS = ROOT / "MAPA" / "Resources" / "world_110m.geojson"
 OUT = ROOT / "MAPA" / "Resources" / "city-facts.json"
 
 PER_CITY = 4
+
+# Родовые слова: если два места начинаются с них, это ещё не значит, что
+# они одно и то же. «Мечеть Имама» и «Мечеть Шейха Лютфаллы» стоят на одной
+# площади в трёхстах метрах друг от друга и остаются разными мечетями.
+GENERIC = {"мечет", "собор", "храм", "музей", "церко", "парк", "замок",
+           "дворе", "базил", "монас", "башня", "мост", "площа", "театр"}
+
+# Ближе этого две записи с одинаковым началом названия — один объект,
+# описанный дважды.
+SAME_PLACE_KM = 0.4
+
+
+def first_root(name):
+    """Начало первого слова: «Пирамида» и «Пирамиды» — одно и то же."""
+    words = re.findall(r"[^\W\d_]+", name.lower())
+    return words[0][:5] if words and len(words[0]) >= 5 else None
+
+
+def distance_km(a, b):
+    radius = 6371.0088
+    lat1, lat2 = math.radians(a[1]), math.radians(b[1])
+    dlat = math.radians(b[1] - a[1])
+    dlon = math.radians(b[0] - a[0])
+    h = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    return 2 * radius * math.asin(math.sqrt(h))
+
+
+def is_neighbour_city(item, cities_by_name):
+    """Это не достопримечательность, а соседний город.
+
+    В списке Гизы первым местом стоял Каир, в списке Пирея — Афины.
+    Проверяем не по названию, а по названию вместе с точкой: «Давид» во
+    Флоренции — статуя Микеланджело, а не город в Панаме, и «Минск» в
+    Шэньчжэне — авианосец-музей, а не столица Беларуси.
+    """
+    twin = cities_by_name.get(item["ru"])
+    if not twin or item.get("lat") is None:
+        return False
+    return distance_km((item["lon"], item["lat"]), (twin["lon"], twin["lat"])) < 5
+
+
+def deduplicate(items, city_root):
+    """Убирает повторы одного объекта.
+
+    В Каире Викиданные знают и «Пирамиды Гизы», и «Пирамиду Хеопса» — для
+    прогулки это две строки про одно место. Признак повтора: рядом и
+    одинаковое начало названия. Город из сравнения исключён: «Севильский
+    собор» и «Севильский Алькасар» — разные места, у них просто общий
+    город в имени.
+    """
+    kept = []
+    for item in items:
+        root = first_root(item["ru"])
+        duplicate = False
+        if root and root not in GENERIC and root != city_root:
+            for other in kept:
+                if first_root(other["ru"]) != root:
+                    continue
+                if item.get("lat") is None or other.get("lat") is None:
+                    continue
+                if distance_km((item["lon"], item["lat"]),
+                               (other["lon"], other["lat"])) < SAME_PLACE_KM:
+                    duplicate = True
+                    break
+        if not duplicate:
+            kept.append(item)
+    return kept
 
 
 def country_extents():
@@ -68,6 +135,7 @@ def main():
         cities = cities[:limit]
 
     extents = country_extents()
+    cities_by_name = {c["name_ru"]: c for c in cities}
     # Названия стран — не достопримечательности: в списке Рима первым
     # местом стоял «Ватикан», который у нас и сам страна на карте.
     countries = country_names()
@@ -88,11 +156,15 @@ def main():
                              skip_names=countries | {city["name_ru"]})
             if not item or item["ru"] in seen:
                 continue
+            if is_neighbour_city(item, cities_by_name):
+                continue
             seen.add(item["ru"])
             items.append(item)
-            if len(items) >= PER_CITY:
+            # Берём с запасом: часть отсеется как повтор одного объекта.
+            if len(items) >= PER_CITY * 2:
                 break
 
+        items = deduplicate(items, first_root(city["name_ru"]))[:PER_CITY]
         if items:
             raw[city["id"]] = items
         if done % 100 == 0:

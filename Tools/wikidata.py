@@ -199,7 +199,7 @@ def near_city(city, cap=None):
     r = radius(city["population"], cap)
     links = min_links(city["population"])
     return sparql(f"""
-SELECT ?item ?ru ?en ?img ?links (GROUP_CONCAT(DISTINCT ?class; separator=" ") AS ?classes) WHERE {{
+SELECT ?item ?ru ?en ?img ?links ?loc (GROUP_CONCAT(DISTINCT ?class; separator=" ") AS ?classes) WHERE {{
   SERVICE wikibase:box {{
     ?item wdt:P625 ?loc .
     bd:serviceParam wikibase:cornerWest "Point({city['lon'] - r:.4f} {city['lat'] - r:.4f})"^^geo:wktLiteral .
@@ -212,7 +212,7 @@ SELECT ?item ?ru ?en ?img ?links (GROUP_CONCAT(DISTINCT ?class; separator=" ") A
   ?item rdfs:label ?en . FILTER(LANG(?en) = "en")
   OPTIONAL {{ ?item wdt:P18 ?img }}
 }}
-GROUP BY ?item ?ru ?en ?img ?links
+GROUP BY ?item ?ru ?en ?img ?links ?loc
 ORDER BY DESC(?links)
 LIMIT 60
 """)
@@ -294,9 +294,14 @@ def accept(row, include, exclude, strong, skip_names=(), always=False):
             return None
 
     image = row.get("img", {}).get("value", "")
+    point = coordinate(row)
     return {
         "ru": ru,
         "en": row["en"]["value"],
+        # Координаты нужны прогулке по городу: без них места — просто
+        # список, а не порядок, в котором их обходят.
+        "lon": round(point[0], 5) if point else None,
+        "lat": round(point[1], 5) if point else None,
         "file": unquote(image.rsplit("/", 1)[-1]).replace("_", " ") if image else "",
         # Число языковых разделов — наша мера известности. Нужна там, где
         # места разных городов сливаются в один список страны.
@@ -351,6 +356,9 @@ def attach_photos(catalog):
         for item in items:
             photo = info.get(item["file"].replace(" ", "_"))
             row = {"ru": item["ru"], "en": item["en"]}
+            if item.get("lon") is not None and item.get("lat") is not None:
+                row["lon"] = item["lon"]
+                row["lat"] = item["lat"]
             if photo:
                 row.update(small=photo["small"], large=photo["large"],
                            author=photo["author"], license=photo["license"])

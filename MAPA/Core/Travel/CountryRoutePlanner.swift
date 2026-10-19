@@ -36,13 +36,32 @@ enum CountryRoutePlanner {
     /// Город без достопримечательностей в наброске бесполезен: он добавляет
     /// строку и не добавляет причины туда ехать. Поэтому сперва берём все
     /// известные, и только если их не набралось — дотягиваем самыми крупными.
+    ///
+    /// Из известных выбираем не первые попавшиеся, а те, где смотреть есть
+    /// на что: четыре места с фотографиями весомее одного без. Размер
+    /// города при равном счёте решает — в большом и помимо списка найдётся
+    /// чем заняться, — но решает вторым, а не первым.
     private static func pick(from cities: [City], limit: Int) -> [City] {
-        let known = cities.filter { !CityFacts.landmarks(for: $0.id).isEmpty }
+        let known = cities
+            .filter { !CityFacts.landmarks(for: $0.id).isEmpty }
+            .sorted { worth($0) > worth($1) }
         if known.count >= limit { return Array(known.prefix(limit)) }
 
         let knownIDs = Set(known.map(\.id))
         let rest = cities.filter { !knownIDs.contains($0.id) }
         return known + rest.prefix(limit - known.count)
+    }
+
+    /// Чем город ценен для поездки.
+    ///
+    /// Место с фотографией — целый балл, без фотографии — половина: о нём
+    /// мы знаем только название, и в карточке оно выглядит пустой строкой.
+    /// Население добавляет доли балла, чтобы при равном счёте впереди
+    /// оказался тот город, где и так есть чем заняться.
+    private static func worth(_ city: City) -> Double {
+        let places = CityFacts.landmarks(for: city.id)
+        let score = places.reduce(0.0) { $0 + ($1.small == nil ? 0.5 : 1) }
+        return score + min(1, Double(city.population) / 10_000_000)
     }
 
     // MARK: - В каком порядке

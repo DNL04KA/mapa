@@ -54,6 +54,19 @@
 			<key>other</key><string>%d дня</string>
 		</dict>
 	</dict>
+	<key>plural.places</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>d</string>
+			<key>one</key><string>%d место</string>
+			<key>few</key><string>%d места</string>
+			<key>many</key><string>%d мест</string>
+			<key>other</key><string>%d места</string>
+		</dict>
+	</dict>
 	<key>plural.points</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
