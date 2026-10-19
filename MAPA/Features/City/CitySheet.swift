@@ -15,9 +15,19 @@ struct CitySheet: View {
     let isHome: Bool
     let accent: Color
     let onSetHome: () -> Void
+    /// Добавить город в маршрут — открытый или новый.
+    let onAddToRoute: () -> Void
+    /// Открыть страну, в которой город стоит.
+    let onOpenCountry: () -> Void
     let onDismiss: () -> Void
+    /// Город уже в открытом маршруте.
+    var isInRoute: Bool = false
+    /// Маршрут сейчас открыт — значит, кнопка добавляет в него, а не
+    /// начинает новый.
+    var hasOpenRoute: Bool = false
 
     @State private var dragOffset: CGFloat = 0
+    @State private var preview: Landmark?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -25,6 +35,15 @@ struct CitySheet: View {
             panel
         }
         .ignoresSafeArea()
+        .photoViewer($preview)
+        #if DEBUG
+        // Снять открытую фотографию симулятором иначе нельзя: нажимать
+        // ему нечем. Только отладочная сборка.
+        .onAppear {
+            guard ProcessInfo.processInfo.environment["MAPA_PHOTO"] == "1" else { return }
+            preview = CityFacts.landmarks(for: city.id).first { $0.small != nil }
+        }
+        #endif
     }
 
     private var scrim: some View {
@@ -47,7 +66,7 @@ struct CitySheet: View {
             header
             landmarks
             facts
-            homeButton
+            actions
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
@@ -122,17 +141,28 @@ struct CitySheet: View {
                 HStack(alignment: .top, spacing: DS.Space.sm) {
                     ForEach(photos) { photo in
                         VStack(alignment: .leading, spacing: 5) {
-                            ZStack {
-                                Rectangle().fill(accent.opacity(0.10))
-                                RemoteImage(url: photo.small)
+                            // Снимок открывается целиком: разглядывать
+                            // Колизей в полтораста точек нечестно по
+                            // отношению и к Колизею, и к человеку.
+                            Button {
+                                Haptics.shared.tap(.light)
+                                withAnimation(motion.animation(.smooth)) { preview = photo }
+                            } label: {
+                                ZStack {
+                                    Rectangle().fill(accent.opacity(0.10))
+                                    RemoteImage(url: photo.small)
+                                }
+                                .frame(width: 152, height: 104)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                        .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                                }
                             }
-                            .frame(width: 152, height: 104)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
-                                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
-                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(photo.name)
+                            .accessibilityHint("Открыть фотографию")
 
                             Text(photo.name)
                                 .font(DS.Font.caption)
@@ -209,6 +239,71 @@ struct CitySheet: View {
         let kilometres = city.distance(to: home.coordinate)
         guard kilometres > 1 else { return nil }
         return "\(Self.distanceFormatter.string(from: NSNumber(value: Int(kilometres))) ?? "") км"
+    }
+
+    /// Что отсюда можно сделать.
+    ///
+    /// Раньше здесь была одна кнопка — «сделать домом», — и экран города
+    /// оказывался тупиком: ты пришёл посмотреть на Рим, а предложили тебе
+    /// в нём поселиться. Главное действие теперь другое: взять город в
+    /// маршрут. Открытый — добавить, нет открытого — начать новый отсюда.
+    private var actions: some View {
+        VStack(spacing: DS.Space.xs) {
+            PillButton(routeTitle, icon: routeIcon,
+                       kind: isInRoute ? .secondary : .tinted(accent),
+                       fullWidth: true, action: onAddToRoute)
+
+            DS.Reflow(spacing: DS.Space.xs) {
+                smallButton(countryName ?? "Страна", icon: "map", action: onOpenCountry)
+                smallButton(isHome ? "Твой дом здесь" : "Сделать домом",
+                            icon: isHome ? "house.fill" : "house",
+                            isOn: isHome,
+                            action: onSetHome)
+            }
+        }
+    }
+
+    private var routeTitle: LocalizedStringKey {
+        if isInRoute { return "Убрать из маршрута" }
+        return hasOpenRoute ? "Добавить в маршрут" : "Маршрут отсюда"
+    }
+
+    private var routeIcon: String {
+        isInRoute ? "minus.circle" : "point.topleft.down.curvedto.point.bottomright.up"
+    }
+
+    private func smallButton(_ title: String, icon: String, isOn: Bool = false,
+                             action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: DS.Space.xxs) {
+                Image(systemName: icon)
+                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                Text(title)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+            .font(DS.Font.caption)
+            .foregroundStyle(isOn ? DS.Gradient.statusForeground(.living) : DS.Color.ink)
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: DS.Size.hitTarget)
+            .background {
+                if isOn {
+                    DS.Gradient.status(.living)
+                } else if motion.reduceTransparency {
+                    DS.Color.surfaceRaised
+                } else {
+                    Rectangle().fill(.ultraThinMaterial)
+                }
+            }
+            .clipShape(Capsule(style: .continuous))
+            .overlay {
+                Capsule(style: .continuous)
+                    .strokeBorder(isOn ? Color.white.opacity(0.35) : DS.Color.border, lineWidth: 1)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isOn)
     }
 
     private var homeButton: some View {

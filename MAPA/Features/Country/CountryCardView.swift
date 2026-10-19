@@ -23,6 +23,7 @@ struct CountryCardView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var dragOffset: CGFloat = 0
+    @State private var preview: Landmark?
 
     private var facts: CountryFacts? { CountryFacts.facts(for: country.id) }
     private var routeStops: [CountryRoutePlanner.Stop] {
@@ -57,6 +58,7 @@ struct CountryCardView: View {
         .ignoresSafeArea()
         .offset(y: dragOffset)
         .gesture(dismissDrag)
+        .photoViewer($preview)
     }
 
     // MARK: - Фон
@@ -134,6 +136,11 @@ struct CountryCardView: View {
             .frame(width: size.width, height: size.height)
             .overlay { RemoteImage(url: cover.large ?? cover.small) }
             .clipped()
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Haptics.shared.tap(.light)
+                withAnimation(motion.animation(.smooth)) { preview = cover }
+            }
             .mask {
                 LinearGradient(
                     stops: [
@@ -441,17 +448,25 @@ struct CountryCardView: View {
                 HStack(alignment: .top, spacing: DS.Space.sm) {
                     ForEach(Array(stripLandmarks.enumerated()), id: \.element.id) { index, place in
                         VStack(alignment: .leading, spacing: 5) {
-                            ZStack {
-                                Rectangle().fill(tint.opacity(0.14))
-                                RemoteImage(url: place.small)
+                            Button {
+                                Haptics.shared.tap(.light)
+                                withAnimation(motion.animation(.smooth)) { preview = place }
+                            } label: {
+                                ZStack {
+                                    Rectangle().fill(tint.opacity(0.14))
+                                    RemoteImage(url: place.small)
+                                }
+                                .frame(width: 168, height: 112)
+                                .clipped()
+                                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
+                                        .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                                }
                             }
-                            .frame(width: 168, height: 112)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous))
-                            .overlay {
-                                RoundedRectangle(cornerRadius: DS.Radius.sm, style: .continuous)
-                                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
-                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(place.name)
+                            .accessibilityHint("Открыть фотографию")
 
                             Text(place.name)
                                 .font(DS.Font.caption)
