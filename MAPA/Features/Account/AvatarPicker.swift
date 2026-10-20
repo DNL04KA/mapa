@@ -63,17 +63,26 @@ struct AvatarPicker: View {
                 isPickingPhoto = true
             }
 
-            SectionHeader("Или выбери значок")
-
             ScrollView {
-                LazyVGrid(columns: columns, spacing: DS.Space.sm) {
-                    ForEach(Array(options.enumerated()), id: \.offset) { _, option in
-                        button(option)
+                VStack(alignment: .leading, spacing: DS.Space.sm) {
+                    SectionHeader("Место на карте",
+                                  subtitle: "Страна в цвете своего флага")
+                    LazyVGrid(columns: columns, spacing: DS.Space.sm) {
+                        ForEach(0..<AvatarPlace.count, id: \.self) { index in
+                            button(.place(index))
+                        }
+                    }
+
+                    SectionHeader("Или картинка")
+                    LazyVGrid(columns: columns, spacing: DS.Space.sm) {
+                        ForEach(0..<AvatarScene.count, id: \.self) { index in
+                            button(.scene(index))
+                        }
                     }
                 }
                 .padding(.bottom, DS.Space.xs)
             }
-            .frame(maxHeight: 320)
+            .frame(maxHeight: 360)
             .scrollIndicators(.hidden)
         }
         .padding(.horizontal, DS.Space.screen)
@@ -99,14 +108,6 @@ struct AvatarPicker: View {
         .offset(y: dragOffset)
         .gesture(dismissDrag)
         .transition(.move(edge: .bottom))
-    }
-
-    /// Каждый значок в своём цвете, а не все двенадцать во всех десяти:
-    /// сто двадцать кружков — это не выбор, это каталог.
-    private var options: [Avatar] {
-        Avatar.Catalog.symbols.enumerated().map { index, symbol in
-            .symbol(symbol, index)
-        }
     }
 
     private func button(_ option: Avatar) -> some View {

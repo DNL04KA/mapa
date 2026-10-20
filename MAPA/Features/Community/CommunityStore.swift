@@ -16,7 +16,6 @@ final class CommunityStore: ObservableObject {
     }
 
     @Published private(set) var routes: State<PublicRoute> = .loading
-    @Published private(set) var authors: State<PublicAuthor> = .loading
 
     private let source: CommunitySource
 
@@ -37,10 +36,7 @@ final class CommunityStore: ObservableObject {
     var isConfigured: Bool { BackendConfig.isConfigured }
 
     func load(limit: Int = 20) async {
-        async let routes = fetch { try await self.source.topRoutes(limit: limit) }
-        async let authors = fetch { try await self.source.topAuthors(limit: limit) }
-        self.routes = await routes
-        self.authors = await authors
+        routes = await fetch { try await self.source.topRoutes(limit: limit) }
     }
 
     /// Найти человека по никнейму.
@@ -124,10 +120,6 @@ private struct DemoCommunity: CommunitySource {
 
     func topRoutes(limit: Int) async throws -> [PublicRoute] {
         routes.sorted { $0.score > $1.score }
-    }
-
-    func topAuthors(limit: Int) async throws -> [PublicAuthor] {
-        authors.sorted { ($0.score ?? 0) > ($1.score ?? 0) }
     }
 
     func author(id: String) async throws -> PublicAuthor {

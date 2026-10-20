@@ -14,14 +14,19 @@ import SwiftUI
 ///   больше, чем безликий кружок с буквой.
 enum Avatar: Equatable, Codable, Hashable {
 
+    /// Место на карте — номер страны из набора.
+    case place(Int)
+    /// Пейзаж из набора — номер картинки.
+    case scene(Int)
     /// Значок из набора: имя символа и место цвета в палитре.
+    /// Остался ради профилей, созданных до пейзажей.
     case symbol(String, Int)
     /// Своё фото из галереи — идентификатор файла.
     case photo(String)
     /// Пришло вместе с входом.
     case remote(URL)
 
-    static let `default` = Avatar.symbol(Catalog.symbols[0], 0)
+    static let `default` = Avatar.place(0)
 
     /// Устойчивая аватарка по идентификатору человека.
     ///
@@ -33,9 +38,7 @@ enum Avatar: Equatable, Codable, Hashable {
         for byte in id.utf8 {
             hash = (hash ^ UInt64(byte)) &* 0x100000001b3
         }
-        let symbol = Catalog.symbols[Int(hash % UInt64(Catalog.symbols.count))]
-        let color = Int((hash >> 16) % UInt64(Catalog.colors.count))
-        return .symbol(symbol, color)
+        return .place(Int(hash % UInt64(AvatarPlaces.count)))
     }
 
     enum Catalog {
@@ -56,17 +59,33 @@ enum Avatar: Equatable, Codable, Hashable {
             "globe.europe.africa.fill",
         ]
 
-        /// Те же тона, что у палитры «Чернила» на карте, плюс пара тёплых:
-        /// аватарка не должна выглядеть из другого приложения.
-        static let colors: [Color] = [
-            Color(hex: 0x2E4A6B), Color(hex: 0x3F6560), Color(hex: 0x55677A),
-            Color(hex: 0x6B7355), Color(hex: 0x7A5B4C), Color(hex: 0x5B5570),
-            Color(hex: 0x87764C), Color(hex: 0xB05A3D), Color(hex: 0x3B7370),
-            Color(hex: 0x7A4A62),
+        /// Пары цветов, из которых собирается заливка.
+        ///
+        /// Раньше здесь лежали приглушённые плоские тона, и аватарки
+        /// выглядели как серые кружки в списке контактов. Градиент из двух
+        /// цветов, белый значок и тонкий ободок дают тот же набор, но он
+        /// выглядит нарисованным, а не вычисленным. Цвета — из палитр самой
+        /// карты, поэтому аватарка не смотрится из другого приложения.
+        static let gradients: [[Color]] = [
+            [Color(hex: 0x6C5CFF), Color(hex: 0x9B5CFF)],   // индиго
+            [Color(hex: 0x22A7C9), Color(hex: 0x2EE0C2)],   // лагуна
+            [Color(hex: 0xE86FD1), Color(hex: 0xFF7A9C)],   // магента
+            [Color(hex: 0xF0A33C), Color(hex: 0xE2622F)],   // закат
+            [Color(hex: 0x3E6E9E), Color(hex: 0x24606B)],   // море
+            [Color(hex: 0x5C7A45), Color(hex: 0x2F5148)],   // лес
+            [Color(hex: 0xB08D5F), Color(hex: 0x7A5F42)],   // винтаж
+            [Color(hex: 0x55677A), Color(hex: 0x2E3A4A)],   // уголь
+            [Color(hex: 0x5FE3B4), Color(hex: 0x22A7C9)],   // мята
+            [Color(hex: 0xFF5C7A), Color(hex: 0xC2512F)],   // гранат
         ]
 
+        static func gradient(_ index: Int) -> [Color] {
+            gradients[((index % gradients.count) + gradients.count) % gradients.count]
+        }
+
+        /// Цвет для случаев, где градиент не нужен, — рамка, подпись.
         static func color(_ index: Int) -> Color {
-            colors[((index % colors.count) + colors.count) % colors.count]
+            gradient(index)[0]
         }
     }
 }
@@ -83,12 +102,26 @@ struct AvatarView: View {
     var body: some View {
         ZStack {
             switch avatar {
+            case let .place(index):
+                AvatarPlace(index: index, size: size)
+
+            case let .scene(index):
+                AvatarScene(index: index, size: size)
+
             case let .symbol(name, colorIndex):
-                let tint = Avatar.Catalog.color(colorIndex)
-                Circle().fill(tint.opacity(0.22))
+                let colors = Avatar.Catalog.gradient(colorIndex)
+                Circle()
+                    .fill(LinearGradient(colors: colors,
+                                         startPoint: .topLeading,
+                                         endPoint: .bottomTrailing))
+                // Тонкий светлый ободок изнутри: он отделяет аватарку от
+                // тёмной панели и даёт ей объём на любом фоне.
+                Circle()
+                    .strokeBorder(.white.opacity(0.22), lineWidth: max(1, size * 0.02))
                 Image(systemName: name)
-                    .font(.system(size: size * 0.44, weight: .medium))
-                    .foregroundStyle(tint)
+                    .font(.system(size: size * 0.42, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .shadow(color: colors[1].opacity(0.55), radius: size * 0.06, y: size * 0.02)
 
             case let .photo(id):
                 if let image = PhotoStore.avatars.image(id: id) {

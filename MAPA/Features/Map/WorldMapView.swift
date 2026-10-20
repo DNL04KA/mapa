@@ -75,15 +75,14 @@ struct WorldMapView: View {
         case "plus": showsPlus = true
         case "community": showsCommunity = true
         #if DEBUG
-        case "person":
-            // Снимок страницы человека: список приходит из того же
-            // показа, что и топ.
+        case let id? where id.hasPrefix("person-"):
+            // Снимок страницы человека: ищем его по никнейму так же, как
+            // это сделает человек.
             showsCommunity = true
             Task {
                 let store = CommunityStore()
-                await store.load()
-                if case let .loaded(authors) = store.authors, let first = authors.first {
-                    person = first
+                if case let .found(author) = await store.find(handle: String(id.dropFirst(7))) {
+                    person = author
                 }
             }
         #endif

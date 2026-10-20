@@ -58,6 +58,14 @@ struct AccountSheet: View {
             }
         }
         .ignoresSafeArea()
+        #if DEBUG
+        // Снимок выбора аватарки: нажать на карандаш симулятору нечем.
+        .onAppear {
+            if ProcessInfo.processInfo.environment["MAPA_AVATARS"] == "1" {
+                isPickingAvatar = true
+            }
+        }
+        #endif
     }
 
     private var scrim: some View {

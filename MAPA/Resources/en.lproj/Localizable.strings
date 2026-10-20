@@ -104,6 +104,7 @@
 "Изолинии глубин" = "Depth contours";
 "Изумруд" = "Emerald";
 "Или выбери значок" = "Or pick a glyph";
+"Или картинка" = "Or a picture";
 "Ими будут заливаться страны" = "Countries will be filled with these";
 "Имя" = "Name";
 "Индиго" = "Indigo";
@@ -130,6 +131,7 @@
 "Ленты над водой" = "Ribbons over the water";
 "Лепестки на воде" = "Petals on the water";
 "Лес" = "Forest";
+"Лучшие маршруты" = "Best routes";
 "Лучшие маршруты и люди" = "Best routes and people";
 "Людей пока нет" = "No people yet";
 "Люди" = "People";
@@ -139,6 +141,7 @@
 "Маршрутов пока нет" = "No routes yet";
 "Маршруты" = "Routes";
 "Маршруты сообщества" = "Community routes";
+"Место на карте" = "A place on the map";
 "Миллиметровка и пунктир" = "Graph paper and dashes";
 "Мир открыт на" = "World unlocked";
 "Мир открыт на %@ процента, " = "World unlocked %@ percent, ";
@@ -203,6 +206,7 @@
 "Переставить %@" = "Move %@";
 "Платное. Коснись, чтобы примерить" = "Paid. Tap to try it on";
 "Плетение холста" = "Canvas weave";
+"По оценкам тех, кто уже съездил" = "Ranked by the people who have been";
 "По странам" = "By country";
 "Поделиться" = "Share";
 "Поделиться видео" = "Share video";
@@ -272,6 +276,7 @@
 "столица" = "capital";
 "стран" = "countries";
 "Страна" = "Country";
+"Страна в цвете своего флага" = "A country in the colours of its flag";
 "Страна или город" = "Country or city";
 "Строки развёртки" = "Scan lines";
 "Сумерки перед рассветом" = "Dusk before dawn";

@@ -1,11 +1,15 @@
 import SwiftUI
 
-/// Сообщество: лучшие маршруты и люди, которые их собрали.
+/// Сообщество: лучшие маршруты.
 ///
-/// Две вкладки, потому что это два разных вопроса. «Маршруты» отвечают
-/// «куда поехать», «Люди» — «за кем следить». Порядок в обоих считает
-/// сервер по сглаженной оценке: один отзыв на пять звёзд не поднимает
-/// маршрут выше того, у которого сорок отзывов и четыре с половиной.
+/// Одна лента, а не две вкладки. Топ людей отсюда убран намеренно:
+/// человек приходит сюда с вопросом «куда поехать», а не «за кем
+/// следить», и список чужих имён на этот вопрос не отвечает. К автору
+/// по-прежнему можно зайти — из его маршрута или по никнейму.
+///
+/// Порядок считает сервер по сглаженной оценке: один отзыв на пять
+/// звёзд не поднимает маршрут выше того, у которого сорок отзывов и
+/// четыре с половиной.
 @MainActor
 struct CommunitySheet: View {
 
@@ -19,28 +23,11 @@ struct CommunitySheet: View {
     let onOpenAuthor: (PublicAuthor) -> Void
     let onDismiss: () -> Void
 
-    @State private var tab: Tab = Self.firstTab
     @State private var handle = ""
     @State private var lookup: CommunityStore.Lookup?
     @State private var isSearching = false
     @FocusState private var handleFocused: Bool
-
-    /// Вкладка из переменной окружения — чтобы снять «Людей» симулятором,
-    /// которому нечем переключить. Только отладка.
-    private static var firstTab: Tab {
-        #if DEBUG
-        ProcessInfo.processInfo.environment["MAPA_TAB"] == "people" ? .people : .routes
-        #else
-        .routes
-        #endif
-    }
     @State private var dragOffset: CGFloat = 0
-
-    private enum Tab: String, CaseIterable, Identifiable {
-        case routes = "Маршруты"
-        case people = "Люди"
-        var id: String { rawValue }
-    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -71,17 +58,20 @@ struct CommunitySheet: View {
                 .fill(DS.Color.borderStrong)
                 .frame(width: 38, height: 4)
 
-            Text("Сообщество")
-                .font(DS.Font.title)
-                .foregroundStyle(DS.Color.ink)
+            VStack(spacing: 2) {
+                Text("Лучшие маршруты")
+                    .font(DS.Font.title)
+                    .foregroundStyle(DS.Color.ink)
+                Text("По оценкам тех, кто уже съездил")
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
 
-            tabs
-
-            if tab == .people { handleField }
+            handleField
 
             ViewThatFits(in: .vertical) {
-                list
-                ScrollView { list }.scrollIndicators(.hidden)
+                routeList
+                ScrollView { routeList }.scrollIndicators(.hidden)
             }
         }
         .padding(.horizontal, DS.Space.screen)
@@ -101,30 +91,6 @@ struct CommunitySheet: View {
         .offset(y: dragOffset)
         .gesture(dismissDrag)
         .transition(.move(edge: .bottom))
-    }
-
-    private var tabs: some View {
-        HStack(spacing: 0) {
-            ForEach(Tab.allCases) { item in
-                let isOn = tab == item
-                Button {
-                    Haptics.shared.selection()
-                    withAnimation(motion.animation(.snap)) { tab = item }
-                } label: {
-                    Text(LocalizedStringKey(item.rawValue))
-                        .font(DS.Font.callout)
-                        .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkSecondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 34)
-                        .background { if isOn { Capsule().fill(DS.Color.ink) } }
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
-            }
-        }
-        .padding(3)
-        .background(Capsule().fill(DS.Color.surfaceSunken.opacity(0.7)))
     }
 
     /// Поиск по никнейму: «зайти к человеку» — это ввести @имя, а не
@@ -221,14 +187,6 @@ struct CommunitySheet: View {
                 isSearching = false
                 withAnimation(motion.animation(.snap)) { lookup = result }
             }
-        }
-    }
-
-    @ViewBuilder
-    private var list: some View {
-        switch tab {
-        case .routes: routeList
-        case .people: authorList
         }
     }
 
@@ -420,34 +378,6 @@ struct CommunitySheet: View {
         }
         parts.append(Plural.reviews(route.reviewsCount))
         return parts.joined(separator: " · ")
-    }
-
-    @ViewBuilder
-    private var authorList: some View {
-        switch store.authors {
-        case .loading:
-            ProgressView().frame(maxWidth: .infinity).padding(.vertical, DS.Space.xl)
-        case .notConfigured:
-            notConfigured
-        case let .failed(reason):
-            failure(reason)
-        case let .loaded(authors):
-            if authors.isEmpty {
-                empty("Людей пока нет",
-                      "Здесь будут те, чьи маршруты оценили выше всего.")
-            } else {
-                VStack(spacing: DS.Space.xs) {
-                    ForEach(Array(authors.enumerated()), id: \.element.id) { index, author in
-                        Button {
-                            onOpenAuthor(author)
-                        } label: {
-                            authorRow(author, place: index + 1)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
     }
 
     private func authorRow(_ author: PublicAuthor, place: Int) -> some View {

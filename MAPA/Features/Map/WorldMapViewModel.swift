@@ -181,6 +181,9 @@ final class WorldMapViewModel: ObservableObject {
         do {
             let result = try await WorldGeometryLoader.loadFromBundle()
             geometry = result.geometry
+            // Аватарки-кусочки карты берут геометрию отсюда: разбирать
+            // двести килобайт второй раз ради кружка незачем.
+            WorldAtlas.shared.use(result.geometry)
             loadDuration = result.duration
 
             // Отметки не критичны для запуска: если файл побился, лучше показать

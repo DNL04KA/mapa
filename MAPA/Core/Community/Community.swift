@@ -74,7 +74,6 @@ enum CommunityError: Error, Equatable {
 /// поднимая сервер.
 protocol CommunitySource {
     func topRoutes(limit: Int) async throws -> [PublicRoute]
-    func topAuthors(limit: Int) async throws -> [PublicAuthor]
     func author(id: String) async throws -> PublicAuthor
     /// Найти человека по никнейму — это и есть «зайти к пользователю».
     func author(handle: String) async throws -> PublicAuthor
@@ -94,11 +93,6 @@ struct SupabaseCommunity: CommunitySource {
 
     func topRoutes(limit: Int) async throws -> [PublicRoute] {
         try await get("popular_routes",
-                      query: ["select": "*", "order": "score.desc", "limit": "\(limit)"])
-    }
-
-    func topAuthors(limit: Int) async throws -> [PublicAuthor] {
-        try await get("popular_authors",
                       query: ["select": "*", "order": "score.desc", "limit": "\(limit)"])
     }
 
@@ -162,7 +156,6 @@ struct SupabaseCommunity: CommunitySource {
 /// надо показать разное.
 struct MissingCommunity: CommunitySource {
     func topRoutes(limit: Int) async throws -> [PublicRoute] { throw CommunityError.notConfigured }
-    func topAuthors(limit: Int) async throws -> [PublicAuthor] { throw CommunityError.notConfigured }
     func author(id: String) async throws -> PublicAuthor { throw CommunityError.notConfigured }
     func author(handle: String) async throws -> PublicAuthor { throw CommunityError.notConfigured }
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] {

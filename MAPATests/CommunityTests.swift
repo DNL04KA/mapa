@@ -70,7 +70,6 @@ final class CommunityTests: XCTestCase {
         await store.load()
 
         XCTAssertEqual(store.routes, .notConfigured)
-        XCTAssertEqual(store.authors, .notConfigured)
     }
 
     func testОтветСервераДоезжаетДоЭкрана() async throws {
@@ -80,14 +79,16 @@ final class CommunityTests: XCTestCase {
         await store.load()
 
         guard case let .loaded(routes) = store.routes else { return XCTFail("маршруты не дошли") }
-        guard case let .loaded(authors) = store.authors else { return XCTFail("авторы не дошли") }
         XCTAssertEqual(routes.count, 3)
-        XCTAssertEqual(authors.count, 2)
 
-        guard case let .loaded(mine) = await store.routes(by: authors[0]) else {
+        // Страница человека: только его маршруты и ничьи больше.
+        guard case let .found(author) = await store.find(handle: "nikita") else {
+            return XCTFail("@nikita не нашёлся")
+        }
+        guard case let .loaded(mine) = await store.routes(by: author) else {
             return XCTFail("маршруты автора не дошли")
         }
-        XCTAssertEqual(mine.map(\.id), ["r1", "r3"], "на странице человека только его маршруты")
+        XCTAssertEqual(mine.map(\PublicRoute.id), ["r1", "r3"])
     }
 
     func testКНикнеймуМожноЗайти() async throws {
@@ -137,7 +138,6 @@ private struct FakeCommunity: CommunitySource {
     let authors: [PublicAuthor]
 
     func topRoutes(limit: Int) async throws -> [PublicRoute] { routes }
-    func topAuthors(limit: Int) async throws -> [PublicAuthor] { authors }
     func author(id: String) async throws -> PublicAuthor {
         guard let found = authors.first(where: { $0.id == id }) else {
             throw CommunityError.notFound
@@ -159,7 +159,6 @@ private struct FakeCommunity: CommunitySource {
 private struct BrokenCommunity: CommunitySource {
     private var failure: CommunityError { .network("Сервер ответил 500") }
     func topRoutes(limit: Int) async throws -> [PublicRoute] { throw failure }
-    func topAuthors(limit: Int) async throws -> [PublicAuthor] { throw failure }
     func author(id: String) async throws -> PublicAuthor { throw failure }
     func author(handle: String) async throws -> PublicAuthor { throw failure }
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] { throw failure }

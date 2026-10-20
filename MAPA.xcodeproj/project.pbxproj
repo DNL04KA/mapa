@@ -11,6 +11,8 @@
 		CB24D449BE2CE060D13B7A78 /* RootView.swift in Build */ = {isa = PBXBuildFile; fileRef = 5E5DE670B6F7E26ADDC1397E /* RootView.swift */; };
 		2B4D1AD0F9A1E1904CA4BCB8 /* AccountStore.swift in Build */ = {isa = PBXBuildFile; fileRef = F16E3F7FB89CB8D6DA309981 /* AccountStore.swift */; };
 		52E3CEF987158D2389536E01 /* Avatar.swift in Build */ = {isa = PBXBuildFile; fileRef = F341E6CD2DCFDA5257CBB798 /* Avatar.swift */; };
+		C85EC7FE6E2DDBC46E031E19 /* AvatarPlace.swift in Build */ = {isa = PBXBuildFile; fileRef = 6ADBE14A3DAB56581ECC4DE4 /* AvatarPlace.swift */; };
+		288F3D32F75AC8AF2A860799 /* AvatarScene.swift in Build */ = {isa = PBXBuildFile; fileRef = 2EA29034F197DFC0B37185B0 /* AvatarScene.swift */; };
 		0A78464F46C7D8A78588D419 /* BackendConfig.swift in Build */ = {isa = PBXBuildFile; fileRef = E0C3D41459991836A07E5B8B /* BackendConfig.swift */; };
 		477BEB1066B982225244B4D4 /* Profile.swift in Build */ = {isa = PBXBuildFile; fileRef = CB5C3E62D9DD2CE8EA1A3463 /* Profile.swift */; };
 		8EA7230127DE702832DBFE9E /* Community.swift in Build */ = {isa = PBXBuildFile; fileRef = A1A86D7FDE28F118B91FEF53 /* Community.swift */; };
@@ -122,6 +124,8 @@
 		5E5DE670B6F7E26ADDC1397E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		F16E3F7FB89CB8D6DA309981 /* AccountStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStore.swift; sourceTree = "<group>"; };
 		F341E6CD2DCFDA5257CBB798 /* Avatar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Avatar.swift; sourceTree = "<group>"; };
+		6ADBE14A3DAB56581ECC4DE4 /* AvatarPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPlace.swift; sourceTree = "<group>"; };
+		2EA29034F197DFC0B37185B0 /* AvatarScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarScene.swift; sourceTree = "<group>"; };
 		E0C3D41459991836A07E5B8B /* BackendConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendConfig.swift; sourceTree = "<group>"; };
 		CB5C3E62D9DD2CE8EA1A3463 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		A1A86D7FDE28F118B91FEF53 /* Community.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Community.swift; sourceTree = "<group>"; };
@@ -262,6 +266,8 @@
 			children = (
 				F16E3F7FB89CB8D6DA309981 /* AccountStore.swift */,
 				F341E6CD2DCFDA5257CBB798 /* Avatar.swift */,
+				6ADBE14A3DAB56581ECC4DE4 /* AvatarPlace.swift */,
+				2EA29034F197DFC0B37185B0 /* AvatarScene.swift */,
 				E0C3D41459991836A07E5B8B /* BackendConfig.swift */,
 				CB5C3E62D9DD2CE8EA1A3463 /* Profile.swift */,
 			);
@@ -788,6 +794,8 @@
 				CB24D449BE2CE060D13B7A78 /* RootView.swift */,
 				2B4D1AD0F9A1E1904CA4BCB8 /* AccountStore.swift */,
 				52E3CEF987158D2389536E01 /* Avatar.swift */,
+				C85EC7FE6E2DDBC46E031E19 /* AvatarPlace.swift */,
+				288F3D32F75AC8AF2A860799 /* AvatarScene.swift */,
 				0A78464F46C7D8A78588D419 /* BackendConfig.swift */,
 				477BEB1066B982225244B4D4 /* Profile.swift */,
 				8EA7230127DE702832DBFE9E /* Community.swift */,
