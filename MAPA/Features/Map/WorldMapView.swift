@@ -429,7 +429,7 @@ struct WorldMapView: View {
         if showsCommunity {
             CommunitySheet(
                 accent: activeTheme.accent,
-                countryName: { model.geometry?.country(id: $0)?.displayName ?? "" },
+                country: { model.geometry?.country(id: $0) },
                 onOpenAuthor: { author in
                     withAnimation(motion.animation(.smooth)) { person = author }
                 },

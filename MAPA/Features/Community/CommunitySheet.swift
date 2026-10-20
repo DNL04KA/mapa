@@ -13,11 +13,23 @@ struct CommunitySheet: View {
     @StateObject private var store = CommunityStore()
 
     let accent: Color
-    let countryName: (String) -> String
+    /// Страна маршрута: из неё берутся и название, и цвет флага, и
+    /// фотография — всё своё, местное, ничего не выдумано.
+    let country: (String) -> Country?
     let onOpenAuthor: (PublicAuthor) -> Void
     let onDismiss: () -> Void
 
-    @State private var tab: Tab = .routes
+    @State private var tab: Tab = Self.firstTab
+
+    /// Вкладка из переменной окружения — чтобы снять «Людей» симулятором,
+    /// которому нечем переключить. Только отладка.
+    private static var firstTab: Tab {
+        #if DEBUG
+        ProcessInfo.processInfo.environment["MAPA_TAB"] == "people" ? .people : .routes
+        #else
+        .routes
+        #endif
+    }
     @State private var dragOffset: CGFloat = 0
 
     private enum Tab: String, CaseIterable, Identifiable {
@@ -131,18 +143,107 @@ struct CommunitySheet: View {
                 empty("Маршрутов пока нет",
                       "Как только кто-нибудь опубликует свой — он появится здесь.")
             } else {
-                VStack(spacing: DS.Space.xs) {
-                    ForEach(Array(routes.enumerated()), id: \.element.id) { index, route in
-                        routeRow(route, place: index + 1)
+                VStack(spacing: DS.Space.sm) {
+                    // Первый — обложкой во всю ширину. Это и есть топ: он
+                    // должен выглядеть как место, куда хочется, а не как
+                    // первая строка таблицы.
+                    if let best = routes.first {
+                        leader(best)
+                    }
+                    ForEach(Array(routes.dropFirst().enumerated()), id: \.element.id) { index, route in
+                        routeRow(route, place: index + 2)
                     }
                 }
             }
         }
     }
 
+    private func leader(_ route: PublicRoute) -> some View {
+        Rectangle()
+            .fill(tint(route).opacity(0.18))
+            .frame(height: 150)
+            .overlay { cover(route, large: true) }
+            .clipped()
+            .overlay(alignment: .bottom) {
+                // Затемнение выше и плотнее, чем кажется нужным: название
+                // ложится на небо и камень, и на светлом снимке белым по
+                // белому его не прочесть.
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: DS.Palette.void.opacity(0.55), location: 0.45),
+                        .init(color: DS.Palette.void.opacity(0.92), location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 112)
+            }
+            .overlay(alignment: .topLeading) {
+                Text("№1 по оценкам")
+                    .font(DS.Font.micro)
+                    .foregroundStyle(DS.Color.inkOnAccent)
+                    .padding(.horizontal, DS.Space.xs)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(accent))
+                    .padding(DS.Space.sm)
+            }
+            .overlay(alignment: .bottomLeading) {
+                HStack(alignment: .bottom, spacing: DS.Space.xs) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(route.title)
+                            .font(DS.Font.headline)
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(routeSubtitle(route))
+                            .font(DS.Font.micro)
+                            .foregroundStyle(.white.opacity(0.75))
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    if let rating = route.rating {
+                        HStack(spacing: 3) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text(String(format: "%.1f", rating))
+                                .font(DS.Font.subhead)
+                                .monospacedDigit()
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, DS.Space.xs)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(.white.opacity(0.18)))
+                    }
+                }
+                .padding(DS.Space.sm)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                    .strokeBorder(DS.Color.hairline, lineWidth: 1)
+            }
+            .accessibilityElement(children: .combine)
+    }
+
     private func routeRow(_ route: PublicRoute, place: Int) -> some View {
         HStack(spacing: DS.Space.sm) {
-            placeBadge(place)
+            // Фотография страны вместо серого кружка с цифрой: список без
+            // картинок читается как список задач, а не как «куда поехать».
+            Rectangle()
+                .fill(tint(route).opacity(0.18))
+                .frame(width: 56, height: 56)
+                .overlay { cover(route, large: false) }
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    Text("\(place)")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(DS.Color.inkOnAccent)
+                        .frame(width: 18, height: 18)
+                        .background(Circle().fill(accent))
+                        .padding(3)
+                }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(route.title)
@@ -162,16 +263,29 @@ struct CommunitySheet: View {
                 ratingBadge(rating)
             }
         }
-        .padding(DS.Space.sm)
+        .padding(DS.Space.xs)
         .dsGlass(radius: DS.Radius.md, shadow: .low)
         .accessibilityElement(children: .combine)
     }
 
+    /// Цвет флага страны маршрута — им подсвечивается пустая рамка, пока
+    /// фотография летит из сети.
+    private func tint(_ route: PublicRoute) -> Color {
+        guard let hue = route.countryID.flatMap(country)?.flagHue else { return accent }
+        return Color(hue: hue, saturation: 0.7, brightness: 0.95)
+    }
+
+    @ViewBuilder
+    private func cover(_ route: PublicRoute, large: Bool) -> some View {
+        if let id = route.countryID, let photo = CountryLandmarks.cover(for: id) {
+            RemoteImage(url: large ? (photo.large ?? photo.small) : photo.small)
+        }
+    }
+
     private func routeSubtitle(_ route: PublicRoute) -> String {
         var parts: [String] = []
-        if let id = route.countryID {
-            let name = countryName(id)
-            if !name.isEmpty { parts.append(name) }
+        if let id = route.countryID, let name = country(id)?.displayName {
+            parts.append(name)
         }
         parts.append(Plural.reviews(route.reviewsCount))
         return parts.joined(separator: " · ")
@@ -207,7 +321,24 @@ struct CommunitySheet: View {
 
     private func authorRow(_ author: PublicAuthor, place: Int) -> some View {
         HStack(spacing: DS.Space.sm) {
-            placeBadge(place)
+            // Кружок с буквами в цвете места, а не серый: страница
+            // человека начинается с лица, и когда лица нет, его заменяет
+            // хотя бы цвет.
+            ZStack {
+                Circle().fill(medal(place).opacity(0.22))
+                Circle().strokeBorder(medal(place).opacity(0.55), lineWidth: 2)
+                Text(initials(author.name))
+                    .font(DS.Font.subhead)
+                    .foregroundStyle(medal(place))
+            }
+            .frame(width: 48, height: 48)
+            .overlay(alignment: .bottomTrailing) {
+                Text("\(place)")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(DS.Color.inkOnAccent)
+                    .frame(width: 18, height: 18)
+                    .background(Circle().fill(medal(place)))
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(author.name)
@@ -230,21 +361,26 @@ struct CommunitySheet: View {
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(DS.Color.inkTertiary)
         }
-        .padding(DS.Space.sm)
+        .padding(DS.Space.xs)
         .dsGlass(radius: DS.Radius.md, shadow: .low)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
     }
 
-    private func placeBadge(_ place: Int) -> some View {
-        Text("\(place)")
-            .font(DS.Font.micro)
-            .foregroundStyle(place <= 3 ? DS.Color.inkOnAccent : DS.Color.inkTertiary)
-            .frame(width: 26, height: 26)
-            .background {
-                Circle().fill(place <= 3 ? AnyShapeStyle(accent)
-                                         : AnyShapeStyle(DS.Color.surfaceSunken))
-            }
+    /// Золото, серебро, бронза — и акцент для всех остальных. Топ должен
+    /// читаться с одного взгляда, а не вычитываться по номерам.
+    private func medal(_ place: Int) -> Color {
+        switch place {
+        case 1: return Color(hex: 0xE8C45F)
+        case 2: return Color(hex: 0xBFC7D4)
+        case 3: return Color(hex: 0xCE8E5A)
+        default: return accent
+        }
+    }
+
+    private func initials(_ name: String) -> String {
+        let letters = name.split(separator: " ").prefix(2).compactMap { $0.first }
+        return letters.isEmpty ? "?" : String(letters).uppercased()
     }
 
     private func ratingBadge(_ value: Double) -> some View {
