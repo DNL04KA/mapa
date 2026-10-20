@@ -237,6 +237,10 @@ with overall as (
 select
   r.id,
   r.author_id,
+  -- Никнейм и имя автора прямо здесь: иначе, чтобы подписать строку в
+  -- топе, телефону пришлось бы делать второй запрос на каждый маршрут.
+  a.handle                                                 as author_handle,
+  a.name                                                   as author_name,
   r.title,
   r.country_id,
   r.published_at,
@@ -246,11 +250,13 @@ select
   round(((count(rv.id) * coalesce(avg(rv.rating), 0) + 5 * o.mean)
          / (count(rv.id) + 5))::numeric, 3)                as score
 from public.routes r
+join public.profiles a on a.id = r.author_id
 cross join overall o
 left join public.route_reviews rv on rv.route_id = r.id
 left join public.route_saves   s  on s.route_id  = r.id
 where r.is_published
-group by r.id, r.author_id, r.title, r.country_id, r.published_at, o.mean;
+group by r.id, r.author_id, a.handle, a.name, r.title, r.country_id,
+         r.published_at, o.mean;
 
 -- ───────────────────────── Топ авторов ─────────────────────────
 --

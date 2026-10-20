@@ -162,6 +162,8 @@
 "Неверный адрес" = "Bad address";
 "Неон" = "Neon";
 "нет такого" = "no such thing";
+"никнейм" = "handle";
+"Никого с таким никнеймом" = "Nobody with that handle";
 "Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
@@ -253,6 +255,7 @@
 "Сервер ответил %@" = "The server answered %@";
 "Сетка" = "Grid";
 "Системный шрифт, масштабируется Dynamic Type" = "System font, scales with Dynamic Type";
+"Скопировать никнейм @%@" = "Copy the handle @%@";
 "скоро" = "soon";
 "Снятие статуса" = "Status removed";
 "Снять отметку" = "Remove the mark";

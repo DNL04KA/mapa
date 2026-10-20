@@ -12,11 +12,11 @@ import XCTest
 final class CommunityTests: XCTestCase {
 
     private let routesJSON = """
-    [{"id":"r1","author_id":"a1","title":"Италия за две недели","country_id":"ITA",
+    [{"id":"r1","author_id":"a1","author_handle":"nikita","author_name":"Никита","title":"Италия за две недели","country_id":"ITA",
       "reviews_count":42,"saves_count":17,"rating":4.60,"score":4.520},
-     {"id":"r2","author_id":"a2","title":"Япония весной","country_id":"JPN",
+     {"id":"r2","author_id":"a2","author_handle":"sato","author_name":"Сато","title":"Япония весной","country_id":"JPN",
       "reviews_count":1,"saves_count":0,"rating":5.00,"score":4.100},
-     {"id":"r3","author_id":"a1","title":"Перу","country_id":"PER",
+     {"id":"r3","author_id":"a1","author_handle":"nikita","author_name":"Никита","title":"Перу","country_id":"PER",
       "reviews_count":0,"saves_count":3,"rating":null,"score":4.000}]
     """
 
@@ -90,6 +90,40 @@ final class CommunityTests: XCTestCase {
         XCTAssertEqual(mine.map(\.id), ["r1", "r3"], "на странице человека только его маршруты")
     }
 
+    func testКНикнеймуМожноЗайти() async throws {
+        let store = CommunityStore(source: FakeCommunity(
+            routes: try JSONDecoder().decode([PublicRoute].self, from: Data(routesJSON.utf8)),
+            authors: try JSONDecoder().decode([PublicAuthor].self, from: Data(authorsJSON.utf8))))
+
+        // Собачка и регистр не должны мешать: человек наберёт как привык.
+        guard case let .found(author) = await store.find(handle: "@Sato") else {
+            return XCTFail("@sato не нашёлся")
+        }
+        XCTAssertEqual(author.id, "a2")
+
+        // Несуществующий никнейм — это ответ «никого нет», а не поломка.
+        let missing = await store.find(handle: "никого")
+        XCTAssertEqual(missing, .notFound)
+        // Две буквы — ещё не никнейм, и сервер этим дёргать незачем.
+        let tooShort = await store.find(handle: "ab")
+        XCTAssertEqual(tooShort, .notFound)
+    }
+
+    func testУМаршрутаВидноАвтора() throws {
+        let routes = try JSONDecoder().decode([PublicRoute].self, from: Data(routesJSON.utf8))
+        XCTAssertEqual(routes[0].authorHandle, "nikita")
+        XCTAssertEqual(routes[0].authorName, "Никита")
+        XCTAssertEqual(routes[1].authorHandle, "sato")
+    }
+
+    func testБезСервераПоискГоворитПочему() async {
+        let store = CommunityStore(source: MissingCommunity())
+        guard case let .unavailable(reason) = await store.find(handle: "sato") else {
+            return XCTFail("без сервера поиск обязан объяснить причину")
+        }
+        XCTAssertFalse(reason.isEmpty)
+    }
+
     func testСетеваяОшибкаОстаётсяОшибкой() async {
         let store = CommunityStore(source: BrokenCommunity())
         await store.load()
@@ -106,7 +140,14 @@ private struct FakeCommunity: CommunitySource {
     func topAuthors(limit: Int) async throws -> [PublicAuthor] { authors }
     func author(id: String) async throws -> PublicAuthor {
         guard let found = authors.first(where: { $0.id == id }) else {
-            throw CommunityError.network("нет такого")
+            throw CommunityError.notFound
+        }
+        return found
+    }
+
+    func author(handle: String) async throws -> PublicAuthor {
+        guard let found = authors.first(where: { $0.handle == handle.lowercased() }) else {
+            throw CommunityError.notFound
         }
         return found
     }
@@ -120,5 +161,6 @@ private struct BrokenCommunity: CommunitySource {
     func topRoutes(limit: Int) async throws -> [PublicRoute] { throw failure }
     func topAuthors(limit: Int) async throws -> [PublicAuthor] { throw failure }
     func author(id: String) async throws -> PublicAuthor { throw failure }
+    func author(handle: String) async throws -> PublicAuthor { throw failure }
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] { throw failure }
 }

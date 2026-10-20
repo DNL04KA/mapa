@@ -20,6 +20,10 @@ struct CommunitySheet: View {
     let onDismiss: () -> Void
 
     @State private var tab: Tab = Self.firstTab
+    @State private var handle = ""
+    @State private var lookup: CommunityStore.Lookup?
+    @State private var isSearching = false
+    @FocusState private var handleFocused: Bool
 
     /// Вкладка из переменной окружения — чтобы снять «Людей» симулятором,
     /// которому нечем переключить. Только отладка.
@@ -73,6 +77,8 @@ struct CommunitySheet: View {
 
             tabs
 
+            if tab == .people { handleField }
+
             ViewThatFits(in: .vertical) {
                 list
                 ScrollView { list }.scrollIndicators(.hidden)
@@ -119,6 +125,103 @@ struct CommunitySheet: View {
         }
         .padding(3)
         .background(Capsule().fill(DS.Color.surfaceSunken.opacity(0.7)))
+    }
+
+    /// Поиск по никнейму: «зайти к человеку» — это ввести @имя, а не
+    /// листать топ в надежде, что он там есть.
+    private var handleField: some View {
+        VStack(spacing: DS.Space.xxs) {
+            HStack(spacing: DS.Space.xs) {
+                Text("@")
+                    .font(DS.Font.body)
+                    .foregroundStyle(DS.Color.inkTertiary)
+
+                TextField("никнейм", text: $handle)
+                    .font(DS.Font.body)
+                    .foregroundStyle(DS.Color.ink)
+                    .focused($handleFocused)
+                    .submitLabel(.go)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .onSubmit { search() }
+                    .onChange(of: handle) { _ in lookup = nil }
+
+                if isSearching {
+                    ProgressView()
+                } else if !handle.isEmpty {
+                    Button {
+                        handle = ""
+                        lookup = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: DS.Size.iconSm))
+                            .foregroundStyle(DS.Color.inkTertiary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Очистить")
+                }
+            }
+            .padding(.horizontal, DS.Space.md)
+            .frame(height: DS.Size.controlHeight)
+            .background {
+                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                    .fill(DS.Color.surfaceSunken.opacity(0.7))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                            .strokeBorder(DS.Color.hairline, lineWidth: 1)
+                    }
+            }
+
+            switch lookup {
+            case let .found(author):
+                Button { onOpenAuthor(author) } label: {
+                    authorRow(author, place: 0)
+                }
+                .buttonStyle(.plain)
+
+            case .notFound:
+                Text("Никого с таким никнеймом")
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+            case let .unavailable(reason):
+                Text(reason)
+                    .font(DS.Font.caption)
+                    .foregroundStyle(DS.Color.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+            case nil:
+                EmptyView()
+            }
+        }
+    }
+
+    /// Открыть человека по никнейму из строки маршрута.
+    private func open(handle: String) {
+        Haptics.shared.tap(.light)
+        Task {
+            if case let .found(author) = await store.find(handle: handle) {
+                await MainActor.run { onOpenAuthor(author) }
+            }
+        }
+    }
+
+    private func search() {
+        let query = handle
+        guard query.trimmingCharacters(in: .whitespaces).count >= 3 else {
+            lookup = .notFound
+            return
+        }
+        isSearching = true
+        Task {
+            let result = await store.find(handle: query)
+            await MainActor.run {
+                isSearching = false
+                withAnimation(motion.animation(.snap)) { lookup = result }
+            }
+        }
     }
 
     @ViewBuilder
@@ -196,10 +299,25 @@ struct CommunitySheet: View {
                             .foregroundStyle(.white)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text(routeSubtitle(route))
-                            .font(DS.Font.micro)
-                            .foregroundStyle(.white.opacity(0.75))
-                            .lineLimit(1)
+                        HStack(spacing: DS.Space.xxs) {
+                            Text(routeSubtitle(route))
+                                .font(DS.Font.micro)
+                                .foregroundStyle(.white.opacity(0.75))
+                                .lineLimit(1)
+
+                            if let handle = route.authorHandle {
+                                Button { open(handle: handle) } label: {
+                                    Text("@" + handle)
+                                        .font(DS.Font.micro)
+                                        .foregroundStyle(.white)
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(Capsule().fill(.white.opacity(0.22)))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                     Spacer(minLength: 0)
                     if let rating = route.rating {
@@ -255,6 +373,19 @@ struct CommunitySheet: View {
                     .font(DS.Font.micro)
                     .foregroundStyle(DS.Color.inkTertiary)
                     .lineLimit(1)
+
+                // Никнейм автора прямо в строке: маршрут всегда чей-то,
+                // и зайти к человеку логично отсюда, а не из другого
+                // списка, где его ещё надо найти.
+                if let handle = route.authorHandle {
+                    Button { open(handle: handle) } label: {
+                        Text("@" + handle)
+                            .font(DS.Font.micro)
+                            .foregroundStyle(accent)
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
             Spacer(minLength: 0)

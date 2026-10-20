@@ -12,6 +12,10 @@ import Foundation
 struct PublicRoute: Identifiable, Equatable, Decodable {
     let id: String
     let authorID: String
+    /// Никнейм автора — то, по чему к нему заходят. Имя может повторяться
+    /// у десятка людей, никнейм уникален и короток.
+    let authorHandle: String?
+    let authorName: String?
     let title: String
     let countryID: String?
     /// Средняя оценка. `nil`, пока никто не оценил.
@@ -26,6 +30,8 @@ struct PublicRoute: Identifiable, Equatable, Decodable {
     enum CodingKeys: String, CodingKey {
         case id
         case authorID = "author_id"
+        case authorHandle = "author_handle"
+        case authorName = "author_name"
         case title
         case countryID = "country_id"
         case rating
@@ -58,6 +64,8 @@ struct PublicAuthor: Identifiable, Equatable, Decodable {
 enum CommunityError: Error, Equatable {
     /// Сервера нет — не ошибка, а состояние приложения.
     case notConfigured
+    /// Такого никнейма нет. Это не поломка, а ответ на вопрос.
+    case notFound
     case network(String)
 }
 
@@ -68,6 +76,8 @@ protocol CommunitySource {
     func topRoutes(limit: Int) async throws -> [PublicRoute]
     func topAuthors(limit: Int) async throws -> [PublicAuthor]
     func author(id: String) async throws -> PublicAuthor
+    /// Найти человека по никнейму — это и есть «зайти к пользователю».
+    func author(handle: String) async throws -> PublicAuthor
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute]
 }
 
@@ -97,6 +107,17 @@ struct SupabaseCommunity: CommunitySource {
             "popular_authors", query: ["select": "*", "id": "eq.\(id)", "limit": "1"])
         guard let author = found.first else {
             throw CommunityError.network("Профиль не найден")
+        }
+        return author
+    }
+
+    func author(handle: String) async throws -> PublicAuthor {
+        let cleaned = handle.trimmingCharacters(in: CharacterSet(charactersIn: " @"))
+            .lowercased()
+        let found: [PublicAuthor] = try await get(
+            "popular_authors", query: ["select": "*", "handle": "eq.\(cleaned)", "limit": "1"])
+        guard let author = found.first else {
+            throw CommunityError.notFound
         }
         return author
     }
@@ -143,6 +164,7 @@ struct MissingCommunity: CommunitySource {
     func topRoutes(limit: Int) async throws -> [PublicRoute] { throw CommunityError.notConfigured }
     func topAuthors(limit: Int) async throws -> [PublicAuthor] { throw CommunityError.notConfigured }
     func author(id: String) async throws -> PublicAuthor { throw CommunityError.notConfigured }
+    func author(handle: String) async throws -> PublicAuthor { throw CommunityError.notConfigured }
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] {
         throw CommunityError.notConfigured
     }

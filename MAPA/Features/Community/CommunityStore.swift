@@ -43,6 +43,33 @@ final class CommunityStore: ObservableObject {
         self.authors = await authors
     }
 
+    /// Найти человека по никнейму.
+    ///
+    /// Возвращает три разных исхода: нашли, такого нет, не смогли
+    /// спросить. Путать их нельзя — «@кто-то не найден» и «сеть упала»
+    /// требуют от человека разных действий.
+    enum Lookup: Equatable {
+        case found(PublicAuthor)
+        case notFound
+        case unavailable(String)
+    }
+
+    func find(handle: String) async -> Lookup {
+        let cleaned = handle.trimmingCharacters(in: CharacterSet(charactersIn: " @"))
+        guard cleaned.count >= 3 else { return .notFound }
+        do {
+            return .found(try await source.author(handle: cleaned))
+        } catch CommunityError.notFound {
+            return .notFound
+        } catch CommunityError.notConfigured {
+            return .unavailable(NSLocalizedString("Сообщество ещё не подключено", comment: ""))
+        } catch let CommunityError.network(reason) {
+            return .unavailable(reason)
+        } catch {
+            return .unavailable(error.localizedDescription)
+        }
+    }
+
     /// Маршруты одного человека — для его страницы.
     func routes(by author: PublicAuthor, limit: Int = 20) async -> State<PublicRoute> {
         await fetch { try await self.source.routes(by: author.id, limit: limit) }
@@ -68,13 +95,13 @@ final class CommunityStore: ObservableObject {
 private struct DemoCommunity: CommunitySource {
 
     private static let json = """
-    [{"id":"r1","author_id":"a1","title":"Италия за две недели","country_id":"ITA",
+    [{"id":"r1","author_id":"a1","author_handle":"nikita","author_name":"Никита","title":"Италия за две недели","country_id":"ITA",
       "reviews_count":42,"saves_count":17,"rating":4.60,"score":4.520},
-     {"id":"r2","author_id":"a2","title":"Япония весной","country_id":"JPN",
+     {"id":"r2","author_id":"a2","author_handle":"sato","author_name":"Сато","title":"Япония весной","country_id":"JPN",
       "reviews_count":28,"saves_count":9,"rating":4.70,"score":4.470},
-     {"id":"r3","author_id":"a3","title":"Перу: Лима — Куско — Мачу-Пикчу","country_id":"PER",
+     {"id":"r3","author_id":"a3","author_handle":"ana","author_name":"Ана","title":"Перу: Лима — Куско — Мачу-Пикчу","country_id":"PER",
       "reviews_count":11,"saves_count":6,"rating":4.80,"score":4.350},
-     {"id":"r4","author_id":"a1","title":"Юг Испании за неделю","country_id":"ESP",
+     {"id":"r4","author_id":"a1","author_handle":"nikita","author_name":"Никита","title":"Юг Испании за неделю","country_id":"ESP",
       "reviews_count":7,"saves_count":4,"rating":4.40,"score":4.210}]
     """
 
@@ -105,7 +132,14 @@ private struct DemoCommunity: CommunitySource {
 
     func author(id: String) async throws -> PublicAuthor {
         guard let found = authors.first(where: { $0.id == id }) else {
-            throw CommunityError.network("нет такого")
+            throw CommunityError.notFound
+        }
+        return found
+    }
+
+    func author(handle: String) async throws -> PublicAuthor {
+        guard let found = authors.first(where: { $0.handle == handle.lowercased() }) else {
+            throw CommunityError.notFound
         }
         return found
     }

@@ -17,6 +17,8 @@ struct PersonSheet: View {
 
     @State private var routes: CommunityStore.State<PublicRoute> = .loading
     @State private var dragOffset: CGFloat = 0
+    /// Никнейм только что скопировали — галочка вместо значка.
+    @State private var copied = false
 
     @StateObject private var store = CommunityStore()
 
@@ -102,13 +104,32 @@ struct PersonSheet: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(author.name)
-                    .font(DS.Font.title)
-                    .foregroundStyle(DS.Color.ink)
+                    .font(DS.Font.headline)
+                    .foregroundStyle(DS.Color.inkSecondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                Text("@" + author.handle)
-                    .font(DS.Font.caption)
-                    .foregroundStyle(DS.Color.inkTertiary)
+                    .minimumScaleFactor(0.6)
+
+                // Никнейм крупнее имени: имён «Ана» в мире тысячи, а
+                // @ana одна — по ней человека и находят.
+                Button {
+                    UIPasteboard.general.string = "@" + author.handle
+                    Haptics.shared.success()
+                    withAnimation(motion.animation(.snap)) { copied = true }
+                } label: {
+                    HStack(spacing: DS.Space.xxs) {
+                        Text("@" + author.handle)
+                            .font(DS.Font.title)
+                            .foregroundStyle(DS.Color.ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(accent)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Скопировать никнейм @\(author.handle)")
             }
 
             Spacer(minLength: 0)
