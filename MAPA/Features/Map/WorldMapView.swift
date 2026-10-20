@@ -71,6 +71,9 @@ struct WorldMapView: View {
         switch ProcessInfo.processInfo.environment["MAPA_SCREEN"] {
         case "routes": showsRoutes = true
         case "account": showsAccount = true
+        case "profile-setup":
+            showsAccount = true
+            account.forgetHandleForScreenshot()
         case "theme": showsThemes = true
         case "plus": showsPlus = true
         case "community": showsCommunity = true

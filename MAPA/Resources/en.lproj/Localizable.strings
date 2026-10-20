@@ -109,6 +109,7 @@
 "Или картинка" = "Or a picture";
 "Ими будут заливаться страны" = "Countries will be filled with these";
 "Имя" = "Name";
+"Имя и картинка на твоей карте и в экспорте" = "Your name and picture on your map and in exports";
 "Индиго" = "Indigo";
 "Истории" = "Stories";
 "кадр" = "frame";
@@ -159,6 +160,8 @@
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
 "Найти страну или город" = "Find a country or city";
+"Не длиннее двадцати знаков" = "No longer than twenty characters";
+"Не короче трёх знаков" = "At least three characters";
 "не разобрана ни одна страна" = "not a single country was parsed";
 "Не удалось загрузить" = "Could not load";
 "Не удалось загрузить маршруты" = "Could not load the routes";
@@ -168,6 +171,8 @@
 "Неон" = "Neon";
 "нет такого" = "no such thing";
 "никнейм" = "handle";
+"Никнейм и картинка — чтобы к тебе можно было зайти" = "A handle and a picture — so people can visit you";
+"Никнейм, по которому к тебе зайдут" = "A handle people can reach you by";
 "Никого с таким никнеймом" = "Nobody with that handle";
 "Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
@@ -179,6 +184,7 @@
 "Океания" = "Oceania";
 "Описания пока нет" = "No description yet";
 "опубликовано" = "published";
+"Опубликовать маршрут и оценить чужой — когда подключим сервер" = "Publishing a route and rating someone else's — once the server is connected";
 "Осака" = "Osaka";
 "от дома" = "from home";
 "От мелководья к глубине" = "From shallows to the deep";
@@ -208,6 +214,7 @@
 "Переставить %@" = "Move %@";
 "Платное. Коснись, чтобы примерить" = "Paid. Tap to try it on";
 "Плетение холста" = "Canvas weave";
+"По нему тебя найдут и зайдут к тебе" = "This is how people find you";
 "По оценкам тех, кто уже съездил" = "Ranked by the people who have been";
 "По странам" = "By country";
 "Поделиться" = "Share";
@@ -263,12 +270,14 @@
 "Системный шрифт, масштабируется Dynamic Type" = "System font, scales with Dynamic Type";
 "Скопировать никнейм @%@" = "Copy the handle @%@";
 "скоро" = "soon";
+"Сменить картинку" = "Change the picture";
 "Снятие статуса" = "Status removed";
 "Снять отметку" = "Remove the mark";
 "Собираем видео" = "Building the video";
 "Собираем мир" = "Assembling the world";
 "Собрано из главных городов" = "Built from the main cities";
 "Советуют заложить" = "Suggested to allow";
+"Создать профиль" = "Create a profile";
 "Сообщество" = "Community";
 "Сообщество ещё не подключено" = "The community is not connected yet";
 "сохранили" = "saves";
@@ -295,6 +304,7 @@
 "Типографика" = "Typography";
 "Тлеющие угли" = "Smouldering embers";
 "Толща океана" = "The ocean's depth";
+"Только латиница, цифры и _" = "Latin letters, digits and _ only";
 "Только на этом телефоне" = "Only on this phone";
 "Топ по оценкам тех, кто уже съездил" = "Ranked by the people who have been there";
 "точек" = "stops";

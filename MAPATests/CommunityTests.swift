@@ -163,3 +163,50 @@ private struct BrokenCommunity: CommunitySource {
     func author(handle: String) async throws -> PublicAuthor { throw failure }
     func routes(by authorID: String, limit: Int) async throws -> [PublicRoute] { throw failure }
 }
+
+/// Никнейм.
+///
+/// Правила написания живут в двух местах — в приложении и в базе — и
+/// должны совпадать: если телефон пропустит «Вася», сервер откажет, и
+/// человек увидит ошибку после отправки, а не во время набора.
+final class HandleTests: XCTestCase {
+
+    func testХорошийНикнеймПроходит() {
+        XCTAssertTrue(Handle.isValid("nikita"))
+        XCTAssertTrue(Handle.isValid("ana_2024"))
+        XCTAssertTrue(Handle.isValid("@Sato"), "собачка и регистр не мешают")
+    }
+
+    func testПлохойНикнеймОбъясняетПочему() {
+        XCTAssertNotNil(Handle.problem(with: "ab"), "короткий")
+        XCTAssertNotNil(Handle.problem(with: String(repeating: "a", count: 21)), "длинный")
+        XCTAssertNotNil(Handle.problem(with: "вася"), "кириллица")
+        XCTAssertNotNil(Handle.problem(with: "ni kita"), "пробел внутри")
+    }
+
+    func testХранитсяОдноНаписание() {
+        XCTAssertEqual(Handle.normalized("@Nikita"), "nikita")
+        XCTAssertEqual(Handle.normalized("  SATO "), "sato")
+    }
+
+    @MainActor
+    func testПрофильСоздаётсяТолькоСВернымНикнеймом() {
+        let account = AccountStore(storage: MemoryProfileStorage())
+        XCTAssertFalse(account.profile.isCreated, "без никнейма профиля ещё нет")
+
+        XCTAssertFalse(account.createProfile(handle: "ab", name: "Аня"))
+        XCTAssertFalse(account.profile.isCreated)
+
+        XCTAssertTrue(account.createProfile(handle: "@Anya", name: "Аня"))
+        XCTAssertEqual(account.profile.handle, "anya")
+        XCTAssertEqual(account.profile.name, "Аня")
+        XCTAssertTrue(account.profile.isCreated)
+    }
+}
+
+/// Хранилище профиля в памяти — чтобы тест не писал в файлы.
+private final class MemoryProfileStorage: ProfileStorage {
+    private var stored: Profile?
+    func load() -> Profile? { stored }
+    func save(_ profile: Profile) { stored = profile }
+}

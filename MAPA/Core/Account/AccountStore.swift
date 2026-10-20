@@ -45,6 +45,29 @@ final class AccountStore: ObservableObject {
         storage.save(profile)
     }
 
+    /// Создать профиль: никнейм и имя.
+    ///
+    /// Пока сервера нет, профиль остаётся местным, и занятость никнейма
+    /// проверить не у кого. Поэтому здесь только правила написания, а
+    /// «такой уже есть» появится вместе с регистрацией — иначе пришлось
+    /// бы обещать уникальность, которую мы не можем обеспечить.
+    @discardableResult
+    func createProfile(handle: String, name: String) -> Bool {
+        guard Handle.isValid(handle) else { return false }
+        profile.handle = Handle.normalized(handle)
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { profile.name = trimmed }
+        storage.save(profile)
+        return true
+    }
+
+    #if DEBUG
+    /// Снять экран «профиля ещё нет» на телефоне, где он уже создан.
+    func forgetHandleForScreenshot() {
+        profile.handle = nil
+    }
+    #endif
+
     func setAvatar(_ avatar: Avatar) {
         guard avatar != profile.avatar else { return }
         // Старое своё фото удаляем сразу: иначе в папке копятся снимки,

@@ -28,6 +28,7 @@ struct AccountSheet: View {
     @State private var isEditingName = false
     @State private var dragOffset: CGFloat = 0
     @State private var isPickingAvatar = false
+    @State private var isCreatingProfile = false
     @FocusState private var nameFocused: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -40,6 +41,20 @@ struct AccountSheet: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 96)
                 panel
+            }
+
+            if isCreatingProfile {
+                ProfileSetupSheet(
+                    account: account,
+                    accent: accent,
+                    onDone: {
+                        withAnimation(motion.animation(.smooth)) { isCreatingProfile = false }
+                    },
+                    onDismiss: {
+                        withAnimation(motion.animation(.smooth)) { isCreatingProfile = false }
+                    }
+                )
+                .zIndex(2)
             }
 
             if isPickingAvatar {
@@ -63,6 +78,10 @@ struct AccountSheet: View {
         .onAppear {
             if ProcessInfo.processInfo.environment["MAPA_AVATARS"] == "1" {
                 isPickingAvatar = true
+            }
+            if ProcessInfo.processInfo.environment["MAPA_NEW_PROFILE"] == "1" {
+                account.forgetHandleForScreenshot()
+                isCreatingProfile = true
             }
         }
         #endif
@@ -121,6 +140,7 @@ struct AccountSheet: View {
                 .frame(width: 38, height: 4)
 
             header
+            if !account.profile.isCreated { createProfileCard }
             summary
             countrySection("Был", visited, status: .visited)
             countrySection("Хочу", wishlist, status: .wishlist)
@@ -134,6 +154,45 @@ struct AccountSheet: View {
                 }
             }
         }
+    }
+
+    /// Приглашение завести профиль.
+    ///
+    /// Не загородка на входе, а карточка в середине экрана: приложением
+    /// можно пользоваться и без профиля, и человек, который просто красит
+    /// карту, не должен об этом спотыкаться.
+    private var createProfileCard: some View {
+        Button {
+            Haptics.shared.tap(.light)
+            withAnimation(motion.animation(.smooth)) { isCreatingProfile = true }
+        } label: {
+            HStack(spacing: DS.Space.sm) {
+                Image(systemName: "at")
+                    .font(.system(size: DS.Size.iconMd, weight: .semibold))
+                    .foregroundStyle(accent)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Создать профиль")
+                        .font(DS.Font.body)
+                        .foregroundStyle(DS.Color.ink)
+                    Text("Никнейм и картинка — чтобы к тебе можно было зайти")
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+            .padding(DS.Space.sm)
+            .dsGlass(radius: DS.Radius.md, shadow: .low)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// Три числа, которыми человек и представляется: сколько мира, сколько

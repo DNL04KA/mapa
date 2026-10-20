@@ -12,6 +12,10 @@ struct Profile: Equatable, Codable {
     /// Идентификатор. У местного профиля свой, у серверного — выданный
     /// сервером. При первом входе местные данные переезжают на серверный.
     let id: String
+    /// Никнейм — адрес человека в сообществе. `nil`, пока профиль не
+    /// создан: приложением можно пользоваться и без него, и до появления
+    /// второго человека никнейм ни к чему.
+    var handle: String?
     var name: String
     var email: String?
     var avatar: Avatar
@@ -19,6 +23,10 @@ struct Profile: Equatable, Codable {
     let createdAt: Date
 
     var isLocal: Bool { provider == .local }
+
+    /// Профиль создан: у человека есть никнейм, по которому к нему можно
+    /// зайти. Без него он просто отмечает свою карту, и это нормально.
+    var isCreated: Bool { handle?.isEmpty == false }
 
     /// Первая буква имени — пока нет аватара, показываем её.
     var initial: String {
@@ -29,12 +37,53 @@ struct Profile: Equatable, Codable {
         let id = "local-" + UUID().uuidString
         return Profile(
             id: id,
+            handle: nil,
             name: String(localized: "Путешественник"),
             email: nil,
             avatar: .suggested(for: id),
             provider: .local,
             createdAt: Date()
         )
+    }
+}
+
+/// Никнейм: правила те же, что на сервере.
+///
+/// Проверять их здесь, а не только в базе, нужно затем, чтобы человек
+/// узнавал об ошибке во время набора, а не после отправки формы. Правило
+/// одно и то же в двух местах — и в `supabase/schema.sql` стоит ровно это
+/// выражение.
+enum Handle {
+
+    static let minLength = 3
+    static let maxLength = 20
+
+    /// Что не так с никнеймом. `nil` — всё в порядке.
+    ///
+    /// Проверяем то написание, в котором никнейм будет храниться, а не то,
+    /// что человек набрал: «@Sato» и «sato» — один и тот же никнейм, и
+    /// отвергать первый только за заглавную букву было бы придирками.
+    static func problem(with handle: String) -> String? {
+        let value = normalized(handle)
+        if value.count < minLength {
+            return String(localized: "Не короче трёх знаков")
+        }
+        if value.count > maxLength {
+            return String(localized: "Не длиннее двадцати знаков")
+        }
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789_")
+        if value.unicodeScalars.contains(where: { !allowed.contains($0) }) {
+            return String(localized: "Только латиница, цифры и _")
+        }
+        return nil
+    }
+
+    static func isValid(_ handle: String) -> Bool { problem(with: handle) == nil }
+
+    /// Привести к тому виду, в каком никнейм хранится: без собачки,
+    /// строчными. Человек набирает как привык, а хранится одно написание.
+    static func normalized(_ handle: String) -> String {
+        handle.trimmingCharacters(in: CharacterSet(charactersIn: " @")).lowercased()
     }
 }
 
