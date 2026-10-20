@@ -14,6 +14,8 @@ import SwiftUI
 ///   больше, чем безликий кружок с буквой.
 enum Avatar: Equatable, Codable, Hashable {
 
+    /// Зверь из набора — номер морды.
+    case face(Int)
     /// Место на карте — номер страны из набора.
     case place(Int)
     /// Пейзаж из набора — номер картинки.
@@ -26,7 +28,7 @@ enum Avatar: Equatable, Codable, Hashable {
     /// Пришло вместе с входом.
     case remote(URL)
 
-    static let `default` = Avatar.place(0)
+    static let `default` = Avatar.face(0)
 
     /// Устойчивая аватарка по идентификатору человека.
     ///
@@ -38,7 +40,7 @@ enum Avatar: Equatable, Codable, Hashable {
         for byte in id.utf8 {
             hash = (hash ^ UInt64(byte)) &* 0x100000001b3
         }
-        return .place(Int(hash % UInt64(AvatarPlaces.count)))
+        return .face(Int(hash % UInt64(AvatarFace.count)))
     }
 
     enum Catalog {
@@ -102,6 +104,9 @@ struct AvatarView: View {
     var body: some View {
         ZStack {
             switch avatar {
+            case let .face(index):
+                AvatarFace(index: index, size: size)
+
             case let .place(index):
                 AvatarPlace(index: index, size: size)
 
