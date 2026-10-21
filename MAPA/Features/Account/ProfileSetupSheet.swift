@@ -155,10 +155,12 @@ struct ProfileSetupSheet: View {
 
     private var handleField: some View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
-            HStack(spacing: DS.Space.xs) {
-                Text("@")
+            // Собачка вплотную к набранному: с разрядкой «@ nikita»
+            // читалось двумя словами, а никнейм — одно слово и один адрес.
+            HStack(spacing: 0) {
+                Text(verbatim: "@")
                     .font(DS.Font.title)
-                    .foregroundStyle(DS.Color.inkTertiary)
+                    .foregroundStyle(DS.Color.inkTertiary.opacity(0.7))
 
                 TextField("никнейм", text: $handle)
                     .font(DS.Font.title)

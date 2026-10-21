@@ -97,8 +97,10 @@ struct CommunitySheet: View {
     /// листать топ в надежде, что он там есть.
     private var handleField: some View {
         VStack(spacing: DS.Space.xxs) {
-            HStack(spacing: DS.Space.xs) {
-                Text("@")
+            // Собачка вплотную к полю: с разрядкой «@ nikita» выглядело
+            // двумя словами, а никнейм — одно.
+            HStack(spacing: 0) {
+                Text(verbatim: "@")
                     .font(DS.Font.body)
                     .foregroundStyle(DS.Color.inkTertiary)
 
@@ -265,11 +267,10 @@ struct CommunitySheet: View {
 
                             if let handle = route.authorHandle {
                                 Button { open(handle: handle) } label: {
-                                    Text("@" + handle)
+                                    DS.handle(handle, tint: .white)
                                         .font(DS.Font.micro)
-                                        .foregroundStyle(.white)
                                         .lineLimit(1)
-                                        .padding(.horizontal, 6)
+                                        .padding(.horizontal, 7)
                                         .padding(.vertical, 2)
                                         .background(Capsule().fill(.white.opacity(0.22)))
                                 }
@@ -327,22 +328,32 @@ struct CommunitySheet: View {
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(1)
 
-                Text(routeSubtitle(route))
-                    .font(DS.Font.micro)
-                    .foregroundStyle(DS.Color.inkTertiary)
-                    .lineLimit(1)
+                // Никнейм автора — в той же строке, что страна и отзывы.
+                // Третьей строкой он делал карточку выше и перетягивал на
+                // себя взгляд, хотя в списке лучших главное — маршрут.
+                // Разрядка в 3 точки, а не отступ дизайн-системы: точка
+                // между строками должна стоять так же, как точка внутри
+                // «Япония · 28 отзывов», иначе она отрывается от строки.
+                HStack(spacing: 3) {
+                    Text(routeSubtitle(route))
+                        .font(DS.Font.micro)
+                        .foregroundStyle(DS.Color.inkTertiary)
+                        .lineLimit(1)
+                        .layoutPriority(1)
 
-                // Никнейм автора прямо в строке: маршрут всегда чей-то,
-                // и зайти к человеку логично отсюда, а не из другого
-                // списка, где его ещё надо найти.
-                if let handle = route.authorHandle {
-                    Button { open(handle: handle) } label: {
-                        Text("@" + handle)
+                    if let handle = route.authorHandle {
+                        Text(verbatim: "·")
                             .font(DS.Font.micro)
-                            .foregroundStyle(accent)
-                            .lineLimit(1)
+                            .foregroundStyle(DS.Color.inkTertiary)
+
+                        Button { open(handle: handle) } label: {
+                            DS.handle(handle, tint: accent)
+                                .font(DS.Font.micro)
+                                .lineLimit(1)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
 
@@ -406,9 +417,10 @@ struct CommunitySheet: View {
                     .font(DS.Font.body)
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(1)
-                Text("@" + author.handle + " · " + Plural.routes(author.routesCount))
+                (DS.handle(author.handle, tint: DS.Color.inkTertiary)
+                    + Text(verbatim: " · " + Plural.routes(author.routesCount))
+                        .foregroundColor(DS.Color.inkTertiary))
                     .font(DS.Font.micro)
-                    .foregroundStyle(DS.Color.inkTertiary)
                     .lineLimit(1)
             }
 

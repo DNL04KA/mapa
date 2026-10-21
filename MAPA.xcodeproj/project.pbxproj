@@ -48,6 +48,7 @@
 		4C034D2E963983025E46109C /* AnimatedNumber.swift in Build */ = {isa = PBXBuildFile; fileRef = EAC4266E406B9BFAE2761C70 /* AnimatedNumber.swift */; };
 		6911CBD44D751DEB0589A8AC /* AuroraBackground.swift in Build */ = {isa = PBXBuildFile; fileRef = E25D2604A33282B2FF92E08C /* AuroraBackground.swift */; };
 		4FDCD02B037D7F607CE7EA96 /* GlassSurface.swift in Build */ = {isa = PBXBuildFile; fileRef = 1E80D5B466C2A3FFDDA0F86C /* GlassSurface.swift */; };
+		182F1E3E381392E34E30236D /* Handle.swift in Build */ = {isa = PBXBuildFile; fileRef = 61EF5DB8C89996DE07213F48 /* Handle.swift */; };
 		2EA5E6D0826797D13EFBAAD4 /* KeyboardInset.swift in Build */ = {isa = PBXBuildFile; fileRef = 7133DFC6EC2102082496AF76 /* KeyboardInset.swift */; };
 		C43F1BE169E21DD7AA0B7D1F /* NoiseOverlay.swift in Build */ = {isa = PBXBuildFile; fileRef = 73F45439D1A63349BBA7A847 /* NoiseOverlay.swift */; };
 		A2534C4B60569D09369B1752 /* PhotoViewer.swift in Build */ = {isa = PBXBuildFile; fileRef = 64EB2986AAF5C7DD8477E629 /* PhotoViewer.swift */; };
@@ -167,6 +168,7 @@
 		EAC4266E406B9BFAE2761C70 /* AnimatedNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedNumber.swift; sourceTree = "<group>"; };
 		E25D2604A33282B2FF92E08C /* AuroraBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraBackground.swift; sourceTree = "<group>"; };
 		1E80D5B466C2A3FFDDA0F86C /* GlassSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassSurface.swift; sourceTree = "<group>"; };
+		61EF5DB8C89996DE07213F48 /* Handle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handle.swift; sourceTree = "<group>"; };
 		7133DFC6EC2102082496AF76 /* KeyboardInset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInset.swift; sourceTree = "<group>"; };
 		73F45439D1A63349BBA7A847 /* NoiseOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoiseOverlay.swift; sourceTree = "<group>"; };
 		64EB2986AAF5C7DD8477E629 /* PhotoViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewer.swift; sourceTree = "<group>"; };
@@ -410,6 +412,7 @@
 				EAC4266E406B9BFAE2761C70 /* AnimatedNumber.swift */,
 				E25D2604A33282B2FF92E08C /* AuroraBackground.swift */,
 				1E80D5B466C2A3FFDDA0F86C /* GlassSurface.swift */,
+				61EF5DB8C89996DE07213F48 /* Handle.swift */,
 				7133DFC6EC2102082496AF76 /* KeyboardInset.swift */,
 				73F45439D1A63349BBA7A847 /* NoiseOverlay.swift */,
 				64EB2986AAF5C7DD8477E629 /* PhotoViewer.swift */,
@@ -857,6 +860,7 @@
 				4C034D2E963983025E46109C /* AnimatedNumber.swift */,
 				6911CBD44D751DEB0589A8AC /* AuroraBackground.swift */,
 				4FDCD02B037D7F607CE7EA96 /* GlassSurface.swift */,
+				182F1E3E381392E34E30236D /* Handle.swift */,
 				2EA5E6D0826797D13EFBAAD4 /* KeyboardInset.swift */,
 				C43F1BE169E21DD7AA0B7D1F /* NoiseOverlay.swift */,
 				A2534C4B60569D09369B1752 /* PhotoViewer.swift */,

@@ -111,29 +111,40 @@ struct PersonSheet: View {
 
                 // Никнейм крупнее имени: имён «Ана» в мире тысячи, а
                 // @ana одна — по ней человека и находят.
-                Button {
-                    UIPasteboard.general.string = "@" + author.handle
-                    Haptics.shared.success()
-                    withAnimation(motion.animation(.snap)) { copied = true }
-                } label: {
-                    HStack(spacing: DS.Space.xxs) {
-                        Text("@" + author.handle)
-                            .font(DS.Font.title)
-                            .foregroundStyle(DS.Color.ink)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(accent)
-                    }
-                    .contentShape(Rectangle())
+                HStack(spacing: DS.Space.xs) {
+                    DS.handle(author.handle)
+                        .font(DS.Font.title)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+
+                    copyButton
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Скопировать никнейм @\(author.handle)")
             }
 
             Spacer(minLength: 0)
         }
+    }
+
+    /// Скопировать никнейм.
+    ///
+    /// Отдельной кнопкой, а не значком, приклеенным к тексту: там он
+    /// выглядел помаркой в слове, и было неясно, что по нему можно
+    /// нажать. Круг с подложкой говорит это сам.
+    private var copyButton: some View {
+        Button {
+            UIPasteboard.general.string = "@" + author.handle
+            Haptics.shared.success()
+            withAnimation(motion.animation(.snap)) { copied = true }
+        } label: {
+            Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(copied ? DS.Gradient.statusGlowColor(.living) : accent)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(DS.Color.surfaceSunken.opacity(0.9)))
+                .overlay(Circle().strokeBorder(DS.Color.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Скопировать никнейм @\(author.handle)")
     }
 
     private var initials: String {
