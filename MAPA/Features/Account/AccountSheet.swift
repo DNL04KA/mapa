@@ -23,6 +23,8 @@ struct AccountSheet: View {
     let onOpenCountry: (Country) -> Void
     let onOpenRoutes: () -> Void
     let onDismiss: () -> Void
+    /// Шестерёнка в шапке профиля.
+    let onOpenSettings: () -> Void
 
     @State private var draftName: String = ""
     @State private var isEditingName = false
@@ -319,6 +321,7 @@ struct AccountSheet: View {
                     HStack {
                         avatar
                         Spacer(minLength: 0)
+                        settingsButton
                         editButton
                     }
                     names
@@ -328,6 +331,7 @@ struct AccountSheet: View {
                     avatar
                     names
                     Spacer(minLength: 0)
+                    settingsButton
                     editButton
                 }
             }
@@ -360,6 +364,18 @@ struct AccountSheet: View {
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private var settingsButton: some View {
+        Button(action: onOpenSettings) {
+            Image(systemName: "gearshape")
+                .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                .foregroundStyle(DS.Color.inkSecondary)
+                .frame(width: DS.Size.hitTarget, height: DS.Size.hitTarget)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Настройки")
     }
 
     private var editButton: some View {

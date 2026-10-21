@@ -65,7 +65,7 @@ struct AvatarPicker: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.Space.sm) {
-                    SectionHeader("Звери", subtitle: "Выбери, кто ты в дороге")
+                    SectionHeader("Звери", subtitle: String(localized: "Выбери, кто ты в дороге"))
                     LazyVGrid(columns: columns, spacing: DS.Space.sm) {
                         ForEach(0..<AvatarFace.count, id: \.self) { index in
                             button(.face(index))
@@ -73,7 +73,7 @@ struct AvatarPicker: View {
                     }
 
                     SectionHeader("Место на карте",
-                                  subtitle: "Страна в цвете своего флага")
+                                  subtitle: String(localized: "Страна в цвете своего флага"))
                     LazyVGrid(columns: columns, spacing: DS.Space.sm) {
                         ForEach(0..<AvatarPlace.count, id: \.self) { index in
                             button(.place(index))

@@ -591,6 +591,30 @@ final class WorldMapViewModel: ObservableObject {
             .sorted { $0.areaKm2 > $1.areaKm2 }
     }
 
+    /// Файл с копией карты — для настроек.
+    func makeBackup() -> URL? {
+        Backup.write(log: travelLog, routes: routes)
+    }
+
+    /// Принять копию: отметки и маршруты заменяются целиком.
+    ///
+    /// Именно заменяются, а не сливаются. Слияние выглядит добрее, но на
+    /// деле непредсказуемо: человек восстанавливает копию, когда хочет
+    /// вернуть то состояние, а не получить смесь из двух.
+    @discardableResult
+    func restore(from url: URL, reduceMotion: Bool) -> Bool {
+        guard let backup = Backup.read(from: url) else { return false }
+        travelLog = backup.log
+        routes = backup.routes
+        rebuildMarked(excluding: nil)
+        refreshStatistics()
+        rebuildRouteLine()
+        persist()
+        persistRoutes()
+        Haptics.shared.success()
+        return true
+    }
+
     func startRoute(reduceMotion: Bool) {
         Haptics.shared.tap(.light)
         withAnimation(reduceMotion ? DS.Motion.Preset.smooth.reducedAnimation : DS.Motion.Preset.smooth.animation) {

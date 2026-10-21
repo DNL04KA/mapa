@@ -5,6 +5,9 @@ import SwiftUI
 public struct SectionHeader: View {
 
     private let title: LocalizedStringKey
+    /// Строка, а не ключ перевода: сюда чаще приходят данные — «5 городов
+    /// · 14 дней», — а не фраза из словаря. Там, где подзаголовок всё же
+    /// фраза, её переводят на месте вызова через `String(localized:)`.
     private let subtitle: String?
 
     public init(_ title: LocalizedStringKey, subtitle: String? = nil) {

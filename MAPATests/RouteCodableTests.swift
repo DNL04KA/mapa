@@ -84,3 +84,58 @@ final class RouteCodableTests: XCTestCase {
         XCTAssertNil(route.averageRating)
     }
 }
+
+/// Копия карты.
+///
+/// Это единственная на сегодня страховка от потери телефона, и проверять
+/// её надо не руками: ошибка здесь обнаружится ровно в тот момент, когда
+/// человек попробует восстановиться, то есть когда всё уже потеряно.
+final class BackupTests: XCTestCase {
+
+    func testКопияВозвращаетсяТойЖе() throws {
+        var log = TravelLog()
+        log.set(.visited, for: "ITA")
+        log.set(.wishlist, for: "JPN")
+        log.setHome(HomePlace(countryID: "POL",
+                              coordinate: Coordinate(longitude: 21.0, latitude: 52.2),
+                              cityName: "Варшава"))
+
+        let route = Route(title: "Италия", points: [])
+        guard let url = Backup.write(log: log, routes: [route]) else {
+            return XCTFail("копия не записалась")
+        }
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        guard let restored = Backup.read(from: url) else {
+            return XCTFail("копия не прочиталась")
+        }
+        XCTAssertEqual(restored.log.status(for: "ITA"), .visited)
+        XCTAssertEqual(restored.log.status(for: "JPN"), .wishlist)
+        XCTAssertEqual(restored.log.home?.cityName, "Варшава")
+        XCTAssertEqual(restored.routes.map(\.title), ["Италия"])
+    }
+
+    func testЧужойФайлНеПринимается() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("not-mapa.json")
+        try Data(#"{"hello":"world"}"#.utf8).write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        XCTAssertNil(Backup.read(from: url), "чужой json не должен притворяться копией")
+    }
+
+    func testКопияИзБудущегоНеОткрывается() throws {
+        // Файл, записанный более новой версией приложения, читать нельзя:
+        // молча потерять половину полей хуже, чем честно отказаться.
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("future.json")
+        let json = """
+        {"version":99,"exportedAt":"2030-01-01T00:00:00Z",
+         "log":{"statuses":{}},"routes":[]}
+        """
+        try Data(json.utf8).write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        XCTAssertNil(Backup.read(from: url))
+    }
+}

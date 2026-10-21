@@ -14,6 +14,7 @@ struct WorldMapView: View {
     @State private var showsThemes = false
     @State private var showsPlus = false
     @State private var showsCommunity = false
+    @State private var showsSettings = false
     /// Человек, чью страницу открыли из топа.
     @State private var person: PublicAuthor?
     @State private var showsAccount = false
@@ -76,6 +77,7 @@ struct WorldMapView: View {
             account.forgetHandleForScreenshot()
         case "theme": showsThemes = true
         case "plus": showsPlus = true
+        case "settings": showsSettings = true
         case "community": showsCommunity = true
         #if DEBUG
         case let id? where id.hasPrefix("person-"):
@@ -389,16 +391,24 @@ struct WorldMapView: View {
     /// «лишний аргумент», по которому причину не угадать.
     @ViewBuilder
     private var sheets: some View {
-        statusSheet
-        plusSheet
-        communitySheets
-        citySheet
-        routePanel
-        routesSheet
-        exportSheet
-        themeSheet
-        accountSheet
-        searchSheet
+        // Две группы, а не одиннадцать подряд: `ViewBuilder` принимает не
+        // больше десяти дочерних вью, и одиннадцатая ломает сборку
+        // сообщением «лишний аргумент», по которому причину не угадать.
+        Group {
+            statusSheet
+            citySheet
+            routePanel
+            routesSheet
+            exportSheet
+        }
+        Group {
+            themeSheet
+            accountSheet
+            searchSheet
+            settingsSheet
+            plusSheet
+            communitySheets
+        }
     }
 
     /// Первый запуск: зачем это всё и откуда ты.
@@ -454,6 +464,38 @@ struct WorldMapView: View {
             )
             .themedPanel(activeTheme)
             .zIndex(9)
+        }
+    }
+
+    /// Настройки: вид, язык, копия карты и о приложении.
+    @ViewBuilder
+    private var settingsSheet: some View {
+        if showsSettings {
+            SettingsSheet(
+                shop: shop,
+                accent: activeTheme.accent,
+                backup: { model.makeBackup() },
+                onRestore: { url in
+                    model.restore(from: url, reduceMotion: motion.reduceMotion)
+                },
+                onOpenAppearance: {
+                    withAnimation(motion.animation(.smooth)) {
+                        showsSettings = false
+                        showsThemes = true
+                    }
+                },
+                onOpenPlus: {
+                    withAnimation(motion.animation(.smooth)) {
+                        showsSettings = false
+                        showsPlus = true
+                    }
+                },
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { showsSettings = false }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(7)
         }
     }
 
@@ -525,6 +567,9 @@ struct WorldMapView: View {
                 },
                 onDismiss: {
                     withAnimation(motion.animation(.smooth)) { showsAccount = false }
+                },
+                onOpenSettings: {
+                    withAnimation(motion.animation(.smooth)) { showsSettings = true }
                 }
             )
             .themedPanel(activeTheme)

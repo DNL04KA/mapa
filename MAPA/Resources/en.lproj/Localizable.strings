@@ -27,15 +27,18 @@
 "В бандле нет файла %@" = "File %@ is missing from the bundle";
 "В бандле нет файла cities.json" = "cities.json is missing from the bundle";
 "в день" = "per day";
+"Версия" = "Version";
 "Весь мир" = "Whole world";
 "Весь мир: %@ процента" = "Whole world: %@ percent";
 "Взять маршрут по стране: %@" = "Take the route for %@";
 "Взять себе" = "Make it mine";
+"Вид и язык" = "Look and language";
 "Винтаж" = "Vintage";
 "Витрина недоступна. Проверь сеть и попробуй ещё раз." = "The store is not responding. Check your connection and try again.";
 "включено" = "on";
 "Волны дюн" = "Dune waves";
 "Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-colour charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
+"Восстановить из копии" = "Restore from a backup";
 "Восстановить покупку" = "Restore purchase";
 "Всё открыто — выбирай любое" = "Everything is unlocked — pick any";
 "Всё, что появится дальше — карта, карточки стран, маршруты — собирается только из этих токенов." = "Everything that follows — the map, country cards, routes — is built from these tokens alone.";
@@ -61,6 +64,7 @@
 "Гравюра резцом" = "Burin engraving";
 "Градиенты статусов" = "Status gradients";
 "Гранит" = "Granite";
+"Границы — Natural Earth" = "Borders — Natural Earth";
 "Дальше" = "Next";
 "Движение" = "Motion";
 "Дизайн-система" = "Design system";
@@ -84,6 +88,7 @@
 "Закрыть город" = "Close city";
 "Закрыть карточку" = "Close card";
 "Закрыть маршруты" = "Close routes";
+"Закрыть настройки" = "Close settings";
 "Закрыть поиск" = "Close search";
 "Закрыть профиль" = "Close profile";
 "Закрыть сообщество" = "Close community";
@@ -115,6 +120,7 @@
 "кадр" = "frame";
 "Как только кто-нибудь опубликует свой — он появится здесь." = "As soon as someone publishes one, it shows up here.";
 "Карта" = "Map";
+"Карта восстановлена из копии" = "The map has been restored from a backup";
 "Карта и маршруты переедут на новый телефон" = "Your map and routes move to a new phone";
 "Карта мира" = "World map";
 "Карта не открылась" = "The map did not open";
@@ -144,6 +150,7 @@
 "Маршрутов пока нет" = "No routes yet";
 "Маршруты" = "Routes";
 "Маршруты сообщества" = "Community routes";
+"Места и фотографии — Викиданные и Викисклад" = "Places and photographs — Wikidata and Wikimedia Commons";
 "Место на карте" = "A place on the map";
 "Миллиметровка и пунктир" = "Graph paper and dashes";
 "Мир открыт на" = "World unlocked";
@@ -160,6 +167,7 @@
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
 "Найти страну или город" = "Find a country or city";
+"Настройки" = "Settings";
 "Не длиннее двадцати знаков" = "No longer than twenty characters";
 "Не короче трёх знаков" = "At least three characters";
 "не разобрана ни одна страна" = "not a single country was parsed";
@@ -177,11 +185,13 @@
 "Ничего не нашлось" = "Nothing found";
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
+"О приложении" = "About";
 "Один раз и навсегда — это не подписка" = "Once and for good — this is not a subscription";
 "Один цвет на всю карту" = "One colour for the whole map";
 "Однажды доберусь" = "One day I will get there";
 "ожидалась FeatureCollection" = "expected a FeatureCollection";
 "Океания" = "Oceania";
+"Они лежат только на этом телефоне" = "They live on this phone only";
 "Описания пока нет" = "No description yet";
 "опубликовано" = "published";
 "Опубликовать маршрут и оценить чужой — когда подключим сервер" = "Publishing a route and rating someone else's — once the server is connected";
@@ -217,6 +227,7 @@
 "По нему тебя найдут и зайдут к тебе" = "This is how people find you";
 "По оценкам тех, кто уже съездил" = "Ranked by the people who have been";
 "По странам" = "By country";
+"Поддержка" = "Support";
 "Поделиться" = "Share";
 "Поделиться видео" = "Share video";
 "Подробнее о стране" = "More about the country";
@@ -227,6 +238,7 @@
 "Показать, где я" = "Show where I am";
 "Покупка ждёт подтверждения" = "The purchase is awaiting approval";
 "Покупка не найдена" = "No purchase found";
+"Политика конфиденциальности" = "Privacy policy";
 "Полотно" = "Canvas";
 "Попробовать снова" = "Try again";
 "Пост" = "Post";
@@ -254,6 +266,7 @@
 "Работает на всех твоих устройствах" = "Works on all your devices";
 "Развернуть подробности" = "Expand details";
 "Рассвет" = "Dawn";
+"Русский" = "Russian";
 "Рябь под закатом" = "Ripples at sunset";
 "Сакура" = "Sakura";
 "Свернуть подробности" = "Collapse details";
@@ -283,6 +296,7 @@
 "сохранили" = "saves";
 "Сохранить" = "Save";
 "Сохранить имя" = "Save name";
+"Сохранить копию" = "Save a backup";
 "среднее" = "average";
 "столица" = "capital";
 "стран" = "countries";
@@ -292,6 +306,7 @@
 "Строки развёртки" = "Scan lines";
 "Сумерки перед рассветом" = "Dusk before dawn";
 "Тапни пресет — увидишь его характер" = "Tap a preset to feel its character";
+"Твои данные" = "Your data";
 "Твои маршруты" = "Your routes";
 "Твой дом" = "Your home";
 "Твой дом здесь" = "Your home is here";
@@ -323,6 +338,7 @@
 "Удалить отзыв" = "Delete review";
 "Уже видел своими глазами" = "Already seen with my own eyes";
 "Успех" = "Success";
+"файл" = "file";
 "Файл городов повреждён" = "The cities file is damaged";
 "Файл границ повреждён: %@" = "The borders file is damaged: %@";
 "Флаги" = "Flags";
@@ -348,7 +364,9 @@
 "Чужие маршруты и страницы людей живут на сервере — приложение к нему пока не подключено. Выдуманных авторов здесь нет и не будет: по их маршрутам нельзя поехать, а по оценкам нельзя выбрать." = "Other people's routes and pages live on a server, and the app is not connected to one yet. There are no invented authors here and there never will be: you cannot travel by their routes, and you cannot choose by their ratings.";
 "Чужие — сохранить и пройти" = "And save other people's routes to walk them";
 "Шаг 4pt — общий ритм интерфейса" = "A 4pt step — the shared rhythm of the interface";
+"Это не похоже на копию MAPA" = "This does not look like a MAPA backup";
 "Это твой дом" = "This is your home";
 "Южная Америка" = "South America";
+"Язык" = "Language";
 "Язык приложения" = "App language";
 "№1 по оценкам" = "#1 by rating";

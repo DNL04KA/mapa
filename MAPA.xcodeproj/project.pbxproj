@@ -33,6 +33,7 @@
 		61EACD5C9E7B0E021C602229 /* SearchIndex.swift in Build */ = {isa = PBXBuildFile; fileRef = 855825E1377FE45891DF5EA4 /* SearchIndex.swift */; };
 		A32DA95910EA397B5D68E9BD /* AppSettings.swift in Build */ = {isa = PBXBuildFile; fileRef = FDFFE5D0C3A9831BA6642590 /* AppSettings.swift */; };
 		E4414A692B6DC15EC03040FF /* Shop.swift in Build */ = {isa = PBXBuildFile; fileRef = 9E808BAD9187D624FA16E7DA /* Shop.swift */; };
+		BE538EBF4C97EBBDEC1A424D /* Backup.swift in Build */ = {isa = PBXBuildFile; fileRef = B72CC711C982C648B834D18C /* Backup.swift */; };
 		F985A3B026689C10CC0A746C /* CityFacts.swift in Build */ = {isa = PBXBuildFile; fileRef = BD2889D22F9B91673CB6773B /* CityFacts.swift */; };
 		4EEDDB8B33DA848B4945E374 /* CityWalk.swift in Build */ = {isa = PBXBuildFile; fileRef = 9B640B56DB42B776B3B533D6 /* CityWalk.swift */; };
 		88E478E7EF57B7BC4A531C19 /* CountryFacts.swift in Build */ = {isa = PBXBuildFile; fileRef = 45BA3A6203D29087547A3939 /* CountryFacts.swift */; };
@@ -96,6 +97,7 @@
 		1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift in Build */ = {isa = PBXBuildFile; fileRef = 0850B19A6F2435CAC30DD278 /* RoutePanel.swift */; };
 		644B9A95B247A9EBC96A839E /* RoutesSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */; };
 		4F3F4AE384F8C1DB71BE02F6 /* SearchSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 183BAE8B3416FEFC58E437A6 /* SearchSheet.swift */; };
+		9480C4BDA91535C4A0BE5705 /* SettingsSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = BD37DBD027ABAE6156BCFF36 /* SettingsSheet.swift */; };
 		8A7CF0654BADFCA4A83E6173 /* WorldStatsPanel.swift in Build */ = {isa = PBXBuildFile; fileRef = 0FED3F1BE9EFC9EB630FAAA0 /* WorldStatsPanel.swift */; };
 		D60A3871938A9C682D1ACA1C /* PlusSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 40316BA363E1871E837F802E /* PlusSheet.swift */; };
 		71D3A907F58494B928F5C328 /* ThemePicker.swift in Build */ = {isa = PBXBuildFile; fileRef = 218AE410B899D1F5B775F724 /* ThemePicker.swift */; };
@@ -148,6 +150,7 @@
 		855825E1377FE45891DF5EA4 /* SearchIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchIndex.swift; sourceTree = "<group>"; };
 		FDFFE5D0C3A9831BA6642590 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		9E808BAD9187D624FA16E7DA /* Shop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shop.swift; sourceTree = "<group>"; };
+		B72CC711C982C648B834D18C /* Backup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Backup.swift; sourceTree = "<group>"; };
 		BD2889D22F9B91673CB6773B /* CityFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityFacts.swift; sourceTree = "<group>"; };
 		9B640B56DB42B776B3B533D6 /* CityWalk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityWalk.swift; sourceTree = "<group>"; };
 		45BA3A6203D29087547A3939 /* CountryFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryFacts.swift; sourceTree = "<group>"; };
@@ -211,6 +214,7 @@
 		0850B19A6F2435CAC30DD278 /* RoutePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePanel.swift; sourceTree = "<group>"; };
 		16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesSheet.swift; sourceTree = "<group>"; };
 		183BAE8B3416FEFC58E437A6 /* SearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchSheet.swift; sourceTree = "<group>"; };
+		BD37DBD027ABAE6156BCFF36 /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
 		0FED3F1BE9EFC9EB630FAAA0 /* WorldStatsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldStatsPanel.swift; sourceTree = "<group>"; };
 		40316BA363E1871E837F802E /* PlusSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlusSheet.swift; sourceTree = "<group>"; };
 		218AE410B899D1F5B775F724 /* ThemePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePicker.swift; sourceTree = "<group>"; };
@@ -361,6 +365,7 @@
 		BAC38084CBFC98D2D3FAFB1D /* Travel */ = {
 			isa = PBXGroup;
 			children = (
+				B72CC711C982C648B834D18C /* Backup.swift */,
 				BD2889D22F9B91673CB6773B /* CityFacts.swift */,
 				9B640B56DB42B776B3B533D6 /* CityWalk.swift */,
 				45BA3A6203D29087547A3939 /* CountryFacts.swift */,
@@ -564,6 +569,14 @@
 			path = Search;
 			sourceTree = "<group>";
 		};
+		79EC837492CDD263E927C580 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				BD37DBD027ABAE6156BCFF36 /* SettingsSheet.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		789F485B252C9FA66D92CCB7 /* Stats */ = {
 			isa = PBXGroup;
 			children = (
@@ -594,6 +607,7 @@
 				EBF1A55518912ED7622846DD /* Onboarding */,
 				1384448E1BCD81507781F281 /* Route */,
 				5A6D9DAD263B138D6E3D0426 /* Search */,
+				79EC837492CDD263E927C580 /* Settings */,
 				789F485B252C9FA66D92CCB7 /* Stats */,
 				8386E6B8A212347D91C15483 /* Theme */,
 			);
@@ -822,6 +836,7 @@
 				61EACD5C9E7B0E021C602229 /* SearchIndex.swift */,
 				A32DA95910EA397B5D68E9BD /* AppSettings.swift */,
 				E4414A692B6DC15EC03040FF /* Shop.swift */,
+				BE538EBF4C97EBBDEC1A424D /* Backup.swift */,
 				F985A3B026689C10CC0A746C /* CityFacts.swift */,
 				4EEDDB8B33DA848B4945E374 /* CityWalk.swift */,
 				88E478E7EF57B7BC4A531C19 /* CountryFacts.swift */,
@@ -885,6 +900,7 @@
 				1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift */,
 				644B9A95B247A9EBC96A839E /* RoutesSheet.swift */,
 				4F3F4AE384F8C1DB71BE02F6 /* SearchSheet.swift */,
+				9480C4BDA91535C4A0BE5705 /* SettingsSheet.swift */,
 				8A7CF0654BADFCA4A83E6173 /* WorldStatsPanel.swift */,
 				D60A3871938A9C682D1ACA1C /* PlusSheet.swift */,
 				71D3A907F58494B928F5C328 /* ThemePicker.swift */,
