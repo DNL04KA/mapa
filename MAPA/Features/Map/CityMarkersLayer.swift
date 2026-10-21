@@ -21,7 +21,7 @@ struct CityMarkersLayer: View, Animatable {
     let accent: Color
     let selectedCityID: String?
     /// Город, где стоит дом: его точку не рисуем — там уже домик.
-    let homeCityName: String?
+    let homeCityID: String?
 
     var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
         get { AnimatablePair(camera.zoom, AnimatablePair(camera.center.x, camera.center.y)) }
@@ -57,7 +57,7 @@ struct CityMarkersLayer: View, Animatable {
         let margin: CGFloat = 40
 
         let candidates = cities
-            .filter { $0.nameRU != homeCityName }
+            .filter { $0.id != homeCityID }
             .sorted { importance($0) > importance($1) }
 
         var placed: [CGRect] = []

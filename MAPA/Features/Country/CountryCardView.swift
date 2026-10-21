@@ -265,7 +265,10 @@ struct CountryCardView: View {
             // к стране стояло «404 322 км²».
             parts.append(String(format: NSLocalizedString("%@ км²", comment: ""), area))
         }
-        parts.append(country.name)
+        // Английское название — подсказка рядом с русским. На английском
+        // телефоне заголовок уже «Japan», и третьим «Japan» строка только
+        // повторяла бы саму себя.
+        if country.name != country.displayName { parts.append(country.name) }
         return parts
     }
 

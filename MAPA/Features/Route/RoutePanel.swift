@@ -167,11 +167,16 @@ struct RoutePanel: View {
     }
 
     private var totalsText: String {
-        guard !route.points.isEmpty else { return "Коснись страны, затем города" }
+        guard !route.points.isEmpty else {
+            return String(localized: "Коснись страны, затем города")
+        }
 
         // Начатый маршрут в первую очередь про прогресс, а не про километры.
         if route.visitedCount > 0 {
-            var parts = ["\(route.visitedCount) из \(route.points.count) пройдено"]
+            // Строка собирается здесь, а не в `Text`, и переводится тоже
+            // здесь: `Text(String)` перевода не делает.
+            var parts = [String(format: NSLocalizedString("%@ из %@ пройдено", comment: ""),
+                                "\(route.visitedCount)", "\(route.points.count)")]
             if route.totalDays > 0 {
                 parts.append(Plural.days(route.totalDays))
             }
@@ -183,7 +188,8 @@ struct RoutePanel: View {
             parts.append(Plural.days(route.totalDays))
         }
         if route.totalDistanceKm > 1 {
-            parts.append("\(Int(route.totalDistanceKm)) км")
+            parts.append(String(format: NSLocalizedString("%@ км", comment: ""),
+                                "\(Int(route.totalDistanceKm))"))
         }
         return parts.joined(separator: " · ")
     }
@@ -532,7 +538,7 @@ struct RoutePanel: View {
 
     private var reviewsSubtitle: String? {
         guard let average = route.averageRating else {
-            return "Пока никто не оценивал"
+            return String(localized: "Пока никто не оценивал")
         }
         return String(format: "%.1f · ", average)
             + Plural.reviews(route.reviews.count)

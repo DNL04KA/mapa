@@ -18,39 +18,58 @@ final class SearchTests: XCTestCase {
         results.map(\.title)
     }
 
+    /// Проверяем по идентификаторам, а не по подписям: подпись зависит от
+    /// языка телефона, и на английском «Италия» законно показывается как
+    /// «Italy» — тест об этом не про то.
+    private func ids(_ results: [SearchResult]) -> [String] {
+        results.map(\.id)
+    }
+
+    /// Название города на том языке, на котором его показывает приложение.
+    private func city(_ id: String, in results: [SearchResult]) -> Bool {
+        ids(results).contains("t:" + id)
+    }
+
     func testНаходитСтрануПоНачалуНазвания() async throws {
         let found = try await index().search("итал")
-        XCTAssertTrue(titles(found).contains("Италия"), "нашлось: \(titles(found).prefix(5))")
+        XCTAssertTrue(ids(found).contains("c:ITA"), "нашлось: \(titles(found).prefix(5))")
     }
 
     func testНаходитГородПоНачалуНазвания() async throws {
         let found = try await index().search("праг")
-        XCTAssertTrue(titles(found).contains("Прага"), "нашлось: \(titles(found).prefix(5))")
+        XCTAssertTrue(city("CZE-Prague", in: found), "нашлось: \(titles(found).prefix(5))")
     }
 
     func testНаходитПоАнглийскомуНазванию() async throws {
         // Человек помнит город так, как помнит: «Cologne», «Köln», «Кёльн».
         let found = try await index().search("rome")
-        XCTAssertTrue(titles(found).contains("Рим"), "нашлось: \(titles(found).prefix(5))")
+        XCTAssertTrue(city("ITA-Rome", in: found), "нашлось: \(titles(found).prefix(5))")
     }
 
     func testЁИЕРавнозначны() async throws {
         let found = try await index().search("кельн")
-        XCTAssertTrue(titles(found).contains("Кёльн"), "нашлось: \(titles(found).prefix(5))")
+        XCTAssertTrue(city("DEU-Cologne", in: found), "нашлось: \(titles(found).prefix(5))")
     }
 
     func testДиакритикаНеМешает() async throws {
         let found = try await index().search("malaga")
-        XCTAssertTrue(titles(found).contains("Малага"), "нашлось: \(titles(found).prefix(5))")
+        XCTAssertTrue(city("ESP-Malaga", in: found), "нашлось: \(titles(found).prefix(5))")
     }
 
     func testСовпадениеСНачалаВышеСовпаденияВнутри() async throws {
         let found = try await index().search("вен")
         guard let first = found.first else { return XCTFail("пусто") }
         // «Венгрия» и «Вена» начинаются с запроса, «Словения» содержит его
-        // внутри — и должна быть ниже, какой бы большой ни была.
-        XCTAssertTrue(first.title.lowercased().hasPrefix("вен"),
-                      "первым оказалось «\(first.title)»")
+        // внутри — и должна быть ниже, какой бы большой ни была. Сверяем с
+        // русским названием: подпись на английском телефоне другая, а
+        // правило сортировки — то же.
+        let russian: String
+        switch first {
+        case let .country(country): russian = country.nameRU
+        case let .city(city):       russian = city.nameRU
+        }
+        XCTAssertTrue(russian.lowercased().hasPrefix("вен"),
+                      "первым оказалось «\(russian)»")
     }
 
     func testОднойБуквыНедостаточно() async throws {

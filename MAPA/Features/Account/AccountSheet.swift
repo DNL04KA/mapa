@@ -350,7 +350,7 @@ struct AccountSheet: View {
             } else {
                 // Имя — одно длинное слово, и переносить его нельзя:
                 // «Путешеств / енник» выглядит сломанным. Сжимается.
-                Text(account.profile.name)
+                Text(account.profile.displayName)
                     .font(DS.Font.title)
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(1)

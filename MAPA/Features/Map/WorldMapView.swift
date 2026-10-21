@@ -181,12 +181,13 @@ struct WorldMapView: View {
                         viewport: size,
                         accent: activeTheme.accent,
                         selectedCityID: model.selectedCity?.id,
-                        homeCityName: model.travelLog.home?.cityName
+                        homeCityID: model.homeCityID
                     )
 
                     MapMarkersLayer(
                         camera: model.camera,
                         home: model.travelLog.home,
+                        homeName: model.homeCityName,
                         current: model.currentCoordinate,
                         viewport: size,
                         accent: activeTheme.accent
@@ -234,7 +235,7 @@ struct WorldMapView: View {
                 overlay: model.overlay,
                 statistics: model.statistics,
                 route: model.editingRoute,
-                homeCity: model.travelLog.home?.cityName,
+                homeCity: model.homeCityName,
                 markedBounds: geometry.bounds(of: model.travelLog.statuses.keys),
                 onDismiss: { withAnimation(motion.animation(.smooth)) { showsExport = false } }
             )
@@ -552,7 +553,7 @@ struct WorldMapView: View {
                 statistics: model.statistics,
                 visited: model.countries(with: .visited),
                 wishlist: model.countries(with: .wishlist),
-                homeCity: model.travelLog.home?.cityName,
+                homeCity: model.homeCityName,
                 routeCount: model.routes.count,
                 onOpenCountry: { country in
                     withAnimation(motion.animation(.smooth)) { showsAccount = false }

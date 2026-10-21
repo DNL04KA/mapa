@@ -16,6 +16,7 @@ struct ProfileSetupSheet: View {
 
     @Environment(\.dsMotion) private var motion
     @ObservedObject var account: AccountStore
+    @StateObject private var keyboard = KeyboardInset()
 
     let accent: Color
     let onDone: () -> Void
@@ -82,7 +83,11 @@ struct ProfileSetupSheet: View {
         }
         .padding(.horizontal, DS.Space.screen)
         .padding(.top, DS.Space.sm)
-        .padding(.bottom, DS.Space.xl + DS.Space.lg)
+        // Клавиатуру панель пускает вперёд: без этого поле никнейма с
+        // курсором в нём пряталось под ней вместе с кнопкой «Готово».
+        .padding(.bottom, keyboard.height > 0
+                 ? keyboard.height + DS.Space.md
+                 : DS.Space.xl + DS.Space.lg)
         .frame(maxWidth: .infinity)
         .background {
             UnevenRoundedTopShape(radius: DS.Radius.xl)
@@ -94,6 +99,7 @@ struct ProfileSetupSheet: View {
                 .dsShadow(.high)
                 .ignoresSafeArea(edges: .bottom)
         }
+        .animation(motion.animation(.smooth), value: keyboard.height)
         .offset(y: dragOffset)
         .gesture(dismissDrag)
         .transition(.move(edge: .bottom))
@@ -171,7 +177,7 @@ struct ProfileSetupSheet: View {
                 if canCreate {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: DS.Size.iconSm))
-                        .foregroundStyle(DS.Gradient.statusForeground(.living))
+                        .foregroundStyle(DS.Gradient.statusGlowColor(.living))
                 }
             }
             .padding(.horizontal, DS.Space.md)
@@ -226,8 +232,11 @@ struct ProfileSetupSheet: View {
         HStack(alignment: .firstTextBaseline, spacing: DS.Space.xs) {
             Image(systemName: icon)
                 .font(.system(size: DS.Size.iconSm, weight: .semibold))
-                .foregroundStyle(isReady ? AnyShapeStyle(DS.Gradient.statusForeground(.living))
-                                         : AnyShapeStyle(DS.Color.inkTertiary))
+                // Цвет статуса, а не текст поверх него: `statusForeground`
+                // рассчитан на заливку, и без неё галочка превращалась в
+                // тёмное пятно на тёмной панели.
+                .foregroundStyle(isReady ? DS.Gradient.statusGlowColor(.living)
+                                         : DS.Color.inkTertiary)
                 .frame(width: 20)
             Text(text)
                 .font(DS.Font.caption)

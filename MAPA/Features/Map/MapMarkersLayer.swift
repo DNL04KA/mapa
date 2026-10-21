@@ -10,6 +10,8 @@ struct MapMarkersLayer: View, Animatable {
     var camera: MapCamera
 
     let home: HomePlace?
+    /// Название города, где стоит дом, — уже на языке телефона.
+    let homeName: String?
     let current: Coordinate?
     let viewport: CGSize
     let accent: Color
@@ -33,7 +35,7 @@ struct MapMarkersLayer: View, Animatable {
 
             if let home, let point = screenPoint(for: home.unitPoint) {
                 // Иконка лежит прямо на стране, а не висит над ней на булавке.
-                HomeMark(scale: markerScale, label: camera.zoom >= 3 ? home.cityName : nil)
+                HomeMark(scale: markerScale, label: camera.zoom >= 3 ? homeName : nil)
                     .position(point)
             }
         }

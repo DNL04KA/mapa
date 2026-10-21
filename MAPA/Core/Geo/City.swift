@@ -44,8 +44,8 @@ public enum CityLoader {
 
         public var errorDescription: String? {
             switch self {
-            case .resourceMissing: return "В бандле нет файла cities.json"
-            case .malformed:       return "Файл городов повреждён"
+            case .resourceMissing: return String(localized: "В бандле нет файла cities.json")
+            case .malformed:       return String(localized: "Файл городов повреждён")
             }
         }
     }

@@ -11,11 +11,14 @@ enum ExportFormat: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Названия переводятся здесь, а не в `Text`: строка приходит в
+    /// переключатель уже готовой, а `Text(String)` ничего не переводит —
+    /// на английском телефоне в ряду стояло «Истории».
     var title: String {
         switch self {
-        case .story:  return "Истории"
-        case .post:   return "Пост"
-        case .square: return "Квадрат"
+        case .story:  return String(localized: "Истории")
+        case .post:   return String(localized: "Пост")
+        case .square: return String(localized: "Квадрат")
         }
     }
 
@@ -48,8 +51,8 @@ enum ExportTemplate: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .map:   return "Карта"
-        case .route: return "Маршрут"
+        case .map:   return String(localized: "Карта")
+        case .route: return String(localized: "Маршрут")
         }
     }
 }

@@ -538,7 +538,8 @@ final class WorldMapViewModel: ObservableObject {
     /// Дом из города — с настоящим названием, а не «где-то в стране».
     func setHome(at city: City, reduceMotion: Bool) {
         travelLog.setHome(
-            HomePlace(countryID: city.countryID, coordinate: city.coordinate, cityName: city.nameRU)
+            HomePlace(countryID: city.countryID, coordinate: city.coordinate,
+                      cityID: city.id, cityName: city.displayName)
         )
         rebuildMarked(excluding: nil)
         refreshStatistics()
@@ -569,7 +570,36 @@ final class WorldMapViewModel: ObservableObject {
 
     var isSelectedCityHome: Bool {
         guard let city = selectedCity, let home = travelLog.home else { return false }
-        return home.cityName == city.nameRU && home.countryID == city.countryID
+        guard home.countryID == city.countryID else { return false }
+        // Дома, поставленные до того, как мы начали хранить идентификатор,
+        // узнаются по названию — тому самому, под которым их записали.
+        if let id = home.cityID { return id == city.id }
+        return home.cityName == city.nameRU || home.cityName == city.name
+    }
+
+    /// Название города, где стоит дом, — на языке телефона.
+    ///
+    /// Берётся из справочника по идентификатору, а не из записи о доме:
+    /// запись сделана один раз и на одном языке, а подпись читают каждый
+    /// день.
+    var homeCityName: String? {
+        guard let home = travelLog.home else { return nil }
+        if let id = homeCityID, let city = cities.first(where: { $0.id == id }) {
+            return city.displayName
+        }
+        return home.cityName
+    }
+
+    /// Город, где стоит дом. У домов, поставленных до того, как мы начали
+    /// хранить идентификатор, он ищется по записанному названию — иначе
+    /// под домиком у них навсегда осталась бы вторая метка того же города.
+    var homeCityID: String? {
+        guard let home = travelLog.home else { return nil }
+        if let id = home.cityID { return id }
+        guard let name = home.cityName else { return nil }
+        return cities.first {
+            $0.countryID == home.countryID && ($0.nameRU == name || $0.name == name)
+        }?.id
     }
 
     /// Статус выбранной страны — шит подсвечивает им активную карточку.
@@ -672,9 +702,9 @@ final class WorldMapViewModel: ObservableObject {
     func takeSuggestedRoute(_ stops: [CountryRoutePlanner.Stop], for country: Country, reduceMotion: Bool) {
         guard stops.count > 1 else { return }
         let route = CountryRoutePlanner.route(
-            title: country.nameRU,
+            title: country.displayName,
             countryID: country.id,
-            countryName: country.nameRU,
+            countryName: country.displayName,
             stops: stops
         )
         routes.insert(route, at: 0)
@@ -692,7 +722,7 @@ final class WorldMapViewModel: ObservableObject {
             Haptics.shared.countryClear()
         } else {
             route.points.append(
-                RoutePoint(city: city, countryName: geometry?.country(id: city.countryID)?.nameRU)
+                RoutePoint(city: city, countryName: geometry?.country(id: city.countryID)?.displayName)
             )
             Haptics.shared.countryFill()
         }

@@ -31,8 +31,17 @@ final class AccountStore: ObservableObject {
         self.profile = storage.load() ?? Profile.local()
         if storage.load() == nil {
             storage.save(profile)
+        } else if Self.defaultNames.contains(profile.name) {
+            // Раньше имя по умолчанию записывалось в файл, и на английском
+            // телефоне человек видел «Путешественник». Стираем его один
+            // раз: пустое имя показывается на языке телефона.
+            profile.name = ""
+            storage.save(profile)
         }
     }
+
+    /// Имена, которые когда-то записывались как «ещё не назвался».
+    private static let defaultNames: Set<String> = ["Путешественник", "Traveller"]
 
     /// Можно ли вообще входить. Пока сервера нет — нет и входа,
     /// и честнее сказать это прямо, чем показать кнопку, которая не работает.

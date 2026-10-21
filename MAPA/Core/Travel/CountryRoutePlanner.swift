@@ -119,7 +119,7 @@ enum CountryRoutePlanner {
             points: stops.map { stop in
                 RoutePoint(
                     cityID: stop.city.id,
-                    name: stop.city.nameRU,
+                    name: stop.city.displayName,
                     countryID: countryID,
                     countryName: countryName,
                     coordinate: stop.city.coordinate,

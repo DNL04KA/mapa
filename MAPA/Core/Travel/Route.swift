@@ -88,7 +88,7 @@ struct RoutePoint: Identifiable, Equatable, Codable {
     init(city: City, countryName: String? = nil) {
         self.init(
             cityID: city.id,
-            name: city.nameRU,
+            name: city.displayName,
             countryID: city.countryID,
             countryName: countryName,
             coordinate: city.coordinate
@@ -186,7 +186,7 @@ struct Route: Identifiable, Equatable, Codable {
     var displayTitle: String {
         if !title.trimmingCharacters(in: .whitespaces).isEmpty { return title }
         switch points.count {
-        case 0: return "Новый маршрут"
+        case 0: return String(localized: "Новый маршрут")
         case 1: return points[0].name
         default: return "\(points[0].name) → \(points[points.count - 1].name)"
         }

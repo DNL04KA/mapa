@@ -28,9 +28,19 @@ struct Profile: Equatable, Codable {
     /// зайти. Без него он просто отмечает свою карту, и это нормально.
     var isCreated: Bool { handle?.isEmpty == false }
 
+    /// Как человека зовут на экране. Пока он не назвался — «Путешественник»
+    /// на языке телефона.
+    ///
+    /// Имя по умолчанию не хранится, а подставляется при показе: записанное
+    /// один раз при первом запуске, оно застыло бы на том языке и осталось
+    /// бы «Путешественником» на английском телефоне.
+    var displayName: String {
+        name.isEmpty ? String(localized: "Путешественник") : name
+    }
+
     /// Первая буква имени — пока нет аватара, показываем её.
     var initial: String {
-        String(name.trimmingCharacters(in: .whitespaces).prefix(1)).uppercased()
+        String(displayName.trimmingCharacters(in: .whitespaces).prefix(1)).uppercased()
     }
 
     static func local() -> Profile {
@@ -38,7 +48,7 @@ struct Profile: Equatable, Codable {
         return Profile(
             id: id,
             handle: nil,
-            name: String(localized: "Путешественник"),
+            name: "",
             email: nil,
             avatar: .suggested(for: id),
             provider: .local,
