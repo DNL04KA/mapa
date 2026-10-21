@@ -12,6 +12,9 @@ struct WorldStatsPanel: View {
     let statistics: TravelStatistics
     let theme: MapTheme
     @Binding var isExpanded: Bool
+    /// Открыть список стран. На пустой карте это единственная кнопка,
+    /// которая вообще что-то предлагает сделать.
+    var onOpenMarks: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.md) {
@@ -62,16 +65,26 @@ struct WorldStatsPanel: View {
     // MARK: - Шапка
 
     private var emptyHeader: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xxs) {
-            Text("Твоя карта пуста")
-                .font(DS.Font.headline)
-                .foregroundStyle(theme.mapInk)
-            Text("Коснись любой страны, чтобы отметить её")
-                .font(DS.Font.callout)
-                .foregroundStyle(theme.mapInk.opacity(0.7))
+        VStack(alignment: .leading, spacing: DS.Space.xs) {
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                Text("Твоя карта пуста")
+                    .font(DS.Font.headline)
+                    .foregroundStyle(theme.mapInk)
+                Text("Коснись любой страны, чтобы отметить её")
+                    .font(DS.Font.callout)
+                    .foregroundStyle(theme.mapInk.opacity(0.7))
+            }
+            .dsMapText()
+            .accessibilityElement(children: .combine)
+
+            // Совет «коснись страны» хорош для первой страны и ужасен для
+            // двадцатой: Нидерланды на обзоре мира размером с ноготь.
+            // Поэтому рядом — список.
+            if let onOpenMarks {
+                PillButton("Отметить списком", icon: "checklist",
+                           kind: .tinted(theme.accent), action: onOpenMarks)
+            }
         }
-        .dsMapText()
-        .accessibilityElement(children: .combine)
     }
 
     /// Шапка в покое: надпись, число, счёт. И ничего больше.

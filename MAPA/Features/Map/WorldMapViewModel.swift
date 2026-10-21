@@ -173,6 +173,26 @@ final class WorldMapViewModel: ObservableObject {
         dismissSelection(reduceMotion: reduceMotion)
     }
 
+    #if DEBUG
+    /// Разложить отметки по переменным окружения.
+    ///
+    /// Для снимков в магазин нужна заполненная карта, а набрать её на
+    /// симуляторе, у которого нет пальцев, нечем. Коды стран через запятую:
+    /// `MAPA_MARKED=FRA,ITA,ESP MAPA_WISH=JPN,PER`. Записывается в тот же
+    /// файл, что и обычные отметки, — чтобы пережить перезапуск. В сборку
+    /// для магазина этот путь не попадает.
+    private func seedMarksFromEnvironment() {
+        let env = ProcessInfo.processInfo.environment
+        let visited = env["MAPA_MARKED"]?.split(separator: ",") ?? []
+        let wishlist = env["MAPA_WISH"]?.split(separator: ",") ?? []
+        guard !visited.isEmpty || !wishlist.isEmpty else { return }
+
+        for id in visited { travelLog.set(.visited, for: String(id)) }
+        for id in wishlist { travelLog.set(.wishlist, for: String(id)) }
+        persist()
+    }
+    #endif
+
     // MARK: - Загрузка
 
     func load() async {
@@ -193,6 +213,10 @@ final class WorldMapViewModel: ObservableObject {
             cities = (try? CityLoader.loadFromBundle()) ?? []
             travelLog = (try? await storage.load()) ?? TravelLog()
             routes = (try? await routeStorage.load()) ?? []
+
+            #if DEBUG
+            seedMarksFromEnvironment()
+            #endif
 
             rebuildMarked(excluding: nil)
             refreshStatistics()
@@ -409,6 +433,27 @@ final class WorldMapViewModel: ObservableObject {
         }
         setStatus(status, for: country, origin: country.anchor, reduceMotion: reduceMotion)
     }
+
+    /// Отметка из списка.
+    ///
+    /// Без растекания краски: в списке человек ставит отметки очередью, и
+    /// анимация на всю страну после каждой превратила бы два десятка
+    /// касаний в два десятка ожиданий. Карта под списком просто
+    /// перекрашивается.
+    func mark(_ status: TravelStatus?, for country: Country) {
+        travelLog.set(status, for: country.id)
+        refreshStatistics()
+        persist()
+        rebuildMarked(excluding: nil)
+        if status == nil {
+            Haptics.shared.countryClear()
+        } else {
+            Haptics.shared.countryFill()
+        }
+    }
+
+    /// Все страны мира — для списка отметок.
+    var allCountries: [Country] { geometry?.countries ?? [] }
 
     private func setStatus(_ status: TravelStatus, for country: Country, origin: CGPoint, reduceMotion: Bool) {
         travelLog.set(status, for: country.id)

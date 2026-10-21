@@ -106,7 +106,11 @@ struct SearchIndex {
     ///
     /// Иначе «Кельн» не находит «Кёльн», а «Malaga» — «Málaga»: человек
     /// набирает так, как ему удобно, а не так, как написано в данных.
-    private static func normalize(_ value: String) -> String {
+    ///
+    /// Не приватное: тем же правилом ищет список стран. Два разных
+    /// правила поиска в одном приложении — это когда «Кельн» находится в
+    /// одном месте и не находится в другом.
+    static func normalize(_ value: String) -> String {
         value
             .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: nil)
             .replacingOccurrences(of: "ё", with: "е")

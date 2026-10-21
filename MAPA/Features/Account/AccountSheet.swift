@@ -25,6 +25,9 @@ struct AccountSheet: View {
     let onDismiss: () -> Void
     /// Шестерёнка в шапке профиля.
     let onOpenSettings: () -> Void
+    /// Открыть список стран. Снять отметку иначе можно было, только найдя
+    /// страну на карте, — а именно её человек обычно и не может найти.
+    let onEditMarks: () -> Void
 
     @State private var draftName: String = ""
     @State private var isEditingName = false
@@ -141,18 +144,26 @@ struct AccountSheet: View {
                 .fill(DS.Color.borderStrong)
                 .frame(width: 38, height: 4)
 
-            header
-            if !account.profile.isCreated { createProfileCard }
-            summary
-            countrySection("Был", visited, status: .visited)
-            countrySection("Хочу", wishlist, status: .wishlist)
-            routesRow
-            whatSignInGives
-            providers
+            // Две группы, а не одиннадцать подряд: `ViewBuilder` принимает
+            // не больше десяти дочерних вью.
+            Group {
+                header
+                if !account.profile.isCreated { createProfileCard }
+                summary
+                countrySection("Был", visited, status: .visited)
+                countrySection("Хочу", wishlist, status: .wishlist)
+                marksRow
+                routesRow
+            }
 
-            if !account.profile.isLocal {
-                PillButton("Выйти", kind: .secondary, fullWidth: true) {
-                    Task { await account.signOut() }
+            Group {
+                whatSignInGives
+                providers
+
+                if !account.profile.isLocal {
+                    PillButton("Выйти", kind: .secondary, fullWidth: true) {
+                        Task { await account.signOut() }
+                    }
                 }
             }
         }
@@ -273,6 +284,28 @@ struct AccountSheet: View {
                 .padding(.horizontal, -DS.Space.screen)
             }
         }
+    }
+
+    private var marksRow: some View {
+        Button(action: onEditMarks) {
+            HStack(spacing: DS.Space.sm) {
+                Image(systemName: "checklist")
+                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                    .foregroundStyle(accent)
+                Text(visited.isEmpty && wishlist.isEmpty
+                     ? "Отметить страны" : "Изменить отметки")
+                    .font(DS.Font.body)
+                    .foregroundStyle(DS.Color.ink)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+            .padding(DS.Space.sm)
+            .dsGlass(radius: DS.Radius.md, shadow: .low)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder

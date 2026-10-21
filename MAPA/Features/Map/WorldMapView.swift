@@ -15,6 +15,7 @@ struct WorldMapView: View {
     @State private var showsPlus = false
     @State private var showsCommunity = false
     @State private var showsSettings = false
+    @State private var showsMarks = false
     /// Человек, чью страницу открыли из топа.
     @State private var person: PublicAuthor?
     @State private var showsAccount = false
@@ -78,6 +79,7 @@ struct WorldMapView: View {
         case "theme": showsThemes = true
         case "plus": showsPlus = true
         case "settings": showsSettings = true
+        case "marks": showsMarks = true
         case "community": showsCommunity = true
         #if DEBUG
         case let id? where id.hasPrefix("person-"):
@@ -221,6 +223,24 @@ struct WorldMapView: View {
             )
             .themedPanel(activeTheme)
             .zIndex(2)
+        }
+    }
+
+    /// Список стран: отметить десяток за минуту, а не искать их на глобусе.
+    @ViewBuilder
+    private var marksSheet: some View {
+        if showsMarks {
+            MarksSheet(
+                countries: model.allCountries,
+                log: model.travelLog,
+                accent: activeTheme.accent,
+                onMark: { status, country in model.mark(status, for: country) },
+                onDismiss: {
+                    withAnimation(motion.animation(.smooth)) { showsMarks = false }
+                }
+            )
+            .themedPanel(activeTheme)
+            .zIndex(4)
         }
     }
 
@@ -401,6 +421,7 @@ struct WorldMapView: View {
             routePanel
             routesSheet
             exportSheet
+            marksSheet
         }
         Group {
             themeSheet
@@ -430,6 +451,14 @@ struct WorldMapView: View {
                 },
                 onFinish: {
                     withAnimation(motion.animation(.smooth)) { onboardingDone = true }
+                    // Сразу список: закрашенная карта — это то, ради чего
+                    // приложение открыли, а пустая не показывает ничего.
+                    // Закрыть его можно одним касанием.
+                    if model.travelLog.markedCount < 2 {
+                        withAnimation(motion.animation(.smooth).delay(0.35)) {
+                            showsMarks = true
+                        }
+                    }
                 }
             )
             .zIndex(6)
@@ -571,6 +600,9 @@ struct WorldMapView: View {
                 },
                 onOpenSettings: {
                     withAnimation(motion.animation(.smooth)) { showsSettings = true }
+                },
+                onEditMarks: {
+                    withAnimation(motion.animation(.smooth)) { showsMarks = true }
                 }
             )
             .themedPanel(activeTheme)
@@ -672,7 +704,10 @@ struct WorldMapView: View {
                     WorldStatsPanel(
                         statistics: model.statistics,
                         theme: activeTheme,
-                        isExpanded: $statsExpanded
+                        isExpanded: $statsExpanded,
+                        onOpenMarks: {
+                            withAnimation(motion.animation(.smooth)) { showsMarks = true }
+                        }
                     )
                         .transition(motion.transition(.move(edge: .top).combined(with: .opacity)))
                 }
