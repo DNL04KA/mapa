@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>MAPA — концепции знака</title>
+<style>
+  body { margin: 0; background: #FBFAF7; color: #141A21; font-family: -apple-system, "SF Pro Text", "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+  .sheet { width: 1600px; padding: 64px 72px 72px; box-sizing: border-box; }
+  h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 2.6px; text-transform: uppercase; color: rgba(20,26,33,.45); }
+  .lead { margin: 10px 0 48px; font-size: 30px; font-weight: 600; letter-spacing: -.5px; font-family: -apple-system, "SF Pro Display", "Inter Display", sans-serif; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .card { background: #fff; border-radius: 28px; padding: 36px; box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 18px 40px rgba(20,26,33,.07); }
+  .stage { height: 260px; display: flex; align-items: center; justify-content: center; }
+  .sizes { display: flex; align-items: center; gap: 22px; margin: 18px 0 26px; padding-top: 22px; border-top: 1px solid rgba(20,26,33,.08); }
+  .icon { width: 64px; height: 64px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: #FBFAF7; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .icon.dark { background: #141A21; }
+  .tag { font-size: 12px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: #6C5CFF; }
+  .name { margin-top: 6px; font-size: 26px; font-weight: 700; letter-spacing: -.3px; }
+  .text { margin-top: 10px; font-size: 16px; line-height: 1.45; color: #5A6470; }
+  .verdict { margin-top: 14px; font-size: 14px; font-weight: 600; color: #141A21; }
+  .chosen { outline: 2px solid #6C5CFF; outline-offset: 0; }
+  .lockups { margin-top: 32px; display: grid; grid-template-columns: 1.6fr 1fr; gap: 32px; }
+  .lockup { display: flex; align-items: center; gap: 28px; }
+  .appicon { flex: 0 0 auto; width: 220px; height: 220px; border-radius: 50px; background: linear-gradient(160deg, #FFFFFF, #F2F0EB); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06), 0 24px 50px rgba(20,26,33,.14); display: flex; align-items: center; justify-content: center; }
+  .note { margin-top: 18px; font-size: 14px; color: #8B949F; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>MAPA · знак · предложение</h1>
+  <div class="lead">Готового логотипа у MAPA нет. Три концепции, выбрана первая.</div>
+
+  <div class="row">
+    <div class="card chosen">
+      <div class="stage" id="bloom"></div>
+      <div class="sizes"><span id="bloom-s"></span><div class="icon" id="bloom-i"></div><div class="icon dark" id="bloom-d"></div></div>
+      <div class="tag">Выбрано · 01</div>
+      <div class="name">Растекание</div>
+      <div class="text">Три круга касаются в одной точке — так краска расходится по стране из места касания. Знак — застывший момент отметки, главного действия приложения.</div>
+      <div class="verdict">Анимируется той же пружиной, что заливка страны. Читается в 16 px.</div>
+    </div>
+    <div class="card">
+      <div class="stage" id="fold"></div>
+      <div class="sizes"><span id="fold-s"></span><div class="icon" id="fold-i"></div><div class="icon dark" id="fold-d"></div></div>
+      <div class="tag">02</div>
+      <div class="name">Сгиб</div>
+      <div class="text">Бумажная карта, сложенная гармошкой: верхний край даёт M. Тёплая, «бумажная» идея под светлое полотно карты.</div>
+      <div class="verdict">Минус: сложенная карта — привычный значок «карты», не наш.</div>
+    </div>
+    <div class="card">
+      <div class="stage" id="grid"></div>
+      <div class="sizes"><span id="grid-s"></span><div class="icon" id="grid-i"></div><div class="icon dark" id="grid-d"></div></div>
+      <div class="tag">03</div>
+      <div class="name">Меркатор</div>
+      <div class="text">Мир в MAPA — квадрат 1×1. Параллели разбегаются к полюсам по формуле Меркатора, залитая полоса — твоя часть.</div>
+      <div class="verdict">Минус: в мелком размере похоже на сетку или меню.</div>
+    </div>
+  </div>
+
+  <div class="lockups">
+    <div class="card"><div class="lockup" id="lockup"></div>
+      <div class="note">Словесный знак — монолиния с круглыми концами: продолжение DS.Font.brand (heavy, rounded), но своими кривыми.</div></div>
+    <div class="card" style="display:flex;align-items:center;gap:28px">
+      <div class="appicon" id="appicon"></div>
+      <div class="text" style="margin:0">Иконка 1024 для пустого слота AppIcon. На бумажном фоне — как светлое полотно карты.</div>
+    </div>
+  </div>
+</div>
+<script src="mark.js"></script>
+<script>
+  const B = window.MAPA_BRAND;
+  const put = (id, html) => { document.getElementById(id).innerHTML = html; };
+  put("bloom", B.bloom(200)); put("bloom-s", B.bloom(16)); put("bloom-i", B.bloom(40)); put("bloom-d", B.bloom(40));
+  put("fold", B.fold(210)); put("fold-s", B.fold(16)); put("fold-i", B.fold(42)); put("fold-d", B.fold(42));
+  put("grid", B.grid(220)); put("grid-s", B.grid(16)); put("grid-i", B.grid(48)); put("grid-d", B.grid(48));
+  put("lockup", B.bloom(120) + B.wordmark(84));
+  put("appicon", B.bloom(132));
+</script>
+</body>
+</html>
