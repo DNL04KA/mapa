@@ -1,0 +1,1275 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAPA — ролик</title>
+<!--
+  Двадцатисекундный ролик о MAPA, 9:16.
+
+  Это не макет и не набор картинок: карта рисуется из той же геометрии, что
+  в приложении (world.js собирается из MAPA/Resources/world_110m.geojson),
+  процент мира считается той же формулой, что TravelStatistics, а цвета,
+  отступы, шрифтовая шкала и пружины взяты из DS-токенов и Motion.swift.
+
+  Каждый кадр — чистая функция времени render(t). Поэтому один и тот же код
+  и проигрывается в браузере, и экспортируется покадрово в MP4 (render.mjs).
+-->
+<style>
+  :root {
+    /* DS.Palette, светлая сторона: полотно «Светлая» (MapSurface.paper). */
+    --paper:      #FBFAF7;
+    --paper-deep: #F2F0EB;
+    --paper-sunk: #E9E7E1;
+    --ink:        #141A21;
+    --ink-mid:    #5A6470;
+    --ink-low:    #8B949F;
+    --accent:     #2E4A6B;   /* акцент полотна paper */
+    --accent-soft:#9B8CFF;   /* DS.Color.accentSoft */
+
+    --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Display", "Inter", system-ui, sans-serif;
+    --font-rounded: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Inter Display", "Inter", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #0E0F12;
+    color: #E9E7E1;
+    font-family: var(--font-text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    overflow: hidden;
+  }
+
+  /* Окно просмотра: кадр 360×640 масштабируется под высоту окна. */
+  #viewport { position: relative; }
+
+  #frame {
+    position: absolute;
+    left: 0; top: 0;
+    width: 360px;
+    height: 640px;
+    overflow: hidden;
+    background: var(--paper);
+    transform-origin: 0 0;
+    font-family: var(--font-text);
+    color: var(--ink);
+    user-select: none;
+  }
+
+  canvas.layer {
+    position: absolute;
+    left: 0; top: 0;
+    width: 360px;
+    height: 640px;
+  }
+
+  #screen {
+    position: absolute;
+    left: 0; top: 0;
+    width: 360px;
+    height: 640px;
+    transform-origin: 0 0;
+  }
+
+  .abs { position: absolute; }
+
+  svg.icon { display: block; overflow: visible; }
+
+  /* Тень под текстом поверх карты — dsMapText(): по светлой карте белая. */
+  .map-text {
+    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(255, 255, 255, 0.585);
+  }
+
+  /* MARK: Карта — шапка статистики */
+
+  #scrim {
+    left: 0; top: 0; width: 360px; height: 230px;
+    background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.99) 0%,
+      rgba(255, 255, 255, 0.92) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  }
+  /* Над краем экрана — та же белизна: в крупном плане камера заглядывает
+     выше нулевой строки, и там не должно быть шва. */
+  #scrim::before {
+    content: "";
+    position: absolute;
+    left: -200px; right: -200px; top: -400px; height: 400px;
+    background: rgba(255, 255, 255, 0.99);
+  }
+
+  #header { left: 20px; top: 34px; width: 320px; }
+
+  #header .overline {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: rgba(20, 26, 33, 0.45);
+  }
+
+  #header .row {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    margin-top: -2px;
+  }
+
+  #number {
+    font-family: var(--font-display);
+    font-size: 62px;
+    font-weight: 300;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  #header .percent {
+    font-size: 20px;
+    font-weight: 400;
+    color: rgba(20, 26, 33, 0.35);
+  }
+
+  #header .chevron {
+    position: absolute;
+    right: 0; top: 52px;
+    color: rgba(20, 26, 33, 0.7);
+  }
+
+  #counts {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(20, 26, 33, 0.65);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* MARK: Кнопки карты и нижняя панель */
+
+  #controls { left: 300px; top: 214px; width: 44px; }
+
+  #controls .button {
+    width: 44px; height: 44px;
+    margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(20, 26, 33, 0.72);
+    filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.9));
+  }
+
+  #tabbar {
+    left: 16px; top: 570px; width: 328px; height: 54px;
+    padding: 6px 4px;
+    display: flex;
+    border-radius: 27px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: inset 0 0 0 1px rgba(20, 26, 33, 0.10), 0 10px 26px rgba(0, 0, 0, 0.10);
+  }
+
+  #tabbar .item {
+    flex: 1;
+    height: 42px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px;
+    color: rgba(20, 26, 33, 0.68);
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  #home { width: 120px; margin-left: -60px; text-align: center; }
+  #home .glyph { display: flex; justify-content: center; color: var(--ink); }
+  #home .label { margin-top: 2px; font-size: 11px; font-weight: 600; color: var(--ink); }
+
+  /* MARK: Панель выбора статуса (CountryStatusSheet) */
+
+  #sheetScrim { left: 0; top: 0; width: 360px; height: 640px; background: rgba(0, 0, 0, 0.18); }
+
+  #sheet {
+    left: 0; top: 0; width: 360px;
+    padding: 12px 20px 32px;
+    border-radius: 34px 34px 0 0;
+    background: rgba(250, 250, 249, 0.80);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 -12px 40px rgba(0, 0, 0, 0.12);
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px;
+  }
+
+  #sheet .handle { width: 38px; height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.22); }
+
+  #sheet .head { text-align: center; }
+  #sheet .title { font-size: 26px; font-weight: 700; line-height: 1.15; color: var(--ink); }
+  #sheet .subtitle { margin-top: 4px; font-size: 13px; font-weight: 500; color: var(--ink-low); }
+
+  #sheet .details {
+    height: 32px; margin: -12px 0;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 14px; color: var(--accent-soft);
+  }
+
+  .options { display: flex; gap: 8px; width: 100%; }
+
+  .option {
+    position: relative;
+    flex: 1;
+    height: 96px;
+    border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    font-size: 16px; font-weight: 600;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.10);
+  }
+
+  .option .glyph { color: var(--ink-mid); display: flex; }
+
+  /* Выбранное состояние — слой поверх, чтобы его можно было проявлять. */
+  .option .selected {
+    position: absolute; inset: 0;
+    border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    color: #FFFFFF;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    opacity: 0;
+  }
+  .option .selected .glyph { color: #FFFFFF; }
+
+  #sheet .homeButton {
+    width: 100%; height: 44px;
+    border-radius: 22px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 16px; font-weight: 600; color: var(--ink);
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+
+  /* MARK: Карточка страны (CountryCardView) */
+
+  #card { left: 0; top: 0; width: 360px; height: 640px; }
+  #cardBg { left: 0; top: 0; width: 360px; height: 640px; background: var(--paper); }
+  #cardTint { left: 0; top: 0; width: 360px; height: 640px; }
+  #cardContent { left: 20px; top: 344px; width: 320px; }
+
+  #cardContent .title { font-family: var(--font-display); font-size: 40px; font-weight: 700; line-height: 1.12; letter-spacing: -0.4px; }
+  #cardContent .subtitle { margin-top: 8px; font-size: 14px; color: var(--ink-mid); }
+  #cardContent .overline {
+    margin-top: 32px; margin-bottom: 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--ink-low);
+  }
+
+  /* MARK: Касание и надписи */
+
+  #touch {
+    width: 42px; height: 42px; margin: -21px 0 0 -21px;
+    border-radius: 21px;
+    background: rgba(20, 26, 33, 0.16);
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.75), 0 2px 10px rgba(0, 0, 0, 0.10);
+  }
+
+  .caption {
+    width: 320px;
+    font-family: var(--font-display);
+    font-size: 31px;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.7px;
+    color: var(--ink);
+  }
+  .caption .line { display: block; }
+
+  /* Зеркало MapTopScrim: в финале карта растворяется в бумаге под подписью. */
+  #bottomScrim {
+    left: 0; top: 446px; width: 360px; height: 194px;
+    background: linear-gradient(180deg,
+      rgba(251, 250, 247, 0) 0%,
+      rgba(251, 250, 247, 0.92) 42%,
+      rgba(251, 250, 247, 0.98) 100%);
+  }
+
+  /* Фраза — тем же голосом, что надпись в середине ролика: это ответ
+     на число в шапке. Имя — подписью, как DS.Font.brand (22, heavy, rounded)
+     в цвете акцента полотна, а не логотипом на пол-экрана. */
+  #final { left: 20px; top: 500px; width: 320px; }
+  #final .phrase .line { display: block; }
+  #final .wordmark {
+    margin-top: 16px;
+    font-family: var(--font-rounded);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2.2px;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  /* MARK: Управление просмотром — вне кадра, в ролик не попадает */
+
+  #player {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 13px; color: #A7ADC4;
+  }
+  #player button {
+    font: inherit; font-weight: 600;
+    color: #F4F5FA;
+    background: #1F2436;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+  #player button:hover { background: #2A3048; }
+  #player input[type=range] { width: 200px; accent-color: #9B8CFF; }
+  #player .time { width: 76px; font-variant-numeric: tabular-nums; }
+
+  body.export { background: transparent; display: block; }
+  body.export #player { display: none; }
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="frame">
+    <canvas id="map" class="layer"></canvas>
+
+    <div id="screen">
+      <div id="ui" class="abs" style="left:0;top:0;width:360px;height:640px">
+        <div id="home" class="abs map-text">
+          <div class="glyph" data-icon="houseFill" data-size="22"></div>
+          <div class="label">Варшава</div>
+        </div>
+        <div id="scrim" class="abs"></div>
+        <div id="header" class="abs map-text">
+          <div class="overline">Мир открыт на</div>
+          <div class="row">
+            <span id="number">2.5</span><span class="percent">%</span>
+          </div>
+          <div id="counts">16 стран · 2 континента</div>
+          <div class="chevron" data-icon="chevronDown" data-size="12"></div>
+        </div>
+        <div id="controls" class="abs">
+          <div class="button" data-icon="magnifyingglass" data-size="16"></div>
+          <div class="button" data-icon="locationFill" data-size="16"></div>
+          <div class="button" data-icon="speedometer" data-size="16"></div>
+          <div class="button" data-icon="plus" data-size="16"></div>
+          <div class="button" data-icon="minus" data-size="16"></div>
+          <div class="button" data-icon="globe" data-size="16"></div>
+        </div>
+        <div id="tabbar" class="abs">
+          <div class="item"><span data-icon="person" data-size="16"></span>Профиль</div>
+          <div class="item"><span data-icon="route" data-size="16"></span>Маршруты</div>
+          <div class="item"><span data-icon="share" data-size="16"></span>Поделиться</div>
+          <div class="item"><span data-icon="palette" data-size="16"></span>Оформление</div>
+        </div>
+      </div>
+
+      <div id="sheetScrim" class="abs"></div>
+      <div id="sheet" class="abs">
+        <div class="handle"></div>
+        <div class="head">
+          <div class="title" data-text="countryName"></div>
+          <div class="subtitle" data-text="sheetSubtitle"></div>
+        </div>
+        <div class="details">Подробнее о стране <span data-icon="chevronRight" data-size="12"></span></div>
+        <div class="options" data-options="sheet"></div>
+        <div class="homeButton"><span data-icon="house" data-size="16"></span>Сделать домом</div>
+      </div>
+
+      <div id="card" class="abs">
+        <div id="cardBg" class="abs"></div>
+        <div id="cardTint" class="abs"></div>
+        <div id="cardContent" class="abs">
+          <div class="title reveal" data-text="countryName"></div>
+          <div class="subtitle reveal" data-text="cardSubtitle"></div>
+          <div class="overline reveal">Твоя отметка</div>
+          <div class="options reveal" data-options="card"></div>
+        </div>
+      </div>
+    </div>
+
+    <canvas id="fx" class="layer"></canvas>
+    <div id="touch" class="abs"></div>
+
+    <div id="caption1" class="abs caption" style="left:20px">
+      <span class="line">Считается площадь,</span>
+      <span class="line">а не галочки.</span>
+    </div>
+
+    <div id="bottomScrim" class="abs"></div>
+
+    <div id="final" class="abs">
+      <div class="phrase caption">
+        <span class="line">Сколько мира</span>
+        <span class="line">ты уже видел.</span>
+      </div>
+      <div class="wordmark">MAPA</div>
+    </div>
+  </div>
+</div>
+
+<div id="player">
+  <button id="toggle" type="button">Пауза</button>
+  <input id="scrub" type="range" min="0" max="20" step="0.01" value="0" aria-label="Время">
+  <span class="time" id="time">0.0 / 20.0 с</span>
+  <button id="replay" type="button">Смотреть ещё раз</button>
+</div>
+
+<script src="world.js"></script>
+<script>
+"use strict";
+
+// MARK: - Кадр
+
+const W = 360;
+const H = 640;
+const DPR = 3;                 // 360×640 × 3 = 1080×1920
+const DURATION = 20;
+
+// MARK: - Знаки
+//
+// SF Symbols не бывает в вебе, поэтому знаки перерисованы по их сетке.
+// Только те, что стоят на настоящих экранах MAPA, — ни одного лишнего.
+
+const ICONS = {
+    magnifyingglass: '<circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.1"/><path d="M15.4 15.4 L20.5 20.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+    locationFill: '<path d="M20.6 3.4 L3.6 10.6 Q2.6 11.1 3.7 11.6 L10.4 13.6 L12.4 20.3 Q12.9 21.4 13.4 20.4 Z" fill="currentColor"/>',
+    speedometer: '<path d="M4 17.5 A8.6 8.6 0 1 1 20 17.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 15 L16 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="15" r="1.9" fill="currentColor"/><path d="M6.6 9.8 L7.6 10.6 M12 6.1 L12 7.4 M17.4 9.8 L16.4 10.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    plus: '<path d="M12 4.5 V19.5 M4.5 12 H19.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+    minus: '<path d="M4.5 12 H19.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+    globe: '<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.2 4.4 Q7.6 6.6 9 8 Q10.9 8.4 10.4 10.4 Q9.2 11.6 10.4 13.6 Q11.3 15.6 10.2 17.6 Q9.6 19 10.4 20.4 M15.2 5 Q14.2 6.8 15.6 8.2 Q17.6 8.6 18.6 7.4 M14.6 12.6 Q16.8 12.2 17.4 14 Q17 16.4 15.4 17.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+    person: '<circle cx="12" cy="12" r="8.8" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9.8" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6.4 18.6 Q8 14.8 12 14.8 Q16 14.8 17.6 18.6" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+    route: '<circle cx="6" cy="5.6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="18.4" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 8 Q6 12.2 12 12 Q18 11.8 18 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    share: '<path d="M8.4 9.4 H6.6 Q5.4 9.4 5.4 10.6 V19.2 Q5.4 20.4 6.6 20.4 H17.4 Q18.6 20.4 18.6 19.2 V10.6 Q18.6 9.4 17.4 9.4 H15.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 14.6 V3.4 M8.6 6.6 L12 3.2 L15.4 6.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    palette: '<path d="M12 3.4 C6.6 3.4 3.2 7.2 3.2 11.8 C3.2 16.8 7.2 20.6 12.2 20.6 C13.6 20.6 14.2 19.8 13.8 18.6 C13.2 17 14 15.8 15.6 15.8 H17.6 C19.6 15.8 20.8 14.4 20.8 12.4 C20.8 7.2 17 3.4 12 3.4 Z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="7.6" cy="11.6" r="1.4" fill="currentColor"/><circle cx="9.6" cy="7.6" r="1.4" fill="currentColor"/><circle cx="14.2" cy="7.2" r="1.4" fill="currentColor"/><circle cx="17.2" cy="10.6" r="1.4" fill="currentColor"/>',
+    chevronDown: '<path d="M5 9 L12 16 L19 9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+    chevronRight: '<path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+    houseFill: '<path d="M12 3.2 L2.6 11.2 Q2.2 11.8 2.9 12 H5.2 V19.6 Q5.2 20.6 6.2 20.6 H9.8 V15.2 Q9.8 14.4 10.6 14.4 H13.4 Q14.2 14.4 14.2 15.2 V20.6 H17.8 Q18.8 20.6 18.8 19.6 V12 H21.1 Q21.8 11.8 21.4 11.2 Z" fill="currentColor"/>',
+    house: '<path d="M3.4 11.6 L12 4 L20.6 11.6 M5.8 9.8 V19.4 Q5.8 20.2 6.6 20.2 H10 V15 H14 V20.2 H17.4 Q18.2 20.2 18.2 19.4 V9.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+    checkmarkCircleFill: '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.4 12.4 L10.6 15.6 L16.8 8.8" fill="none" stroke="var(--cut, #FFFFFF)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+    sparkles: '<path d="M10 3 Q10.9 8.6 16.4 9.6 Q10.9 10.6 10 16.2 Q9.1 10.6 3.6 9.6 Q9.1 8.6 10 3 Z" fill="currentColor"/><path d="M17.6 13.4 Q18.1 16.4 21 17 Q18.1 17.6 17.6 20.6 Q17.1 17.6 14.2 17 Q17.1 16.4 17.6 13.4 Z" fill="currentColor"/>',
+    xmark: '<path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>'
+};
+
+function icon(name, size) {
+    return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24">${ICONS[name]}</svg>`;
+}
+
+// MARK: - Цвета статусов (порт DS.StatusColor)
+
+function hsbToRgb(h, s, v) {
+    const i = Math.floor(h * 6) % 6;
+    const f = h * 6 - Math.floor(h * 6);
+    const p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+    const [r, g, b] = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i];
+    return [r * 255, g * 255, b * 255];
+}
+
+function hueFromHex(hex) {
+    const n = parseInt(hex.replace("#", ""), 16);
+    const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (d <= 0.001) return null;
+    let h;
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h /= 6;
+    return h < 0 ? h + 1 : h;
+}
+
+const StatusColor = (() => {
+    const target = { visited: 0.60, living: 0.66, wishlist: 0.34 };
+    const saturation = { visited: 0.78, living: 0.74, wishlist: 0.62 };
+    const fallbackHue = { visited: 0.085, living: 0.475, wishlist: 0.755 };
+
+    function luminanceOfHue(hue) {
+        const sector = hue * 6;
+        const fraction = sector - Math.floor(sector);
+        const up = fraction, down = 1 - fraction;
+        const rgb = [[1, up, 0], [down, 1, 0], [0, 1, up], [0, down, 1], [up, 0, 1], [1, 0, down]][Math.floor(sector) % 6];
+        return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+    }
+
+    function balanced(hue, status, lift) {
+        const hl = luminanceOfHue(hue);
+        const goal = Math.min(0.92, Math.max(0.12, target[status] + lift));
+        let s = Math.min(1, saturation[status]);
+        let b = 1;
+        const natural = b * (1 - s * (1 - hl));
+        const corrected = natural + (goal - natural) * 0.55;
+        if (corrected < natural) {
+            b = corrected / Math.max(0.05, 1 - s * (1 - hl));
+        } else if (hl < 0.999) {
+            s = Math.max(0.30, (1 - corrected) / (1 - hl));
+        }
+        return hsbToRgb(hue, Math.min(Math.max(s, 0), 1), Math.min(Math.max(b, 0), 1));
+    }
+
+    return {
+        colors(status, flagHue = null) {
+            const hue = flagHue ?? fallbackHue[status];
+            return [balanced(hue, status, 0.06), balanced((hue + 0.035) % 1, status, -0.15)];
+        },
+        glow(status) { return hsbToRgb(fallbackHue[status], 0.72, 1); },
+        outline(status, flagHue = null) { return hsbToRgb(flagHue ?? fallbackHue[status], 0.22, 1); }
+    };
+})();
+
+const rgba = ([r, g, b], a = 1) => `rgba(${r.toFixed(1)}, ${g.toFixed(1)}, ${b.toFixed(1)}, ${a})`;
+const hexRgb = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const mix = (a, b, p) => a.map((v, i) => v + (b[i] - v) * p);
+
+// MARK: - Палитра «Чернила» (MapPalette.ink)
+//
+// Тот же устойчивый хэш, что в MapPalette.color(for:): Польша, Италия и
+// Австралия получают в ролике ровно те тона, что и в приложении.
+
+const INK = ["#2E4A6B", "#3F6560", "#55677A", "#6B7355", "#7A5B4C", "#5B5570", "#87764C"].map(hexRgb);
+const HOME_INK = hexRgb("#2B2724");
+
+function inkColor(id) {
+    let hash = 0x9E3779B97F4A7C15n;
+    for (const byte of new TextEncoder().encode(id)) {
+        hash = ((hash ^ BigInt(byte)) * 0x100000001b3n) & 0xFFFFFFFFFFFFFFFFn;
+    }
+    return INK[Number(hash % BigInt(INK.length))];
+}
+
+// MARK: - Мир
+
+const countries = window.MAPA_WORLD.countries;
+const byID = Object.fromEntries(countries.map((c) => [c.id, c]));
+const landPath = new Path2D();
+
+for (const country of countries) {
+    const path = new Path2D();
+    for (const ring of country.rings) {
+        path.moveTo(ring[0], ring[1]);
+        for (let i = 2; i < ring.length; i += 2) path.lineTo(ring[i], ring[i + 1]);
+        path.closePath();
+    }
+    country.path = path;
+    landPath.addPath(path);
+}
+
+function unitPoint(longitude, latitude) {
+    const max = 85.05112877980659;
+    const r = Math.min(Math.max(latitude, -max), max) * Math.PI / 180;
+    return [(longitude + 180) / 360, 0.5 - Math.log(Math.tan(Math.PI / 4 + r / 2)) / (2 * Math.PI)];
+}
+
+// MARK: - Отметки и статистика
+//
+// Шестнадцать стран: дом в Польше и поездки по Европе. Это ровно то
+// состояние, что на скриншоте в README, — 2.5 %. Цифры ниже не написаны
+// руками: их считает stats() по площадям из geojson, как TravelStatistics.
+
+const HOME = "POL";
+const VISITED = ["DEU", "FRA", "ESP", "PRT", "ITA", "AUT", "CZE", "HUN", "NLD", "BEL", "CHE", "HRV", "GRC", "TUR", "GEO"];
+const TARGET = "AUS";
+
+const totalArea = countries.reduce((sum, c) => sum + c.area, 0);
+
+function stats(explored) {
+    const area = explored.reduce((sum, id) => sum + byID[id].area, 0);
+    const continents = new Set(explored.map((id) => byID[id].continent));
+    return { percent: area / totalArea * 100, count: explored.length, continents: continents.size };
+}
+
+const before = stats([HOME, ...VISITED]);
+const after = stats([HOME, ...VISITED, TARGET]);
+
+function plural(n, one, few, many) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return few;
+    return many;
+}
+
+const countsText = (s) =>
+    `${s.count} ${plural(s.count, "страна", "страны", "стран")} · ${s.continents} ${plural(s.continents, "континент", "континента", "континентов")}`;
+
+const CONTINENT_RU = {
+    "Africa": "Африка", "Asia": "Азия", "Europe": "Европа", "North America": "Северная Америка",
+    "South America": "Южная Америка", "Oceania": "Океания", "Antarctica": "Антарктида"
+};
+
+const target = byID[TARGET];
+const areaText = Math.round(target.area).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " км²";
+const TEXT = {
+    countryName: target.nameRU,
+    sheetSubtitle: `${CONTINENT_RU[target.continent]} · ${areaText}`,
+    cardSubtitle: `${CONTINENT_RU[target.continent]} · ${areaText} · ${target.name}`
+};
+
+const targetFlagHue = hueFromHex(target.color);
+const heroColors = StatusColor.colors("visited", targetFlagHue);
+const visitedColors = StatusColor.colors("visited");
+
+// MARK: - Движение (порт DS.Motion.Preset)
+//
+// Пружины SwiftUI с теми же response и dampingFraction: ролик двигается
+// так же, как приложение, а не «как в шаблоне презентации».
+
+const SPRING = {
+    snap:   [0.26, 0.86],
+    smooth: [0.45, 0.90],
+    flow:   [0.68, 0.88],
+    bounce: [0.50, 0.62]
+};
+
+function spring(t, [response, damping]) {
+    if (t <= 0) return 0;
+    const w0 = 2 * Math.PI / response;
+    const wd = w0 * Math.sqrt(1 - damping * damping);
+    return 1 - Math.exp(-damping * w0 * t) * (Math.cos(wd * t) + (damping * w0 / wd) * Math.sin(wd * t));
+}
+
+const clamp = (v, a = 0, b = 1) => Math.min(Math.max(v, a), b);
+const lerp = (a, b, p) => a + (b - a) * p;
+const progress = (t, start, end) => clamp((t - start) / (end - start));
+const easeInOut = (p) => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+
+// Плавный старт и долгое торможение — так камера «садится» в кадр.
+function glide(p) {
+    // Кубическая Безье (0.65, 0, 0.2, 1): медленно трогается, долго тормозит.
+    const x1 = 0.65, y1 = 0, x2 = 0.2, y2 = 1;
+    let lo = 0, hi = 1, s = p;
+    for (let i = 0; i < 24; i++) {
+        s = (lo + hi) / 2;
+        const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+        if (x < p) lo = s; else hi = s;
+    }
+    return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+}
+
+// MARK: - Таймлайн
+//
+// Четыре сцены, связанные одной страной:
+//  1. Число     — главная цифра приложения выходит из бумаги, камера отъезжает.
+//  2. Касание   — перелёт к Австралии, шит статуса, «Был», краска, число растёт.
+//  3. Карточка  — закрашенный силуэт поднимается с карты и становится обложкой.
+//  4. Мир       — силуэт возвращается на место, камера открывает весь мир, стоп.
+
+const T = {
+    focus: 0.65,
+    pullStart: 1.0,  pullEnd: 3.6,
+    flyStart: 4.15,  flyEnd: 6.15,
+    tap: 6.35,
+    sheetUp: 6.5,
+    pick: 7.7,
+    apply: 7.9,
+    chromeOut: 8.55,
+    caption1In: 8.9, caption1Out: 10.75,
+    liftStart: 10.9, liftEnd: 12.05,
+    cardReveal: 11.75,
+    pushStart: 12.3, pushEnd: 13.8,
+    dropStart: 13.9, dropEnd: 14.9,
+    worldStart: 14.85, worldEnd: 17.2,
+    finalIn: 16.55
+};
+
+// Камера карты: центр в единичном квадрате и сторона мира в точках.
+// «Мир» в финале — от Пиренеев до восточного берега Австралии, с полями
+// в те же 20 точек, что и у экранов приложения.
+const ANCHOR = [target.main[0] + target.main[2] / 2, target.main[1] + target.main[3] / 2];
+const CAM = {
+    europe:  { cx: 0.5455, cy: 0.3330, side: 2350 },
+    oceania: { cx: ANCHOR[0], cy: ANCHOR[1] - 10 / 2000, side: 2000 },
+    world:   { cx: 0.7000, cy: 0.4558, side: 660 }
+};
+
+// Шит закрывает низ экрана, и карта сдвигается ровно настолько, чтобы
+// центр страны остался над ним: WorldMapViewModel.shiftNeeded берёт высоту
+// шита 330 и отступ lg. При закрытии сдвиг уходит в ноль той же пружиной.
+const SHEET_SHIFT = Math.min(0, (H - 330 - 24) - 330);
+
+const TAP_POINT = unitPoint(134.5, -24.5);
+
+function mapCamera(t) {
+    const shift = SHEET_SHIFT * (spring(t - T.sheetUp, SPRING.smooth) - spring(t - T.apply, SPRING.smooth));
+
+    if (t < T.flyStart) return { ...CAM.europe, shift: 0 };
+
+    if (t < T.worldStart) {
+        // Перелёт: на середине пути камера поднимается над картой, иначе
+        // это был бы просто длинный скролл через пустой океан.
+        const p = glide(progress(t, T.flyStart, T.flyEnd));
+        const zoomOut = Math.sin(Math.PI * p) * 1.05;
+        const logSide = lerp(Math.log(CAM.europe.side), Math.log(CAM.oceania.side), p) - zoomOut;
+        return {
+            cx: lerp(CAM.europe.cx, CAM.oceania.cx, p),
+            cy: lerp(CAM.europe.cy, CAM.oceania.cy, p),
+            side: Math.exp(logSide),
+            shift
+        };
+    }
+
+    const p = glide(progress(t, T.worldStart, T.worldEnd));
+    return {
+        cx: lerp(CAM.oceania.cx, CAM.world.cx, p),
+        cy: lerp(CAM.oceania.cy, CAM.world.cy, p),
+        side: Math.exp(lerp(Math.log(CAM.oceania.side), Math.log(CAM.world.side), p)),
+        shift: 0
+    };
+}
+
+// Крупный план в начале: блок шапки, вписанный в кадр с полями экрана.
+// Габариты меряются по-настоящему после загрузки шрифтов (measureOpening).
+const OPENING = { z: 2.2, cx: 96, cy: 82 };
+
+// Виртуальная камера поверх всего экрана: крупный план числа в начале
+// и медленный наезд на карточку. Точка экрана P попадает в кадр как
+// (P − c)·z + центр.
+function screenCamera(t) {
+    if (t < T.pullEnd + 0.01) {
+        // Первые доли секунды кадр «доводит фокус»: едва заметно садится
+        // в масштаб, пока число становится резким.
+        const settle = 1 + 0.05 * (1 - easeOut(progress(t, 0, T.focus + 0.2)));
+        const p = glide(progress(t, T.pullStart, T.pullEnd));
+        const z = Math.exp(lerp(Math.log(OPENING.z * settle), 0, p));
+        return { z, cx: lerp(OPENING.cx, W / 2, p), cy: lerp(OPENING.cy, H / 2, p) };
+    }
+    if (t >= T.pushStart && t < T.dropStart + 0.6) {
+        const push = easeInOut(progress(t, T.pushStart, T.pushEnd));
+        const back = easeInOut(progress(t, T.dropStart, T.dropStart + 0.6));
+        const k = push * (1 - back);
+        return { z: 1 + 0.05 * k, cx: W / 2, cy: lerp(H / 2, 300, k) };
+    }
+    return { z: 1, cx: W / 2, cy: H / 2 };
+}
+
+function measureOpening() {
+    const frame = $("#frame").getBoundingClientRect();
+    const scale = frame.width / W;
+    // Меряем сам текст, а не блоки: блоки растянуты на ширину шапки.
+    const textRect = (selector) => {
+        const range = document.createRange();
+        range.selectNodeContents($(selector));
+        return range.getBoundingClientRect();
+    };
+    const parts = ["#header .overline", "#header .row", "#counts"].map(textRect);
+    const left = Math.min(...parts.map((r) => r.left)), right = Math.max(...parts.map((r) => r.right));
+    const top = Math.min(...parts.map((r) => r.top)), bottom = Math.max(...parts.map((r) => r.bottom));
+    const width = (right - left) / scale;
+    OPENING.z = Math.min(2.6, (W - 2 * 34) / width);
+    OPENING.cx = (left - frame.left) / scale + width / 2;
+    OPENING.cy = ((top + bottom) / 2 - frame.top) / scale;
+}
+
+// MARK: - Отрисовка карты
+
+const mapCanvas = document.getElementById("map");
+const fxCanvas = document.getElementById("fx");
+for (const canvas of [mapCanvas, fxCanvas]) {
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+}
+const mapContext = mapCanvas.getContext("2d");
+const fxContext = fxCanvas.getContext("2d");
+
+// Зерно бумаги (MapSurface.paper.grain = 0.05). Детерминированное, чтобы
+// экспорт давал одинаковые кадры при каждом запуске.
+const grain = (() => {
+    const size = 384;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const context = canvas.getContext("2d");
+    const image = context.createImageData(size, size);
+    let seed = 20261024;
+    const random = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+    for (let i = 0; i < image.data.length; i += 4) {
+        const v = random() * 255;
+        image.data[i] = image.data[i + 1] = image.data[i + 2] = v;
+        image.data[i + 3] = 255;
+    }
+    context.putImageData(image, 0, 0);
+    return canvas;
+})();
+
+// Перевод из единичного квадрата в точки кадра с учётом обеих камер.
+function projector(map, screen) {
+    const scale = map.side * screen.z;
+    const ox = (W / 2 - map.cx * map.side - screen.cx) * screen.z + W / 2;
+    const oy = (H / 2 - map.cy * map.side + (map.shift || 0) - screen.cy) * screen.z + H / 2;
+    return {
+        scale, ox, oy,
+        point: (ux, uy) => [ux * scale + ox, uy * scale + oy],
+        apply: (context) => context.setTransform(scale * DPR, 0, 0, scale * DPR, ox * DPR, oy * DPR)
+    };
+}
+
+function drawMap(t, state) {
+    const context = mapContext;
+    const view = state.projector;
+    const px = 1 / view.scale;        // одна точка экрана в единицах мира
+    const z = state.screen.z;
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.fillStyle = "#E6E5E1";
+    context.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
+    view.apply(context);
+
+    // Вода почти без цвета: тон чуть холоднее суши (MapSurface.paper).
+    const ocean = context.createLinearGradient(0, 0, 0, 1);
+    ocean.addColorStop(0, "#EFEEEB");
+    ocean.addColorStop(1, "#E6E5E1");
+    context.fillStyle = ocean;
+    context.fillRect(0, 0, 1, 1);
+
+    // Тень суши на воду — край материка получает толщину (landShadow 0.22).
+    context.save();
+    context.shadowColor = "rgba(0, 0, 0, 0.22)";
+    context.shadowBlur = 7 * z * DPR;
+    context.shadowOffsetY = 2.5 * z * DPR;
+    context.fillStyle = "#FBFAF7";
+    context.fill(landPath);
+    context.restore();
+
+    const land = context.createLinearGradient(0, 0, 0, 1);
+    land.addColorStop(0, "#FBFAF7");
+    land.addColorStop(1, "#F4F2ED");
+    context.fillStyle = land;
+    context.fill(landPath);
+
+    context.strokeStyle = "rgba(167, 158, 146, 0.42)";
+    context.lineWidth = 0.7 * px * z;
+    context.lineJoin = "round";
+    context.stroke(landPath);
+
+    // Отмеченные страны: плоская заливка набора, белый контур поверх.
+    const marked = [...VISITED, HOME];
+    if (state.targetFilled) marked.push(TARGET);
+    for (const id of marked) {
+        const color = id === HOME ? HOME_INK : inkColor(id);
+        const alpha = id === TARGET ? 0.9 * state.targetFillAlpha : 0.9;
+        context.fillStyle = rgba(color, alpha);
+        context.fill(byID[id].path);
+    }
+    context.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    context.lineWidth = 1.1 * px * z;
+    for (const id of marked) {
+        if (id === TARGET && state.targetFillAlpha < 1) continue;
+        context.stroke(byID[id].path);
+    }
+
+    // Краска растекается из точки касания (MapCanvas.drawBloom).
+    if (state.bloom > 0 && !state.targetFilled) {
+        const box = target.main;
+        const [ox, oy] = TAP_POINT;
+        const corners = [[box[0], box[1]], [box[0] + box[2], box[1]], [box[0], box[1] + box[3]], [box[0] + box[2], box[1] + box[3]]];
+        const full = Math.max(...corners.map(([x, y]) => Math.hypot(x - ox, y - oy))) * 1.15;
+        const radius = full * state.bloom;
+        context.save();
+        context.clip(target.path);
+        context.beginPath();
+        context.arc(ox, oy, Math.max(0, radius), 0, Math.PI * 2);
+        context.fillStyle = rgba(inkColor(TARGET), 0.9);
+        context.fill();
+        context.strokeStyle = rgba(StatusColor.outline("visited", targetFlagHue), 0.75 * clamp(1 - state.bloom));
+        context.lineWidth = 2.5 * px * z;
+        context.stroke();
+        context.restore();
+    }
+
+    // Страна под открытым шитом: контур и мягкое свечение акцентом.
+    if (state.highlight > 0) {
+        context.save();
+        context.shadowColor = `rgba(46, 74, 107, ${0.85 * state.highlight})`;
+        context.shadowBlur = 14 * z * DPR;
+        context.strokeStyle = `rgba(20, 26, 33, ${0.9 * state.highlight})`;
+        context.lineWidth = 2 * px * z;
+        context.stroke(target.path);
+        context.restore();
+    }
+
+    // Зерно поверх всей карты, как у полотна.
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.globalAlpha = 0.05;
+    context.globalCompositeOperation = "soft-light";
+    context.fillStyle = context.createPattern(grain, "repeat");
+    context.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+    context.globalAlpha = 1;
+    context.globalCompositeOperation = "source-over";
+}
+
+// MARK: - Силуэт: с карты в обложку и обратно
+
+const HERO_RECT = { x: 48, y: 32, w: 264, h: 256 };   // обложка 320 с отступами xxl/xl
+
+function heroPlacement(scroll) {
+    const [bx, by, bw, bh] = target.main;
+    const scale = Math.min(HERO_RECT.w / bw, HERO_RECT.h / bh);
+    const cx = HERO_RECT.x + HERO_RECT.w / 2;
+    const cy = HERO_RECT.y + HERO_RECT.h / 2 - scroll;
+    return { scale, cx, cy, bx: bx + bw / 2, by: by + bh / 2 };
+}
+
+function mapPlacement(view) {
+    const [bx, by, bw, bh] = target.main;
+    const [cx, cy] = view.point(bx + bw / 2, by + bh / 2);
+    return { scale: view.scale, cx, cy, bx: bx + bw / 2, by: by + bh / 2 };
+}
+
+function drawSilhouette(state) {
+    const context = fxContext;
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    if (state.lift <= 0) return;
+
+    const from = mapPlacement(state.projector);
+    const to = heroPlacement(0);
+    const p = state.lift;
+    const screen = state.screen;
+
+    // Масштаб — по логарифму, центр — по прямой: так форма растёт
+    // равномерно, а не «выстреливает» в конце.
+    const scale = Math.exp(lerp(Math.log(from.scale), Math.log(to.scale * screen.z), p));
+    const heroCx = (to.cx - screen.cx) * screen.z + W / 2;
+    const heroCy = (to.cy - screen.cy) * screen.z + H / 2;
+    const cx = lerp(from.cx, heroCx, p);
+    const cy = lerp(from.cy, heroCy, p) - Math.sin(Math.PI * p) * 18;
+
+    context.setTransform(scale * DPR, 0, 0, scale * DPR, (cx - from.bx * scale) * DPR, (cy - from.by * scale) * DPR);
+    const px = 1 / scale;
+
+    // Цвет переходит от тона «Чернил» на карте к цвету флага в обложке —
+    // ровно как CountryHeroArt берёт тон у флага страны.
+    const k = easeInOut(clamp(p * 1.25));
+    const top = mix(inkColor(TARGET), heroColors[0], k);
+    const bottom = mix(inkColor(TARGET), heroColors[1], k);
+    const [bx, by, bw, bh] = target.main;
+    const gradient = context.createLinearGradient(bx, by, bx + bw, by + bh);
+    gradient.addColorStop(0, rgba(top));
+    gradient.addColorStop(1, rgba(bottom));
+
+    context.save();
+    context.shadowColor = rgba(heroColors[0], 0.5 * k * state.heroGlow);
+    context.shadowBlur = 60 * screen.z * DPR;
+    context.fillStyle = gradient;
+    context.fill(target.path);
+    context.shadowColor = rgba(heroColors[0], 0.9 * k * state.heroGlow);
+    context.shadowBlur = 30 * screen.z * DPR;
+    context.fill(target.path);
+    context.restore();
+
+    context.strokeStyle = `rgba(255, 255, 255, ${lerp(0.85, 0.55, k)})`;
+    context.lineWidth = lerp(1.1, 1.2, k) * px * screen.z;
+    context.lineJoin = "round";
+    context.stroke(target.path);
+}
+
+// MARK: - Интерфейс
+
+const $ = (selector) => document.querySelector(selector);
+
+function buildInterface() {
+    for (const node of document.querySelectorAll("[data-icon]")) {
+        node.insertAdjacentHTML("afterbegin", icon(node.dataset.icon, Number(node.dataset.size)));
+    }
+    for (const node of document.querySelectorAll("[data-text]")) {
+        node.textContent = TEXT[node.dataset.text];
+    }
+    const options = [
+        ["visited", "Был", "checkmarkCircleFill"],
+        ["living", "Живу", "houseFill"],
+        ["wishlist", "Хочу", "sparkles"]
+    ];
+    for (const container of document.querySelectorAll("[data-options]")) {
+        container.innerHTML = options.map(([status, title, glyph]) => `
+            <div class="option" data-status="${status}">
+                <span class="glyph">${icon(glyph, 28)}</span>${title}
+                <div class="selected"><span class="glyph">${icon(glyph, 28)}</span>${title}</div>
+            </div>`).join("");
+    }
+    // Выбранная карточка статуса: градиент статуса и свечение его цвета.
+    for (const node of document.querySelectorAll('.option[data-status="visited"] .selected')) {
+        node.style.background = `linear-gradient(135deg, ${rgba(visitedColors[0])}, ${rgba(visitedColors[1])})`;
+        node.style.setProperty("--cut", rgba(visitedColors[0]));
+    }
+    $("#cardTint").style.background =
+        `radial-gradient(circle 620px at 50% 0, ${rgba(heroColors[0], 0.5)}, ${rgba(heroColors[0], 0)})`;
+    $("#counts").textContent = countsText(before);
+}
+
+const ui = {
+    screen: $("#screen"), uiLayer: $("#ui"), home: $("#home"), number: $("#number"), counts: $("#counts"),
+    controls: $("#controls"), tabbar: $("#tabbar"), header: $("#header"), scrim: $("#scrim"),
+    sheet: $("#sheet"), sheetScrim: $("#sheetScrim"),
+    card: $("#card"), cardBg: $("#cardBg"), cardTint: $("#cardTint"), cardContent: $("#cardContent"),
+    touch: $("#touch"), caption1: $("#caption1"), final: $("#final"), bottomScrim: $("#bottomScrim")
+};
+
+let sheetHeight = 368;
+
+function setOpacity(node, value) {
+    node.style.opacity = value.toFixed(4);
+    node.style.visibility = value <= 0.001 ? "hidden" : "visible";
+}
+
+// Касание пальца: появляется, держится, гаснет с лёгким расширением.
+function touchState(t) {
+    const touches = [
+        { at: T.tap, x: 0, y: 0, kind: "map" },
+        { at: T.pick, kind: "pick" }
+    ];
+    for (const touch of touches) {
+        const local = t - touch.at + 0.16;
+        if (local < 0 || local > 0.62) continue;
+        const press = easeOut(clamp(local / 0.14));
+        const release = easeOut(clamp((local - 0.3) / 0.32));
+        return { touch, opacity: press * (1 - release), scale: lerp(1.25, 1, press) + release * 0.35 };
+    }
+    return null;
+}
+
+function render(t) {
+    t = clamp(t, 0, DURATION);
+
+    const screen = screenCamera(t);
+    const map = mapCamera(t);
+    const view = projector(map, screen);
+
+    // MARK: Состояние сцены
+
+    const bloom = spring(t - T.apply, SPRING.bounce);
+    const targetFilled = t >= T.apply + 0.8;
+    const sheetIn = spring(t - T.sheetUp, SPRING.smooth) - spring(t - T.apply, SPRING.smooth);
+    const highlight = clamp(easeOut(progress(t, T.tap, T.tap + 0.25)) - easeOut(progress(t, T.apply, T.apply + 0.25)));
+    const lift = t < T.dropStart
+        ? easeInOut(progress(t, T.liftStart, T.liftEnd))
+        : 1 - easeInOut(progress(t, T.dropStart, T.dropEnd));
+    const cardIn = t < T.dropStart
+        ? easeInOut(progress(t, T.liftStart + 0.15, T.liftEnd))
+        : 1 - easeInOut(progress(t, T.dropStart, T.dropEnd - 0.2));
+
+    const state = {
+        screen, projector: view,
+        bloom, targetFilled,
+        targetFillAlpha: 1,
+        highlight,
+        lift,
+        heroGlow: t < T.dropStart ? 1 : clamp(1 - progress(t, T.dropStart, T.dropStart + 0.5))
+    };
+
+    // Пока силуэт висит над картой, на самой карте страна пуста: краска
+    // поднялась вместе с ним. Иначе страна была бы в двух местах сразу.
+    if (lift > 0) state.targetFillAlpha = lift >= 0.999 ? 0 : clamp(1 - lift * 4);
+
+    drawMap(t, state);
+    drawSilhouette(state);
+
+    // MARK: Экран и камера
+
+    ui.screen.style.transform =
+        `translate(${(W / 2 - screen.cx * screen.z).toFixed(3)}px, ${(H / 2 - screen.cy * screen.z).toFixed(3)}px) scale(${screen.z.toFixed(5)})`;
+
+    // Первый кадр уже содержит число — оно только доводит фокус.
+    const appear = easeOut(progress(t, 0, T.focus));
+    ui.header.style.filter = appear < 1 ? `blur(${((1 - appear) * 2.4).toFixed(3)}px)` : "none";
+    setOpacity(ui.header, lerp(0.45, 1, appear) * (1 - easeInOut(progress(t, T.liftStart - 0.25, T.liftStart + 0.2)))
+        + easeInOut(progress(t, T.dropEnd - 0.1, T.dropEnd + 0.5)));
+
+    // Карта проявляется слоем, пока камера отъезжает от числа: в крупном
+    // плане ей нечего делать, а в общем плане без неё нет экрана.
+    const mapReveal = easeInOut(progress(t, T.pullStart + 0.2, T.pullStart + 1.7));
+    mapCanvas.style.opacity = mapReveal.toFixed(4);
+    setOpacity(ui.bottomScrim, easeInOut(progress(t, T.worldStart + 1.0, T.worldEnd)));
+
+    // Экран целиком существует с первого кадра — его раскрывает камера,
+    // а не проявление. Кнопки уходят, когда кадру нужен воздух под надпись.
+    const chrome = 1 - easeInOut(progress(t, T.chromeOut, T.chromeOut + 0.45));
+    setOpacity(ui.controls, chrome);
+    setOpacity(ui.tabbar, chrome);
+
+    // Число: 2.5 → 7.7 той же пружиной .smooth, что AnimatedNumber.
+    const value = lerp(before.percent, after.percent, spring(t - T.apply, SPRING.smooth));
+    ui.number.textContent = value.toFixed(1);
+    ui.counts.textContent = countsText(t >= T.apply ? after : before);
+
+    // Дом на карте — там, где стоит, со свечением, как HomeMark.
+    const [hx, hy] = (() => {
+        const mapOnly = projector(map, { z: 1, cx: W / 2, cy: H / 2 });
+        return mapOnly.point(...unitPoint(21.0122, 52.2297));
+    })();
+    ui.home.style.left = hx.toFixed(2) + "px";
+    ui.home.style.top = (hy - 13).toFixed(2) + "px";
+    const homeVisible = mapReveal * (1 - progress(t, T.flyStart, T.flyStart + 0.6));
+    setOpacity(ui.home, homeVisible);
+    const breathe = 0.5 - 0.5 * Math.cos(t / 1.4 * Math.PI);
+    ui.home.querySelector(".glyph").style.filter =
+        `drop-shadow(0 1px 2.5px rgba(255,255,255,0.9)) drop-shadow(0 0 ${lerp(4, 12, breathe).toFixed(2)}px rgba(20,26,33,${lerp(0.25, 0.9, breathe).toFixed(3)}))`;
+    ui.home.querySelector(".glyph").style.opacity = lerp(0.78, 1, breathe).toFixed(3);
+
+    // MARK: Шит статуса
+
+    sheetHeight = ui.sheet.offsetHeight || sheetHeight;
+    const sheetY = H - sheetHeight * clamp(sheetIn, -0.2, 1.2);
+    ui.sheet.style.transform = `translateY(${sheetY.toFixed(3)}px)`;
+    setOpacity(ui.sheet, sheetIn > 0.002 ? 1 : 0);
+    setOpacity(ui.sheetScrim, clamp(sheetIn));
+
+    const picked = spring(t - T.pick, SPRING.bounce);
+    for (const option of ui.sheet.querySelectorAll('.option[data-status="visited"]')) {
+        const on = clamp(spring(t - T.pick, SPRING.smooth));
+        option.querySelector(".selected").style.opacity = on.toFixed(4);
+        option.style.transform = `scale(${(1 + 0.03 * picked).toFixed(4)})`;
+        option.style.boxShadow = `0 8px 20px ${rgba(StatusColor.glow("visited"), 0.45 * on)}`;
+    }
+
+    // MARK: Карточка страны
+
+    setOpacity(ui.card, cardIn);
+    ui.cardTint.style.opacity = cardIn.toFixed(4);
+    const rows = ui.cardContent.querySelectorAll(".reveal");
+    rows.forEach((row, index) => {
+        const start = T.cardReveal + index * 0.07;
+        const shown = clamp(spring(t - start, SPRING.smooth));
+        const hidden = easeInOut(progress(t, T.dropStart - 0.05, T.dropStart + 0.3));
+        row.style.opacity = (shown * (1 - hidden)).toFixed(4);
+        row.style.transform = `translateY(${((1 - shown) * 14).toFixed(3)}px)`;
+    });
+    for (const option of ui.cardContent.querySelectorAll('.option[data-status="visited"]')) {
+        option.querySelector(".selected").style.opacity = "1";
+        option.style.transform = "scale(1.03)";
+        option.style.boxShadow = `0 8px 20px ${rgba(StatusColor.glow("visited"), 0.45)}`;
+    }
+
+    // MARK: Касание
+
+    const touch = touchState(t);
+    if (touch) {
+        let x, y;
+        if (touch.touch.kind === "map") {
+            [x, y] = view.point(...TAP_POINT);
+        } else {
+            const option = ui.sheet.querySelector('.option[data-status="visited"]');
+            x = 20 + option.offsetLeft + option.offsetWidth / 2;
+            y = sheetY + option.offsetTop + option.offsetHeight / 2;
+        }
+        ui.touch.style.left = x.toFixed(2) + "px";
+        ui.touch.style.top = y.toFixed(2) + "px";
+        ui.touch.style.transform = `scale(${touch.scale.toFixed(4)})`;
+        setOpacity(ui.touch, touch.opacity);
+    } else {
+        setOpacity(ui.touch, 0);
+    }
+
+    // MARK: Надписи
+
+    captionLines(ui.caption1, t, T.caption1In, T.caption1Out);
+    ui.caption1.style.top = "470px";
+
+    // Финал: строки фразы, затем имя. Дальше ничего не двигается.
+    const finalParts = [...ui.final.querySelectorAll(".line"), ui.final.querySelector(".wordmark")];
+    finalParts.forEach((node, index) => {
+        const shown = clamp(spring(t - (T.finalIn + index * 0.1 + (index === 2 ? 0.25 : 0)), SPRING.smooth));
+        node.style.opacity = shown.toFixed(4);
+        node.style.transform = `translateY(${((1 - shown) * 14).toFixed(3)}px)`;
+    });
+}
+
+function captionLines(node, t, start, end) {
+    const lines = node.querySelectorAll(".line");
+    const out = easeInOut(progress(t, end - 0.35, end));
+    lines.forEach((line, index) => {
+        const shown = clamp(spring(t - (start + index * 0.1), SPRING.smooth));
+        line.style.opacity = (shown * (1 - out)).toFixed(4);
+        line.style.transform = `translateY(${((1 - shown) * 16 - out * 6).toFixed(3)}px)`;
+    });
+    setOpacity(node, t >= start && t <= end ? 1 : 0);
+}
+
+// MARK: - Проигрывание
+
+const isExport = new URLSearchParams(location.search).has("export");
+if (isExport) document.body.classList.add("export");
+
+let playing = !isExport;
+let startedAt = 0;
+let position = 0;
+
+function fit() {
+    if (isExport) return;
+    const scale = Math.min((innerHeight - 96) / H, (innerWidth - 32) / W);
+    $("#viewport").style.width = W * scale + "px";
+    $("#viewport").style.height = H * scale + "px";
+    $("#frame").style.transform = `scale(${scale})`;
+}
+
+function updatePlayer() {
+    $("#scrub").value = position;
+    $("#time").textContent = `${position.toFixed(1)} / ${DURATION.toFixed(1)} с`;
+    $("#toggle").textContent = playing ? "Пауза" : "Смотреть";
+}
+
+function tick(now) {
+    if (playing) {
+        position = Math.min(DURATION, (now - startedAt) / 1000);
+        if (position >= DURATION) playing = false;
+    }
+    render(position);
+    updatePlayer();
+    requestAnimationFrame(tick);
+}
+
+function play(from) {
+    position = from ?? (position >= DURATION ? 0 : position);
+    startedAt = performance.now() - position * 1000;
+    playing = true;
+}
+
+async function boot() {
+    buildInterface();
+    // Кадр не рисуется, пока не загружены шрифты: иначе первые кадры
+    // экспорта ушли бы с запасным шрифтом.
+    await Promise.all([
+        "300 62px", "400 20px", "500 13px", "600 31px", "700 40px", "800 22px", "600 16px"
+    ].map((spec) => document.fonts.load(`${spec} "Inter Display"`).catch(() => null)));
+    await document.fonts.ready;
+
+    measureOpening();
+
+    window.__promo = {
+        duration: DURATION,
+        seek(t) { position = t; render(t); return true; }
+    };
+
+    if (isExport) {
+        render(0);
+        window.__promoReady = true;
+        return;
+    }
+
+    fit();
+    addEventListener("resize", fit);
+    $("#toggle").addEventListener("click", () => playing ? (playing = false) : play());
+    $("#replay").addEventListener("click", () => play(0));
+    $("#scrub").addEventListener("input", (event) => { playing = false; position = Number(event.target.value); });
+    addEventListener("keydown", (event) => {
+        if (event.code === "Space") { event.preventDefault(); playing ? (playing = false) : play(); }
+        if (event.key === "r" || event.key === "к") play(0);
+    });
+    play(0);
+    requestAnimationFrame(tick);
+}
+
+boot();
+</script>
+</body>
+</html>
