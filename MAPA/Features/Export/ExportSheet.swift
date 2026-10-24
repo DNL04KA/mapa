@@ -22,6 +22,10 @@ struct ExportSheet: View {
     @State private var isRendering = false
     @State private var video: URL?
     @State private var videoProgress: Double?
+    /// Задача рендера живёт в состоянии, а не улетает в никуда: иначе
+    /// отменить её при закрытии панели нечем, и сто кадров продолжают
+    /// рисоваться для экрана, которого уже нет.
+    @State private var videoTask: Task<Void, Never>?
     @State private var dragOffset: CGFloat = 0
 
     /// Высота превью. Карточка рисуется в натуральную величину и ужимается —
@@ -37,9 +41,10 @@ struct ExportSheet: View {
         .task(id: renderKey) { await render() }
         .onChange(of: renderKey) { _ in
             // Сменили формат или шаблон — прежнее видео уже не про то.
+            cancelVideo()
             video = nil
-            videoProgress = nil
         }
+        .onDisappear(perform: cancelVideo)
     }
 
     private var scrim: some View {
@@ -273,11 +278,18 @@ struct ExportSheet: View {
             .frame(height: DS.Size.controlHeight)
         } else {
             PillButton("Сделать видео", icon: "film", kind: .secondary, fullWidth: true) {
-                Task { await renderVideo() }
+                videoTask = Task { await renderVideo() }
             }
             .disabled(rendered == nil)
             .opacity(rendered == nil ? 0.4 : 1)
         }
+    }
+
+    /// Экран закрыли — рендер больше никому не нужен.
+    private func cancelVideo() {
+        videoTask?.cancel()
+        videoTask = nil
+        videoProgress = nil
     }
 
     private func renderVideo() async {
@@ -311,8 +323,11 @@ struct ExportSheet: View {
             onProgress: { value in videoProgress = value }
         )
 
-        video = url
         videoProgress = nil
+        videoTask = nil
+        // После отмены показывать «готово» нечего: файл мы сами же и стёрли.
+        guard !Task.isCancelled else { return }
+        video = url
     }
 
     private var dismissDrag: some Gesture {

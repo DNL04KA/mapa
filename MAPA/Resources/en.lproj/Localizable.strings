@@ -196,6 +196,7 @@
 "Отмена" = "Cancel";
 "Отметить пройденной" = "Mark as done";
 "Отметить списком" = "Mark from a list";
+"Отметить страну можно списком в профиле, а найти конкретную — поиском" = "Mark a country from the list in your profile; find a particular one with search";
 "Отметить страну" = "Mark the country";
 "Отметить страны" = "Mark countries";
 "Отмечай страны, где был, собирай маршруты по городам и смотри, сколько мира уже твоё." = "Mark the countries you've been to, build routes between cities and see how much of the world is already yours.";
@@ -226,6 +227,7 @@
 "Показать, где я" = "Show where I am";
 "Покупка ждёт подтверждения" = "The purchase is awaiting approval";
 "Покупка не найдена" = "No purchase found";
+"Покупка не прошла. Попробуй ещё раз" = "The purchase did not go through. Try again";
 "Политика конфиденциальности" = "Privacy policy";
 "Полотно" = "Canvas";
 "Попробовать снова" = "Try again";
@@ -352,6 +354,7 @@
 "был" = "been";
 "в день" = "per day";
 "включено" = "on";
+"выбрана %@" = "%@ selected";
 "выключено" = "off";
 "дней" = "days";
 "дом" = "home";

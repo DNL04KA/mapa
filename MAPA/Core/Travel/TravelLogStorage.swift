@@ -45,7 +45,12 @@ struct FileTravelLogStorage: TravelLogStorage {
             }
 
             let data = try Data(contentsOf: fileURL)
-            let snapshot = try JSONDecoder().decode(TravelLogSnapshot.self, from: data)
+            // Даты в .iso8601, как и в маршрутах: один формат на оба файла,
+            // иначе копия карты и копия маршрутов расходятся в мелочи,
+            // которая всплывёт при первом же обмене файлами.
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let snapshot = try decoder.decode(TravelLogSnapshot.self, from: data)
 
             // Неизвестные статусы просто отбрасываем: лучше потерять одну отметку,
             // чем уронить загрузку всей карты.
@@ -63,7 +68,9 @@ struct FileTravelLogStorage: TravelLogStorage {
         )
 
         try await Task.detached(priority: .utility) {
-            let data = try JSONEncoder().encode(snapshot)
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(snapshot)
             // Атомарно: при обрыве на записи старый файл остаётся целым.
             try data.write(to: fileURL, options: .atomic)
         }.value

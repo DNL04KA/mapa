@@ -282,7 +282,7 @@ struct CommunitySheet: View {
                     if let rating = route.rating {
                         HStack(spacing: 3) {
                             Image(systemName: "star.fill")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: DS.Size.glyph, weight: .semibold))
                             Text(String(format: "%.1f", rating))
                                 .font(DS.Font.subhead)
                                 .monospacedDigit()
@@ -315,7 +315,7 @@ struct CommunitySheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous))
                 .overlay(alignment: .topLeading) {
                     Text("\(place)")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Size.glyphSm, weight: .bold))
                         .foregroundStyle(DS.Color.inkOnAccent)
                         .frame(width: 18, height: 18)
                         .background(Circle().fill(accent))
@@ -406,7 +406,7 @@ struct CommunitySheet: View {
             .frame(width: 48, height: 48)
             .overlay(alignment: .bottomTrailing) {
                 Text("\(place)")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: DS.Size.glyphSm, weight: .bold))
                     .foregroundStyle(DS.Color.inkOnAccent)
                     .frame(width: 18, height: 18)
                     .background(Circle().fill(medal(place)))
@@ -431,7 +431,7 @@ struct CommunitySheet: View {
             }
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: DS.Size.glyph, weight: .bold))
                 .foregroundStyle(DS.Color.inkTertiary)
         }
         .padding(DS.Space.xs)
@@ -444,9 +444,9 @@ struct CommunitySheet: View {
     /// читаться с одного взгляда, а не вычитываться по номерам.
     private func medal(_ place: Int) -> Color {
         switch place {
-        case 1: return Color(hex: 0xE8C45F)
-        case 2: return Color(hex: 0xBFC7D4)
-        case 3: return Color(hex: 0xCE8E5A)
+        case 1: return DS.Color.gold
+        case 2: return DS.Color.silver
+        case 3: return DS.Color.bronze
         default: return accent
         }
     }
@@ -459,7 +459,7 @@ struct CommunitySheet: View {
     private func ratingBadge(_ value: Double) -> some View {
         HStack(spacing: 2) {
             Image(systemName: "star.fill")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: DS.Size.glyphSm, weight: .semibold))
             Text(String(format: "%.1f", value))
                 .font(DS.Font.caption)
                 .monospacedDigit()

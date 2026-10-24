@@ -80,7 +80,7 @@ struct CountryRouteSection: View {
                 Circle()
                     .fill(tint)
                 Text("\(index + 1)")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .font(.system(size: DS.Size.glyph, weight: .bold, design: .rounded))
                     .foregroundStyle(DS.Palette.void)
             }
             .frame(width: 24, height: 24)
@@ -121,7 +121,7 @@ struct CountryRouteSection: View {
 
                 if let credit = stop.photo?.credit {
                     Text(credit)
-                        .font(.system(size: 9))
+                        .font(.system(size: DS.Size.glyphSm))
                         .foregroundStyle(DS.Color.inkTertiary.opacity(0.8))
                         .lineLimit(1)
                 }

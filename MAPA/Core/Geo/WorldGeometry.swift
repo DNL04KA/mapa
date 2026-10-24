@@ -69,7 +69,7 @@ public struct WorldGeometry {
         for offset in index.candidates(at: unit) {
             let country = countries[offset]
             guard country.bounds.contains(unit), country.path.contains(unit) else { continue }
-            if exact == nil || country.areaKm2 < exact!.areaKm2 { exact = country }
+            if exact.map({ country.areaKm2 < $0.areaKm2 }) ?? true { exact = country }
         }
 
         guard tolerance > 0 else { return exact }
@@ -123,7 +123,7 @@ public struct WorldGeometry {
 
             let grow = min(8 * point, size) / 2
             guard box.insetBy(dx: -grow, dy: -grow).contains(unit) else { continue }
-            if best == nil || country.areaKm2 < best!.areaKm2 { best = country }
+            if best.map({ country.areaKm2 < $0.areaKm2 }) ?? true { best = country }
         }
         return best
     }

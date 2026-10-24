@@ -12,7 +12,7 @@ struct AccessibilitySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Доступность", subtitle: "Тумблеры имитируют системные настройки")
+            SectionHeader("Доступность", subtitle: String(localized: "Тумблеры имитируют системные настройки"))
 
             GlassCard {
                 VStack(spacing: DS.Space.sm) {
@@ -65,7 +65,7 @@ struct ColorSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Цвет", subtitle: "Семантические роли, а не оттенки")
+            SectionHeader("Цвет", subtitle: String(localized: "Семантические роли, а не оттенки"))
 
             LazyVGrid(columns: columns, spacing: DS.Space.sm) {
                 ForEach(swatches, id: \.0) { name, color in
@@ -95,7 +95,7 @@ struct GradientSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Градиенты статусов", subtitle: "Ими будут заливаться страны")
+            SectionHeader("Градиенты статусов", subtitle: String(localized: "Ими будут заливаться страны"))
 
             HStack(spacing: DS.Space.sm) {
                 ForEach(TravelStatus.allCases) { status in
@@ -145,7 +145,7 @@ struct TypographySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Типографика", subtitle: "Системный шрифт, масштабируется Dynamic Type")
+            SectionHeader("Типографика", subtitle: String(localized: "Системный шрифт, масштабируется Dynamic Type"))
 
             GlassCard {
                 VStack(alignment: .leading, spacing: DS.Space.sm) {
@@ -182,7 +182,7 @@ struct LayoutSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Сетка", subtitle: "Шаг 4pt — общий ритм интерфейса")
+            SectionHeader("Сетка", subtitle: String(localized: "Шаг 4pt — общий ритм интерфейса"))
 
             GlassCard {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
@@ -229,7 +229,7 @@ struct ElevationSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Глубина", subtitle: "Тень + светлая кромка + свечение")
+            SectionHeader("Глубина", subtitle: String(localized: "Тень + светлая кромка + свечение"))
 
             HStack(spacing: DS.Space.md) {
                 card("low", shadow: .low)
@@ -262,7 +262,7 @@ struct MotionSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Движение", subtitle: "Тапни пресет — увидишь его характер")
+            SectionHeader("Движение", subtitle: String(localized: "Тапни пресет — увидишь его характер"))
 
             GlassCard {
                 VStack(alignment: .leading, spacing: DS.Space.md) {
@@ -316,7 +316,7 @@ struct MotionSection: View {
                 }
                 Spacer()
                 Image(systemName: "play.fill")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .frame(minHeight: DS.Size.hitTarget)
@@ -332,23 +332,23 @@ struct HapticsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Хаптика", subtitle: "На симуляторе не ощущается — нужен телефон")
+            SectionHeader("Хаптика", subtitle: String(localized: "На симуляторе не ощущается — нужен телефон"))
 
             GlassCard {
                 VStack(spacing: DS.Space.xs) {
-                    row("Заливка страны", detail: "Core Haptics: щелчок + волна") {
+                    row(String(localized: "Заливка страны"), detail: "Core Haptics: щелчок + волна") {
                         Haptics.shared.countryFill()
                     }
                     Divider().overlay(DS.Color.hairline)
-                    row("Снятие статуса", detail: "Мягкое затухание") {
+                    row(String(localized: "Снятие статуса"), detail: "Мягкое затухание") {
                         Haptics.shared.countryClear()
                     }
                     Divider().overlay(DS.Color.hairline)
-                    row("Выбор", detail: "selectionChanged") {
+                    row(String(localized: "Выбор"), detail: "selectionChanged") {
                         Haptics.shared.selection()
                     }
                     Divider().overlay(DS.Color.hairline)
-                    row("Успех", detail: "notification .success") {
+                    row(String(localized: "Успех"), detail: "notification .success") {
                         Haptics.shared.success()
                     }
                 }
@@ -390,7 +390,7 @@ struct ComponentsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
-            SectionHeader("Компоненты", subtitle: "Из них собирается всё остальное")
+            SectionHeader("Компоненты", subtitle: String(localized: "Из них собирается всё остальное"))
 
             HStack(spacing: DS.Space.sm) {
                 PillButton("Сохранить", icon: "checkmark", kind: .primary) {}

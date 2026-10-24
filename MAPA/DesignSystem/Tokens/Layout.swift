@@ -31,6 +31,13 @@ public extension DS {
     enum Size {
         /// Минимальная зона нажатия по HIG.
         public static let hitTarget: CGFloat = 44
+        /// Значки внутри строки текста: шеврон, галочка, плюс в бейдже.
+        ///
+        /// Отдельно от `iconSm`, потому что это не самостоятельный значок,
+        /// а спутник текста — в экранах таких набралось шесть разных
+        /// кеглей от 9 до 14, и разницу между ними не видел никто.
+        public static let glyphSm: CGFloat = 10
+        public static let glyph: CGFloat = 12
         public static let iconSm: CGFloat = 16
         public static let iconMd: CGFloat = 22
         public static let iconLg: CGFloat = 28

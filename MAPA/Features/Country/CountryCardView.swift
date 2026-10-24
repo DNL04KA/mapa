@@ -167,7 +167,7 @@ struct CountryCardView: View {
                     .lineLimit(1)
                 if let credit = cover.credit {
                     Text(credit)
-                        .font(.system(size: 9))
+                        .font(.system(size: DS.Size.glyphSm))
                         .foregroundStyle(DS.Color.inkTertiary)
                         .lineLimit(1)
                 }
@@ -216,11 +216,23 @@ struct CountryCardView: View {
         .padding(.bottom, DS.Space.huge)
     }
 
+    /// Заливка кнопки закрытия. При выключенной прозрачности — плотная:
+    /// полупрозрачный кружок поверх фотографии становится невидимым ровно
+    /// у тех, кто эту настройку и включил.
+    private var glassFill: AnyShapeStyle {
+        motion.reduceTransparency
+            ? AnyShapeStyle(DS.Color.materialFallback)
+            : AnyShapeStyle(.ultraThinMaterial)
+    }
+
     private var title: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .center, spacing: DS.Space.xs) {
                 Text(country.displayName)
-                    .font(.system(size: 40, weight: .bold))
+                    // Через шкалу, а не фиксированным кеглем: это самый
+                    // крупный заголовок в приложении, и он единственный
+                    // не рос вместе с настройкой шрифта на телефоне.
+                    .font(DS.FontStyle(40, .bold, .default, .largeTitle, cap: 1.3))
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.5)
@@ -361,7 +373,7 @@ struct CountryCardView: View {
                                 HStack(spacing: DS.Space.xxs) {
                                     if city.isCapital {
                                         Image(systemName: "star.fill")
-                                            .font(.system(size: 9, weight: .semibold))
+                                            .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                                             .foregroundStyle(tint)
                                     }
                                     Text(city.displayName)
@@ -388,7 +400,7 @@ struct CountryCardView: View {
                                 .monospacedDigit()
 
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: DS.Size.glyphSm, weight: .bold))
                                 .foregroundStyle(DS.Color.inkTertiary)
                         }
                         .frame(height: 60)
@@ -421,7 +433,7 @@ struct CountryCardView: View {
                 // Всегда булавка: звезда у столицы и так стоит рядом с
                 // названием, и в пустом квадратике она читалась как оценка.
                 Image(systemName: "mappin")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: DS.Size.glyph, weight: .semibold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
         }
@@ -479,7 +491,7 @@ struct CountryCardView: View {
 
                             if let credit = place.credit {
                                 Text(credit)
-                                    .font(.system(size: 9))
+                                    .font(.system(size: DS.Size.glyphSm))
                                     .foregroundStyle(DS.Color.inkTertiary)
                                     .lineLimit(2)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -564,7 +576,7 @@ struct CountryCardView: View {
                     // и плотная плашка выглядит на ней заплаткой.
                     .background {
                         Circle()
-                            .fill(.ultraThinMaterial)
+                            .fill(glassFill)
                             .overlay { Circle().strokeBorder(DS.Color.hairline, lineWidth: 1) }
                     }
                     .contentShape(Circle())

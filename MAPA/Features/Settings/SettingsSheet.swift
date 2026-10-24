@@ -231,7 +231,7 @@ struct SettingsSheet: View {
 
             if showsChevron {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
         }

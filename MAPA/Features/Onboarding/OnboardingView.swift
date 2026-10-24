@@ -214,7 +214,7 @@ struct OnboardingView: View {
                     RemoteImage(url: cover.small)
                 } else {
                     Image(systemName: "mappin")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: DS.Size.glyph, weight: .semibold))
                         .foregroundStyle(accent)
                 }
             }

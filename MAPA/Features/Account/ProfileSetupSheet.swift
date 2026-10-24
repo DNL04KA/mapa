@@ -139,7 +139,7 @@ struct ProfileSetupSheet: View {
                 AvatarView(avatar: account.profile.avatar, size: 96)
                     .overlay(alignment: .bottomTrailing) {
                         Image(systemName: "pencil")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: DS.Size.glyph, weight: .bold))
                             .foregroundStyle(DS.Color.inkOnAccent)
                             .frame(width: 28, height: 28)
                             .background(Circle().fill(accent))

@@ -127,6 +127,23 @@ struct WorldMapView: View {
         .ignoresSafeArea()
     }
 
+    /// Что на карте — словами.
+    ///
+    /// Пустая подпись «Карта мира» не сообщала ничего: сколько закрашено и
+    /// что сейчас выбрано, зрячий читает с самой карты, а незрячему это
+    /// нужно произнести.
+    private var mapAccessibilityLabel: String {
+        var parts = [String(localized: "Карта мира")]
+        if model.statistics.exploredCount > 0 {
+            parts.append(Plural.countries(model.statistics.exploredCount))
+        }
+        if let country = model.selectedCountry {
+            parts.append(String(format: NSLocalizedString("выбрана %@", comment: ""),
+                                country.displayName))
+        }
+        return parts.joined(separator: ", ")
+    }
+
     // MARK: - Состояния
 
     @ViewBuilder
@@ -174,8 +191,8 @@ struct WorldMapView: View {
                     Color.clear
                         .allowsHitTesting(false)
                         .accessibilityElement()
-                        .accessibilityLabel("Карта мира")
-                        .accessibilityHint("Чтобы открыть страну или город, воспользуйся поиском")
+                        .accessibilityLabel(mapAccessibilityLabel)
+                        .accessibilityHint("Отметить страну можно списком в профиле, а найти конкретную — поиском")
 
                     CityMarkersLayer(
                         camera: model.camera,
@@ -863,7 +880,7 @@ struct WorldMapView: View {
                     // Подпись обязательна: без неё карточка не объясняет,
                     // зачем она на экране.
                     Text("ПРОДОЛЖИТЬ")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                         .tracking(1.4)
                         .foregroundStyle(activeTheme.accent)
 
@@ -881,7 +898,7 @@ struct WorldMapView: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(activeTheme.mapInk.opacity(0.4))
             }
             .padding(DS.Space.xs)

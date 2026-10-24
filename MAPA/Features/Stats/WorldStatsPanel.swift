@@ -102,7 +102,7 @@ struct WorldStatsPanel: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(theme.mapInk.opacity(0.7))
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     .animation(motion.animation(.snap), value: isExpanded)

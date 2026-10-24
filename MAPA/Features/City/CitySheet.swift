@@ -239,7 +239,10 @@ struct CitySheet: View {
         }
     }
 
-    private func fact(value: String, caption: String, icon: String) -> some View {
+    /// Подпись — ключ перевода, а не строка: `Text(String)` ничего не
+    /// переводит, и на английском телефоне под числом стояло «человек»
+    /// при готовом переводе в таблице.
+    private func fact(value: String, caption: LocalizedStringKey, icon: String) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             Image(systemName: icon)
                 .font(.system(size: DS.Size.iconSm, weight: .semibold))
@@ -278,8 +281,10 @@ struct CitySheet: View {
     /// когда он открыт.
     private var actions: some View {
         DS.Reflow(spacing: DS.Space.xs) {
-            smallButton(countryName ?? "Страна", icon: "map", action: onOpenCountry)
-            smallButton(isHome ? "Твой дом здесь" : "Сделать домом",
+            smallButton(countryName ?? String(localized: "Страна"),
+                        icon: "map", action: onOpenCountry)
+            smallButton(isHome ? String(localized: "Твой дом здесь")
+                               : String(localized: "Сделать домом"),
                         icon: isHome ? "house.fill" : "house",
                         isOn: isHome,
                         action: onSetHome)

@@ -134,7 +134,7 @@ struct HomeMark: View {
     var body: some View {
         VStack(spacing: 2) {
             Image(systemName: "house.fill")
-                .font(.system(size: 22 * scale, weight: .semibold))
+                .font(.system(size: DS.Size.iconMd * scale, weight: .semibold))
                 .foregroundStyle(theme.mapInk)
                 // Контур обязателен: значок на жёлтой или салатовой стране
                 // без него просто исчезает.
@@ -144,7 +144,7 @@ struct HomeMark: View {
 
             if let label {
                 Text(label)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                     .foregroundStyle(theme.mapInk)
                     .fixedSize()
                     .dsMapText()

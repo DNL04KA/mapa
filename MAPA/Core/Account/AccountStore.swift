@@ -28,8 +28,9 @@ final class AccountStore: ObservableObject {
          auth: AuthService = UnavailableAuthService()) {
         self.storage = storage
         self.auth = auth
-        self.profile = storage.load() ?? Profile.local()
-        if storage.load() == nil {
+        let stored = storage.load()
+        self.profile = stored ?? Profile.local()
+        if stored == nil {
             storage.save(profile)
         } else if Self.defaultNames.contains(profile.name) {
             // Раньше имя по умолчанию записывалось в файл, и на английском
@@ -125,12 +126,19 @@ struct FileProfileStorage: ProfileStorage {
     private let fileURL: URL
 
     init(fileName: String = "profile.json") {
+        // Как в остальных хранилищах: пустой список каталогов — это не
+        // повод падать на запуске, а повод уйти во временную папку.
         let base = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            .first ?? URL(fileURLWithPath: NSTemporaryDirectory())
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         fileURL = base.appendingPathComponent(fileName)
     }
 
+    /// Чтение остаётся на главном акторе осознанно: профиль нужен в
+    /// инициализаторе вьюмодели, до первого кадра, а в файле — несколько
+    /// сотен байт. Асинхронность здесь дала бы экран без имени и аватарки
+    /// на один кадр, и ради этого не стоит.
     func load() -> Profile? {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         let decoder = JSONDecoder()
@@ -138,12 +146,28 @@ struct FileProfileStorage: ProfileStorage {
         return try? decoder.decode(Profile.self, from: data)
     }
 
+    /// А запись уходит с главного актора, как и в остальных хранилищах:
+    /// её результата никто не ждёт, а случается она на каждое изменение
+    /// профиля — имя, аватарка, никнейм, вход.
     func save(_ profile: Profile) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         guard let data = try? encoder.encode(profile) else { return }
-        try? data.write(to: fileURL, options: .atomic)
+        let url = fileURL
+        Task.detached(priority: .utility) {
+            try? data.write(to: url, options: .atomic)
+        }
     }
+}
+
+/// Хранилище для превью и тестов: ничего не пишет.
+///
+/// Такое же, как `EphemeralRouteStorage` и `EphemeralTravelLogStorage` —
+/// по правилу «протокол + файловая реализация + эфемерная».
+struct EphemeralProfileStorage: ProfileStorage {
+    var initial: Profile?
+    func load() -> Profile? { initial }
+    func save(_ profile: Profile) {}
 }
 
 // MARK: - Вход

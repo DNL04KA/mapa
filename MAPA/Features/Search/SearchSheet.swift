@@ -183,7 +183,7 @@ struct SearchSheet: View {
                 RoundedRectangle(cornerRadius: DS.Radius.xs, style: .continuous)
                     .fill(accent.opacity(0.14))
                 Image(systemName: "globe.europe.africa.fill")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: DS.Size.glyph, weight: .medium))
                     .foregroundStyle(accent)
             }
             .frame(width: 30, height: 30)
@@ -198,7 +198,7 @@ struct SearchSheet: View {
                     RemoteImage(url: cover.small)
                 } else {
                     Image(systemName: city.isCapital ? "star.fill" : "mappin")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: DS.Size.glyph, weight: .semibold))
                         .foregroundStyle(accent)
                 }
             }

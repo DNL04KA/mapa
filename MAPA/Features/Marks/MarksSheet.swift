@@ -158,7 +158,7 @@ struct MarksSheet: View {
     private var legend: some View {
         HStack(spacing: DS.Space.xxs) {
             Image(systemName: "checkmark")
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: DS.Size.glyphSm, weight: .bold))
                 .foregroundStyle(DS.StatusColor.glow(.visited))
             Text("был")
                 .font(DS.Font.micro)
@@ -169,7 +169,7 @@ struct MarksSheet: View {
                 .foregroundStyle(DS.Color.inkTertiary)
 
             Image(systemName: "sparkles")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                 .foregroundStyle(DS.StatusColor.glow(.wishlist))
             Text("хочу")
                 .font(DS.Font.micro)
@@ -248,7 +248,7 @@ struct MarksSheet: View {
 
                     if status == .living {
                         Image(systemName: "house.fill")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: DS.Size.glyph, weight: .semibold))
                             .foregroundStyle(DS.StatusColor.glow(.living))
                     }
                 }
@@ -288,7 +288,7 @@ struct MarksSheet: View {
                         .strokeBorder(isOn ? Color.clear : DS.Color.borderStrong, lineWidth: 1.5)
                 }
             Image(systemName: "checkmark")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: DS.Size.glyph, weight: .bold))
                 .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkTertiary.opacity(0.55))
         }
         .frame(width: 30, height: 30)
@@ -307,7 +307,7 @@ struct MarksSheet: View {
                     Circle().strokeBorder(isOn ? Color.clear : DS.Color.border, lineWidth: 1.5)
                 }
             Image(systemName: "sparkles")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: DS.Size.glyph, weight: .semibold))
                 .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkTertiary.opacity(0.55))
         }
         .frame(width: 30, height: 30)

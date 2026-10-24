@@ -255,19 +255,19 @@ public extension MapPalette {
     // MARK: Открытые
 
     static let flags = MapPalette(
-        id: "flags", name: "Флаги", isPremium: false,
+        id: "flags", name: String(localized: "Флаги"), isPremium: false,
         mode: .flags,
         home: Color(hex: 0x5FE3B4),
         glow: 1,
         wishOpacity: 0.74,
-        subtitle: "Цвет страны — с её флага"
+        subtitle: String(localized: "Цвет страны — с её флага")
     )
 
     /// Семь тонов одного семейства: близкие по светлоте, слабые по насыщенности.
     /// Соседние страны различимы, но ни одна не выскакивает вперёд — так
     /// выглядят дорогие бумажные карты.
     static let ink = MapPalette(
-        id: "ink", name: "Чернила", isPremium: false,
+        id: "ink", name: String(localized: "Чернила"), isPremium: false,
         mode: .set([
             Color(hex: 0x2E4A6B), Color(hex: 0x3F6560), Color(hex: 0x55677A),
             Color(hex: 0x6B7355), Color(hex: 0x7A5B4C), Color(hex: 0x5B5570),
@@ -275,13 +275,13 @@ public extension MapPalette {
         ]),
         home: Color(hex: 0x2B2724),
         glow: 0, isFlat: true,
-        subtitle: "Приглушённые тона одной семьи"
+        subtitle: String(localized: "Приглушённые тона одной семьи")
     )
 
     // MARK: Платные
 
     static let neon = MapPalette(
-        id: "neon", name: "Неон", isPremium: true,
+        id: "neon", name: String(localized: "Неон"), isPremium: true,
         mode: .set([
             Color(hex: 0x00E5FF), Color(hex: 0xFF2E93), Color(hex: 0x7CFF3D),
             Color(hex: 0xFFB000), Color(hex: 0x9B5CFF), Color(hex: 0x00FFC2)
@@ -289,44 +289,44 @@ public extension MapPalette {
         home: Color(hex: 0xFFFFFF),
         glow: 1.4,
         wishOpacity: 0.3,
-        subtitle: "Вывеска в ночном городе"
+        subtitle: String(localized: "Вывеска в ночном городе")
     )
 
     static let sunsetPalette = MapPalette(
-        id: "palette-sunset", name: "Закат", isPremium: true,
+        id: "palette-sunset", name: String(localized: "Закат"), isPremium: true,
         mode: .set([
             Color(hex: 0xC2512F), Color(hex: 0xD98324), Color(hex: 0xA8374E),
             Color(hex: 0xE0A33C), Color(hex: 0x8C4A6B), Color(hex: 0xB5643A)
         ]),
         home: Color(hex: 0x3A2028),
         glow: 0.7, isFlat: true,
-        subtitle: "Тёплые от охры до сливы"
+        subtitle: String(localized: "Тёплые от охры до сливы")
     )
 
     static let seaPalette = MapPalette(
-        id: "palette-sea", name: "Море", isPremium: true,
+        id: "palette-sea", name: String(localized: "Море"), isPremium: true,
         mode: .set([
             Color(hex: 0x1F4E6B), Color(hex: 0x2A7A82), Color(hex: 0x3E6E9E),
             Color(hex: 0x24606B), Color(hex: 0x4A5C8A), Color(hex: 0x2E8C93)
         ]),
         home: Color(hex: 0x10222E),
         glow: 0.6, isFlat: true,
-        subtitle: "От мелководья к глубине"
+        subtitle: String(localized: "От мелководья к глубине")
     )
 
     static let forestPalette = MapPalette(
-        id: "palette-forest", name: "Лес", isPremium: true,
+        id: "palette-forest", name: String(localized: "Лес"), isPremium: true,
         mode: .set([
             Color(hex: 0x3A5F3A), Color(hex: 0x5C7A45), Color(hex: 0x2F5148),
             Color(hex: 0x7A8A4E), Color(hex: 0x4A6B58), Color(hex: 0x6B7A3A)
         ]),
         home: Color(hex: 0x24301F),
         glow: 0.5, isFlat: true,
-        subtitle: "Хвоя, мох и молодая листва"
+        subtitle: String(localized: "Хвоя, мох и молодая листва")
     )
 
     static let vintagePalette = MapPalette(
-        id: "palette-vintage", name: "Винтаж", isPremium: true,
+        id: "palette-vintage", name: String(localized: "Винтаж"), isPremium: true,
         mode: .set([
             Color(hex: 0x9C7B4E), Color(hex: 0xB08D5F), Color(hex: 0x8A6A45),
             Color(hex: 0xA8825A), Color(hex: 0x7A5F42), Color(hex: 0xC0A070)
@@ -334,22 +334,22 @@ public extension MapPalette {
         home: Color(hex: 0x4A3728),
         glow: 0.25, isFlat: true,
         wishOpacity: 0.32,
-        subtitle: "Выцветшая типографская краска"
+        subtitle: String(localized: "Выцветшая типографская краска")
     )
 
     /// Одноцветная карта. Самый строгий вариант: страны отличаются не цветом,
     /// а тем, что они закрашены.
     static let charcoal = MapPalette(
-        id: "palette-charcoal", name: "Уголь", isPremium: true,
+        id: "palette-charcoal", name: String(localized: "Уголь"), isPremium: true,
         mode: .set([Color(hex: 0x23282E)]),
         home: Color(hex: 0x000000),
         glow: 0, isFlat: true,
         wishOpacity: 0.22,
-        subtitle: "Один цвет на всю карту"
+        subtitle: String(localized: "Один цвет на всю карту")
     )
 
     static let candy = MapPalette(
-        id: "palette-candy", name: "Леденцы", isPremium: true,
+        id: "palette-candy", name: String(localized: "Леденцы"), isPremium: true,
         mode: .set([
             Color(hex: 0xFF6B8A), Color(hex: 0xFFC145), Color(hex: 0x4ECDC4),
             Color(hex: 0xA06CD5), Color(hex: 0x6BCB77), Color(hex: 0xFF9B54)
@@ -357,18 +357,18 @@ public extension MapPalette {
         home: Color(hex: 0x2B2438),
         glow: 0.8,
         wishOpacity: 0.34,
-        subtitle: "Открытая и весёлая"
+        subtitle: String(localized: "Открытая и весёлая")
     )
 
     /// Один цвет, но взятый от полотна: карта красится тем же тоном, что и
     /// её акцент. Самый «встроенный» вариант — работает на любом полотне.
     static let monoAccent = MapPalette(
-        id: "palette-accent", name: "Акцент", isPremium: true,
+        id: "palette-accent", name: String(localized: "Акцент"), isPremium: true,
         mode: .set([]),          // пусто: цвет берётся у полотна
         home: Color(hex: 0x1A1A1A),
         glow: 0.6, isFlat: true,
         wishOpacity: 0.3,
-        subtitle: "Цвет самого полотна"
+        subtitle: String(localized: "Цвет самого полотна")
     )
 }
 
@@ -395,37 +395,37 @@ public extension MapSurface {
     // MARK: Открытые
 
     static let night = MapSurface(
-        id: "night", name: "Ночь", isPremium: false,
+        id: "night", name: String(localized: "Ночь"), isPremium: false,
         oceanTop: Color(hex: 0x121A2E), oceanBottom: Color(hex: 0x0B0F1C),
         landTop: Color(hex: 0x39426B), landBottom: Color(hex: 0x232A42),
         borderOpacity: 0.17, graticuleOpacity: 0.05,
         accent: Color(hex: 0x6C5CFF),
         auroraColors: [Color(hex: 0x6C5CFF), Color(hex: 0x22A7C9), Color(hex: 0xE86FD1)],
-        subtitle: "Глубокая синяя ночь"
+        subtitle: String(localized: "Глубокая синяя ночь")
     )
 
     static let dawn = MapSurface(
-        id: "dawn", name: "Рассвет", isPremium: false,
+        id: "dawn", name: String(localized: "Рассвет"), isPremium: false,
         oceanTop: Color(hex: 0x1E1327), oceanBottom: Color(hex: 0x0F0913),
         landTop: Color(hex: 0x5A4270), landBottom: Color(hex: 0x33253F),
         borderOpacity: 0.20, graticuleOpacity: 0.05,
         accent: Color(hex: 0xFF7A9E),
         auroraColors: [Color(hex: 0xFF7A9E), Color(hex: 0xFFB067), Color(hex: 0x9A5CFF)],
-        subtitle: "Сумерки перед рассветом"
+        subtitle: String(localized: "Сумерки перед рассветом")
     )
 
     static let depth = MapSurface(
-        id: "depth", name: "Глубина", isPremium: false,
+        id: "depth", name: String(localized: "Глубина"), isPremium: false,
         oceanTop: Color(hex: 0x07202B), oceanBottom: Color(hex: 0x03111A),
         landTop: Color(hex: 0x23525E), landBottom: Color(hex: 0x143038),
         borderOpacity: 0.18, graticuleOpacity: 0.06,
         accent: Color(hex: 0x2BD9C4),
         auroraColors: [Color(hex: 0x2BD9C4), Color(hex: 0x1E7FA8), Color(hex: 0x0C4C5E)],
-        subtitle: "Толща океана"
+        subtitle: String(localized: "Толща океана")
     )
 
     static let paper = MapSurface(
-        id: "paper", name: "Светлая", isPremium: false,
+        id: "paper", name: String(localized: "Светлая"), isPremium: false,
         // Вода почти без цвета: тон чуть холоднее суши, а разделяет их тень.
         // Голубое море сразу читается как дешёвая заготовка.
         oceanTop: Color(hex: 0xEFEEEB), oceanBottom: Color(hex: 0xE6E5E1),
@@ -439,14 +439,14 @@ public extension MapSurface {
         maxGlow: 0,
         forcesFlatFill: true,
         landShadow: 0.22,
-        subtitle: "Тёплая бумага с тенью",
+        subtitle: String(localized: "Тёплая бумага с тенью"),
         isLight: true
     )
 
     // MARK: Платные
 
     static let sunset = MapSurface(
-        id: "sunset", name: "Закат", isPremium: true,
+        id: "sunset", name: String(localized: "Закат"), isPremium: true,
         oceanTop: Color(hex: 0x2A1330), oceanBottom: Color(hex: 0x120814),
         landTop: Color(hex: 0x7A3B54), landBottom: Color(hex: 0x412032),
         borderOpacity: 0.22, graticuleOpacity: 0.06,
@@ -457,11 +457,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0xFFB98A).opacity(0.45), width: 1.0, dash: nil),
         grain: 0.06,
         maxGlow: 0.95,
-        subtitle: "Рябь под закатом"
+        subtitle: String(localized: "Рябь под закатом")
     )
 
     static let aurora = MapSurface(
-        id: "aurora", name: "Северное сияние", isPremium: true,
+        id: "aurora", name: String(localized: "Северное сияние"), isPremium: true,
         oceanTop: Color(hex: 0x061A1C), oceanBottom: Color(hex: 0x020B0D),
         landTop: Color(hex: 0x1D5A4A), landBottom: Color(hex: 0x0F3229),
         borderOpacity: 0.2, graticuleOpacity: 0.07,
@@ -472,11 +472,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x9EFFD8).opacity(0.42), width: 0.9, dash: nil),
         grain: 0.05,
         maxGlow: 1.0,
-        subtitle: "Ленты над водой"
+        subtitle: String(localized: "Ленты над водой")
     )
 
     static let sakura = MapSurface(
-        id: "sakura", name: "Сакура", isPremium: true,
+        id: "sakura", name: String(localized: "Сакура"), isPremium: true,
         oceanTop: Color(hex: 0x241623), oceanBottom: Color(hex: 0x120A11),
         landTop: Color(hex: 0x77405F), landBottom: Color(hex: 0x42233A),
         borderOpacity: 0.22, graticuleOpacity: 0.06,
@@ -487,11 +487,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0xFFC9DE).opacity(0.4), width: 1.0, dash: nil),
         grain: 0.09,
         maxGlow: 0.75,
-        subtitle: "Лепестки на воде"
+        subtitle: String(localized: "Лепестки на воде")
     )
 
     static let desert = MapSurface(
-        id: "desert", name: "Пустыня", isPremium: true,
+        id: "desert", name: String(localized: "Пустыня"), isPremium: true,
         oceanTop: Color(hex: 0x1F1710), oceanBottom: Color(hex: 0x0F0B07),
         landTop: Color(hex: 0x7A5C36), landBottom: Color(hex: 0x453220),
         borderOpacity: 0.24, graticuleOpacity: 0.06,
@@ -502,11 +502,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x5A3E20).opacity(0.8), width: 1.2, dash: nil),
         grain: 0.14,
         maxGlow: 0.4,
-        subtitle: "Волны дюн"
+        subtitle: String(localized: "Волны дюн")
     )
 
     static let cosmos = MapSurface(
-        id: "cosmos", name: "Космос", isPremium: true,
+        id: "cosmos", name: String(localized: "Космос"), isPremium: true,
         oceanTop: Color(hex: 0x0B0720), oceanBottom: Color(hex: 0x03020C),
         landTop: Color(hex: 0x322A6B), landBottom: Color(hex: 0x1A163C),
         borderOpacity: 0.20, graticuleOpacity: 0.08,
@@ -515,11 +515,11 @@ public extension MapSurface {
         oceanPattern: .stars,
         patternColor: Color.white.opacity(0.8),
         grain: 0.04,
-        subtitle: "Звёздное небо под картой"
+        subtitle: String(localized: "Звёздное небо под картой")
     )
 
     static let emerald = MapSurface(
-        id: "emerald", name: "Изумруд", isPremium: true,
+        id: "emerald", name: String(localized: "Изумруд"), isPremium: true,
         oceanTop: Color(hex: 0x071A14), oceanBottom: Color(hex: 0x030C09),
         landTop: Color(hex: 0x1F5C42), landBottom: Color(hex: 0x113627),
         borderOpacity: 0.19, graticuleOpacity: 0.06,
@@ -530,11 +530,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x8FF0C4).opacity(0.35), width: 0.9, dash: nil),
         grain: 0.05,
         maxGlow: 1.0,
-        subtitle: "Изолинии глубин"
+        subtitle: String(localized: "Изолинии глубин")
     )
 
     static let granite = MapSurface(
-        id: "granite", name: "Гранит", isPremium: true,
+        id: "granite", name: String(localized: "Гранит"), isPremium: true,
         oceanTop: Color(hex: 0x16181B), oceanBottom: Color(hex: 0x0A0B0D),
         landTop: Color(hex: 0x45494F), landBottom: Color(hex: 0x2A2D31),
         borderOpacity: 0.24, graticuleOpacity: 0.05,
@@ -545,11 +545,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x1A1C1F).opacity(0.85), width: 1.3, dash: nil),
         grain: 0.13,
         maxGlow: 0.35,
-        subtitle: "Гравюра резцом"
+        subtitle: String(localized: "Гравюра резцом")
     )
 
     static let neon = MapSurface(
-        id: "neon", name: "Неон", isPremium: true,
+        id: "neon", name: String(localized: "Неон"), isPremium: true,
         oceanTop: Color(hex: 0x0D0420), oceanBottom: Color(hex: 0x05010D),
         landTop: Color(hex: 0x3A1160), landBottom: Color(hex: 0x1E0A35),
         borderOpacity: 0.26, graticuleOpacity: 0.09,
@@ -560,11 +560,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x00E5FF).opacity(0.6), width: 0.9, dash: nil),
         grain: 0.07,
         maxGlow: 1.0,
-        subtitle: "Строки развёртки"
+        subtitle: String(localized: "Строки развёртки")
     )
 
     static let atlas = MapSurface(
-        id: "atlas", name: "Атлас", isPremium: true,
+        id: "atlas", name: String(localized: "Атлас"), isPremium: true,
         oceanTop: Color(hex: 0x2A2317), oceanBottom: Color(hex: 0x17130C),
         landTop: Color(hex: 0x8A7448), landBottom: Color(hex: 0x5A4A2C),
         borderOpacity: 0.30, graticuleOpacity: 0.10,
@@ -575,11 +575,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x3A2E18).opacity(0.85), width: 1.3, dash: nil),
         grain: 0.16,
         maxGlow: 0.3,
-        subtitle: "Пергамент и перо"
+        subtitle: String(localized: "Пергамент и перо")
     )
 
     static let blueprint = MapSurface(
-        id: "blueprint", name: "Чертёж", isPremium: true,
+        id: "blueprint", name: String(localized: "Чертёж"), isPremium: true,
         oceanTop: Color(hex: 0x0A2044), oceanBottom: Color(hex: 0x05122A),
         landTop: Color(hex: 0x143869), landBottom: Color(hex: 0x0B2148),
         borderOpacity: 0.40, graticuleOpacity: 0.14,
@@ -590,11 +590,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color.white.opacity(0.55), width: 0.9, dash: [4, 3]),
         grain: 0.05,
         maxGlow: 0.55,
-        subtitle: "Миллиметровка и пунктир"
+        subtitle: String(localized: "Миллиметровка и пунктир")
     )
 
     static let arctic = MapSurface(
-        id: "arctic", name: "Арктика", isPremium: true,
+        id: "arctic", name: String(localized: "Арктика"), isPremium: true,
         oceanTop: Color(hex: 0x13202B), oceanBottom: Color(hex: 0x080F15),
         landTop: Color(hex: 0x51707F), landBottom: Color(hex: 0x2E4351),
         borderOpacity: 0.24, graticuleOpacity: 0.07,
@@ -605,11 +605,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0xE6F6FF).opacity(0.5), width: 1.1, dash: nil),
         grain: 0.08,
         maxGlow: 0.8,
-        subtitle: "Изморозь по воде"
+        subtitle: String(localized: "Изморозь по воде")
     )
 
     static let volcano = MapSurface(
-        id: "volcano", name: "Вулкан", isPremium: true,
+        id: "volcano", name: String(localized: "Вулкан"), isPremium: true,
         oceanTop: Color(hex: 0x1A0C0A), oceanBottom: Color(hex: 0x0A0504),
         landTop: Color(hex: 0x6B2A22), landBottom: Color(hex: 0x3A1613),
         borderOpacity: 0.24, graticuleOpacity: 0.06,
@@ -620,11 +620,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x2A0D09).opacity(0.9), width: 1.2, dash: nil),
         grain: 0.1,
         maxGlow: 1.0,
-        subtitle: "Тлеющие угли"
+        subtitle: String(localized: "Тлеющие угли")
     )
 
     static let mint = MapSurface(
-        id: "mint", name: "Мята", isPremium: true,
+        id: "mint", name: String(localized: "Мята"), isPremium: true,
         oceanTop: Color(hex: 0x0B1F1E), oceanBottom: Color(hex: 0x050F0F),
         landTop: Color(hex: 0x2C6660), landBottom: Color(hex: 0x183B38),
         borderOpacity: 0.2, graticuleOpacity: 0.06,
@@ -635,11 +635,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0xCFF7EC).opacity(0.4), width: 0.9, dash: nil),
         grain: 0.04,
         maxGlow: 0.9,
-        subtitle: "Пузырьки воздуха"
+        subtitle: String(localized: "Пузырьки воздуха")
     )
 
     static let indigo = MapSurface(
-        id: "indigo", name: "Индиго", isPremium: true,
+        id: "indigo", name: String(localized: "Индиго"), isPremium: true,
         oceanTop: Color(hex: 0x0A1230), oceanBottom: Color(hex: 0x040718),
         landTop: Color(hex: 0x2A3C82), landBottom: Color(hex: 0x16214B),
         borderOpacity: 0.2, graticuleOpacity: 0.07,
@@ -650,11 +650,11 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0xAFC8FF).opacity(0.4), width: 0.9, dash: nil),
         grain: 0.06,
         maxGlow: 0.9,
-        subtitle: "Косой дождь"
+        subtitle: String(localized: "Косой дождь")
     )
 
     static let coffee = MapSurface(
-        id: "coffee", name: "Кофе", isPremium: true,
+        id: "coffee", name: String(localized: "Кофе"), isPremium: true,
         oceanTop: Color(hex: 0x1B1310), oceanBottom: Color(hex: 0x0C0807),
         landTop: Color(hex: 0x63453A), landBottom: Color(hex: 0x392722),
         borderOpacity: 0.24, graticuleOpacity: 0.06,
@@ -665,7 +665,7 @@ public extension MapSurface {
         borderStyle: BorderStyle(color: Color(hex: 0x2A1A14).opacity(0.85), width: 1.2, dash: nil),
         grain: 0.15,
         maxGlow: 0.45,
-        subtitle: "Плетение холста"
+        subtitle: String(localized: "Плетение холста")
     )
 
 }

@@ -78,37 +78,55 @@ enum VideoExporter {
         writer.startWriting()
         writer.startSession(atSourceTime: .zero)
 
-        defer { input.markAsFinished() }
+        do {
+            for index in 0..<frameCount {
+                // Человек закрыл экран, а мы продолжаем рисовать сто кадров
+                // по три мегапикселя и держать файл открытым. Проверка на
+                // каждом кадре — единственное место, где отмену видно: в
+                // остальном цикл не приостанавливается и отменить его нечем.
+                try Task.checkCancellation()
 
-        for index in 0..<frameCount {
-            guard let image = makeFrame(index) else { throw Failure.frameFailed(index) }
+                guard let image = makeFrame(index) else { throw Failure.frameFailed(index) }
 
-            // Ждём, пока вход освободится. Без ожидания append молча
-            // возвращает false, и видео обрывается на середине.
-            while !input.isReadyForMoreMediaData {
-                try await Task.sleep(nanoseconds: 5_000_000)
+                // Ждём, пока вход освободится. Без ожидания append молча
+                // возвращает false, и видео обрывается на середине.
+                while !input.isReadyForMoreMediaData {
+                    try await Task.sleep(nanoseconds: 5_000_000)
+                }
+
+                guard let pool = adaptor.pixelBufferPool,
+                      let buffer = pixelBuffer(from: image, pool: pool, width: width, height: height)
+                else { throw Failure.frameFailed(index) }
+
+                let time = CMTime(value: CMTimeValue(index), timescale: CMTimeScale(fps))
+                // Ответ `append` читаем, а не выбрасываем: при отказе он
+                // молчит, запись обрывается на середине, и узнаётся это
+                // уже у человека — по видео, которое кончается на полуслове.
+                guard adaptor.append(buffer, withPresentationTime: time) else {
+                    throw Failure.frameFailed(index)
+                }
+
+                onProgress(Double(index + 1) / Double(frameCount))
+                // Отдаём кадр циклу: иначе полоска прогресса стоит на месте,
+                // и человеку кажется, что приложение зависло.
+                await Task.yield()
             }
 
-            guard let pool = adaptor.pixelBufferPool,
-                  let buffer = pixelBuffer(from: image, pool: pool, width: width, height: height)
-            else { throw Failure.frameFailed(index) }
+            input.markAsFinished()
+            await writer.finishWriting()
 
-            let time = CMTime(value: CMTimeValue(index), timescale: CMTimeScale(fps))
-            adaptor.append(buffer, withPresentationTime: time)
-
-            onProgress(Double(index + 1) / Double(frameCount))
-            // Отдаём кадр циклу: иначе полоска прогресса стоит на месте,
-            // и человеку кажется, что приложение зависло.
-            await Task.yield()
+            guard writer.status == .completed else {
+                throw writer.error ?? Failure.writerUnavailable
+            }
+            return url
+        } catch {
+            // Оборванная запись оставляет за собой недописанный файл на
+            // несколько мегабайт и писателя в незакрытом состоянии. Без
+            // уборки каждая отмена копит мусор во временной папке.
+            if writer.status == .writing { writer.cancelWriting() }
+            try? FileManager.default.removeItem(at: url)
+            throw error
         }
-
-        input.markAsFinished()
-        await writer.finishWriting()
-
-        guard writer.status == .completed else {
-            throw writer.error ?? Failure.writerUnavailable
-        }
-        return url
     }
 
     /// Картинка → буфер кадра.

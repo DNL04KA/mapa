@@ -99,7 +99,10 @@ final class Shop: ObservableObject {
                 // но и не успех: придёт в Transaction.updates.
                 failure = NSLocalizedString("Покупка ждёт подтверждения", comment: "")
             @unknown default:
-                break
+                // Молчать нельзя: человек нажал «купить», денег не
+                // списали, платное не открылось — и ни слова о том,
+                // что произошло. Новый исход StoreKit попадёт сюда.
+                failure = NSLocalizedString("Покупка не прошла. Попробуй ещё раз", comment: "")
             }
         } catch {
             failure = error.localizedDescription

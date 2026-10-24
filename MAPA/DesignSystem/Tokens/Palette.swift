@@ -119,6 +119,12 @@ public extension DS {
 
         /// Непрозрачная замена материалу, когда включён Reduce Transparency.
         public static let materialFallback = adaptive(light: .white, dark: Palette.elevated)
+
+        /// Первые три места в топе. Цвет здесь, а не в экране: место —
+        /// понятие приложения, а не частность одного списка.
+        public static let gold   = SwiftUI.Color(hex: 0xE8C45F)
+        public static let silver = SwiftUI.Color(hex: 0xBFC7D4)
+        public static let bronze = SwiftUI.Color(hex: 0xCE8E5A)
     }
 }
 

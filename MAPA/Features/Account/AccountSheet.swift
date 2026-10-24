@@ -198,7 +198,7 @@ struct AccountSheet: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .padding(DS.Space.sm)
@@ -298,7 +298,7 @@ struct AccountSheet: View {
                     .foregroundStyle(DS.Color.ink)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .padding(DS.Space.sm)
@@ -324,7 +324,7 @@ struct AccountSheet: View {
                         .font(DS.Font.caption)
                         .foregroundStyle(DS.Color.inkTertiary)
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: DS.Size.glyph, weight: .bold))
                         .foregroundStyle(DS.Color.inkTertiary)
                 }
                 .padding(DS.Space.sm)
@@ -447,7 +447,7 @@ struct AccountSheet: View {
                     // Маленький карандаш в углу: без него непонятно,
                     // что по кружку вообще можно нажать.
                     Image(systemName: "pencil")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: DS.Size.glyphSm, weight: .bold))
                         .foregroundStyle(DS.Color.inkOnAccent)
                         .padding(5)
                         .background(accent, in: Circle())
@@ -475,7 +475,7 @@ struct AccountSheet: View {
     private func row(_ icon: String, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: DS.Space.xs) {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: DS.Size.glyph, weight: .semibold))
                 .foregroundStyle(accent)
                 .frame(width: 18)
             Text(text)

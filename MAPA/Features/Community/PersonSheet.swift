@@ -137,7 +137,7 @@ struct PersonSheet: View {
             withAnimation(motion.animation(.snap)) { copied = true }
         } label: {
             Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: DS.Size.glyph, weight: .semibold))
                 .foregroundStyle(copied ? DS.Gradient.statusGlowColor(.living) : accent)
                 .frame(width: 30, height: 30)
                 .background(Circle().fill(DS.Color.surfaceSunken.opacity(0.9)))
@@ -208,7 +208,7 @@ struct PersonSheet: View {
                         if let rating = route.rating {
                             HStack(spacing: 2) {
                                 Image(systemName: "star.fill")
-                                    .font(.system(size: 10, weight: .semibold))
+                                    .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                                 Text(String(format: "%.1f", rating))
                                     .font(DS.Font.caption)
                                     .monospacedDigit()

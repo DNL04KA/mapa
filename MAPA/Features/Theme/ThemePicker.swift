@@ -105,11 +105,11 @@ struct ThemePicker: View {
                 VStack(alignment: .leading, spacing: DS.Space.lg) {
                     switch tab {
                     case .surface:
-                        surfaceSection("Открыто", MapSurface.free)
+                        surfaceSection(String(localized: "Открыто"), MapSurface.free)
                         premiumBlock
                         surfaceSection(nil, MapSurface.premium)
                     case .palette:
-                        paletteSection("Открыто", MapPalette.free)
+                        paletteSection(String(localized: "Открыто"), MapPalette.free)
                         premiumBlock
                         paletteSection(nil, MapPalette.premium)
                     }
@@ -435,7 +435,7 @@ struct ThemePicker: View {
                 Text(languageName)
                     .foregroundStyle(DS.Color.inkTertiary)
                 Image(systemName: "arrow.up.forward.app")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: DS.Size.glyphSm, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .font(DS.Font.callout)
