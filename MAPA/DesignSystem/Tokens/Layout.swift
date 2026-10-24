@@ -31,9 +31,26 @@ public extension DS {
     enum Size {
         /// Минимальная зона нажатия по HIG.
         public static let hitTarget: CGFloat = 44
+
+        /// Значки внутри строк: шеврон у заголовка, галочка у пройденной
+        /// точки, звезда у столицы. Шкала отдельная от `icon*` — эти живут
+        /// среди текста и равняются по нему, а не стоят сами по себе.
+        /// Три ступени, а не шесть: разницу в один пункт никто не видит,
+        /// а в коде она превращается в случайные числа.
+        public static let glyphSm: CGFloat = 10
+        public static let glyphMd: CGFloat = 12
+        public static let glyphLg: CGFloat = 14
+
+        /// Самостоятельные значки — в кнопках и на панелях.
         public static let iconSm: CGFloat = 16
         public static let iconMd: CGFloat = 22
         public static let iconLg: CGFloat = 28
+
+        /// Значок пустого экрана и экрана загрузки: единственное, что на нём
+        /// есть, поэтому и размер другого порядка.
+        public static let iconXl: CGFloat = 34
+        public static let iconHero: CGFloat = 44
+
         public static let controlHeight: CGFloat = 52
     }
 }

@@ -25,6 +25,22 @@ public extension DS {
         public static let callout   = SwiftUI.Font.system(size: 14, weight: .regular)
         public static let caption   = SwiftUI.Font.system(size: 13, weight: .medium)
         public static let micro     = SwiftUI.Font.system(size: 11, weight: .semibold)
+        /// Мельче `micro` уже не подпись, а сноска: кредит фотографии,
+        /// надпись на узкой кнопке. Ниже девяти опускаться нельзя.
+        public static let nano      = SwiftUI.Font.system(size: 9,  weight: .regular)
+        /// Подпись под значком вкладки — своя ступень: она стоит под иконкой
+        /// и меряется по ней, а не по тексту рядом.
+        public static let tab       = SwiftUI.Font.system(size: 10, weight: .medium)
+
+        // Особые случаи — по одному на приложение.
+
+        /// Номер точки в кружке: цифра должна быть плотной и круглой.
+        public static let badge     = SwiftUI.Font.system(size: 12, weight: .bold,  design: .rounded)
+        /// Имя приложения в шапке настроек.
+        public static let brand     = SwiftUI.Font.system(size: 22, weight: .heavy, design: .rounded)
+        /// Название страны в карточке — крупнее `display`, потому что это
+        /// заголовок экрана, а не число в панели.
+        public static let titleHero = SwiftUI.Font.system(size: 40, weight: .bold)
 
         /// Разрядка для мелких заглавных подписей («КОНТИНЕНТЫ»).
         public static let overlineTracking: CGFloat = 1.4

@@ -328,7 +328,7 @@ struct ThemePicker: View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
             HStack(spacing: DS.Space.xs) {
                 Text("MAPA+")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .font(DS.Font.brand)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.white, DS.Palette.indigoSoft],
@@ -396,7 +396,7 @@ struct ThemePicker: View {
                 Text(languageName)
                     .foregroundStyle(DS.Color.inkTertiary)
                 Image(systemName: "arrow.up.forward.app")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .font(DS.Font.callout)

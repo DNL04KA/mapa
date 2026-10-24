@@ -166,7 +166,7 @@ struct AccountSheet: View {
                     // Маленький карандаш в углу: без него непонятно,
                     // что по кружку вообще можно нажать.
                     Image(systemName: "pencil")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: DS.Size.glyphSm, weight: .bold))
                         .foregroundStyle(DS.Color.inkOnAccent)
                         .padding(5)
                         .background(accent, in: Circle())
@@ -194,7 +194,7 @@ struct AccountSheet: View {
     private func row(_ icon: String, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: DS.Space.xs) {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: DS.Size.glyphMd, weight: .semibold))
                 .foregroundStyle(accent)
                 .frame(width: 18)
             Text(text)

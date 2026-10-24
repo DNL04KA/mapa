@@ -553,9 +553,9 @@ struct WorldMapView: View {
         } label: {
             VStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.system(size: DS.Size.iconSm, weight: .medium))
                 Text(title)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(DS.Font.tab)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -594,7 +594,7 @@ struct WorldMapView: View {
                     // Подпись обязательна: без неё карточка не объясняет,
                     // зачем она на экране.
                     Text("ПРОДОЛЖИТЬ")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(DS.Font.nano.weight(.semibold))
                         .tracking(1.4)
                         .foregroundStyle(activeTheme.accent)
 
@@ -612,7 +612,7 @@ struct WorldMapView: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
                     .foregroundStyle(activeTheme.mapInk.opacity(0.4))
             }
             .padding(DS.Space.xs)
@@ -703,7 +703,7 @@ struct MapControlButton: View {
             Image(systemName: icon)
                 // На бумаге значки мельче и тише: крупные жирные символы
                 // над светлой картой выглядят как наклейки.
-                .font(.system(size: theme.isLight ? 18 : DS.Size.iconMd,
+                .font(.system(size: theme.isLight ? DS.Size.iconSm : DS.Size.iconMd,
                               weight: theme.isLight ? .medium : .semibold))
                 .foregroundStyle(isActive ? tint : theme.mapInk.opacity(theme.isLight ? 0.72 : 1))
                 .dsMapText()
@@ -753,7 +753,7 @@ struct MapLoadingView: View {
     var body: some View {
         VStack(spacing: DS.Space.md) {
             Image(systemName: "globe.europe.africa")
-                .font(.system(size: 44, weight: .thin))
+                .font(.system(size: DS.Size.iconHero, weight: .thin))
                 .foregroundStyle(DS.Gradient.accent)
                 .opacity(isPulsing ? 1 : 0.35)
                 .scaleEffect(isPulsing ? 1 : 0.94)
@@ -781,7 +781,7 @@ struct MapErrorView: View {
     var body: some View {
         VStack(spacing: DS.Space.md) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 34, weight: .light))
+                .font(.system(size: DS.Size.iconXl, weight: .light))
                 .foregroundStyle(DS.Color.danger)
 
             Text("Карта не открылась")

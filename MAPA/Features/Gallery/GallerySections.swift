@@ -316,7 +316,7 @@ struct MotionSection: View {
                 }
                 Spacer()
                 Image(systemName: "play.fill")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
             }
             .frame(minHeight: DS.Size.hitTarget)

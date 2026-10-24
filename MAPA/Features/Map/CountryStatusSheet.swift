@@ -117,7 +117,7 @@ struct CountryStatusSheet: View {
             HStack(spacing: DS.Space.xxs) {
                 Text("Подробнее о стране")
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
             }
             .font(DS.Font.callout)
             .foregroundStyle(DS.Color.accentSoft)

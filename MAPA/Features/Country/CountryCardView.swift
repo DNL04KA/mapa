@@ -140,7 +140,7 @@ struct CountryCardView: View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .center, spacing: DS.Space.xs) {
                 Text(country.displayName)
-                    .font(.system(size: 40, weight: .bold))
+                    .font(DS.Font.titleHero)
                     .foregroundStyle(DS.Color.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.5)
@@ -238,7 +238,7 @@ struct CountryCardView: View {
                                 HStack(spacing: DS.Space.xxs) {
                                     if city.isCapital {
                                         Image(systemName: "star.fill")
-                                            .font(.system(size: 9, weight: .semibold))
+                                            .font(.system(size: DS.Size.glyphSm, weight: .semibold))
                                             .foregroundStyle(tint)
                                     }
                                     Text(city.displayName)
@@ -265,7 +265,7 @@ struct CountryCardView: View {
                                 .monospacedDigit()
 
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: DS.Size.glyphMd, weight: .bold))
                                 .foregroundStyle(DS.Color.inkTertiary)
                         }
                         .frame(height: 60)
@@ -296,7 +296,7 @@ struct CountryCardView: View {
                 RemoteImage(url: cover.small)
             } else {
                 Image(systemName: city.isCapital ? "star.fill" : "mappin")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .semibold))
                     .foregroundStyle(city.isCapital ? tint : DS.Color.inkTertiary)
             }
         }
@@ -339,7 +339,7 @@ struct CountryCardView: View {
 
                             if let credit = place.credit {
                                 Text(credit)
-                                    .font(.system(size: 9))
+                                    .font(DS.Font.nano)
                                     .foregroundStyle(DS.Color.inkTertiary)
                                     .lineLimit(2)
                                     .fixedSize(horizontal: false, vertical: true)

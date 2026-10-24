@@ -137,7 +137,7 @@ struct RoutePanel: View {
                 }
 
                 Image(systemName: "chevron.up")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
                     .foregroundStyle(DS.Color.inkTertiary)
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
             }
@@ -300,7 +300,7 @@ struct RoutePanel: View {
 
                 if point.isVisited {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: DS.Size.glyphSm, weight: .bold))
                         .foregroundStyle(DS.Color.inkOnAccent)
                 } else {
                     Text("\(index + 1)")
@@ -380,7 +380,7 @@ struct RoutePanel: View {
 
     private var plusBadge: some View {
         Image(systemName: "plus")
-            .font(.system(size: 9, weight: .bold))
+            .font(.system(size: DS.Size.glyphSm, weight: .bold))
             .foregroundStyle(.white)
             .padding(4)
             .background(DS.Palette.void.opacity(0.55), in: Circle())
@@ -413,7 +413,7 @@ struct RoutePanel: View {
             action()
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: DS.Size.glyphSm, weight: .bold))
                 .foregroundStyle(enabled ? accent : DS.Color.inkTertiary.opacity(0.4))
                 .frame(width: 24, height: 24)
                 .background {

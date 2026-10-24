@@ -49,14 +49,25 @@ git log --format= --name-only -- '*.swift' | grep -v '^$' | sort | uniq -c | sor
 
 ### 3. Что меняется вместе
 
+Считать надо **по парам**, а не по точным наборам файлов: на сотне коммитов
+каждый набор уникален, и группировка по ним не находит ничего.
+
 ```bash
 git log --format='%H' | while read c; do
-  git show --format= --name-only "$c" -- '*.swift' | grep -v '^$' | sort | paste -sd'|'
-done | sort | uniq -c | sort -rn | head -15
+  files=$(git show --format= --name-only "$c" -- 'MAPA' | grep '\.swift$' | sort)
+  echo "$files" | awk 'NF' | while read a; do
+    echo "$files" | awk 'NF' | while read b; do
+      [ "$a" \< "$b" ] && echo "$a + $b"
+    done
+  done
+done | sed 's|MAPA/||g' | sort | uniq -c | sort -rn | head -10
 ```
 
 Пара файлов, попадающая в один коммит снова и снова, — это один модуль,
 разрезанный не по той границе. Это самая ценная находка.
+
+Файл, который стоит в паре с пятью разными, — не модуль, а хаб: через него
+проходит всё, и поэтому его правят при любой задаче.
 
 ### 4. Прочитай сами коммиты
 

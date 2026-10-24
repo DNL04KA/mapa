@@ -89,7 +89,7 @@ struct WorldStatsPanel: View {
                 Spacer(minLength: 0)
 
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.system(size: DS.Size.glyphMd, weight: .bold))
                     .foregroundStyle(theme.mapInk.opacity(0.7))
                     .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     .animation(motion.animation(.snap), value: isExpanded)
@@ -122,7 +122,7 @@ struct WorldStatsPanel: View {
     private var percent: some View {
         VStack(alignment: .leading, spacing: theme.isLight ? 0 : -6) {
             Text("Мир открыт на")
-                .font(.system(size: theme.isLight ? 10 : 11, weight: .semibold))
+                .font(theme.isLight ? DS.Font.tab.weight(.semibold) : DS.Font.micro)
                 .tracking(theme.isLight ? 2.2 : DS.Font.overlineTracking)
                 .textCase(.uppercase)
                 .foregroundStyle(theme.mapInk.opacity(theme.isLight ? 0.45 : 0.5))
