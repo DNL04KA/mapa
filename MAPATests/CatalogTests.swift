@@ -47,6 +47,38 @@ final class CatalogTests: XCTestCase {
         XCTAssertGreaterThan(checked, 300, "каталог мест почти пуст")
     }
 
+    /// Место стоит в том городе, которому приписано.
+    ///
+    /// Запрос в Викиданные идёт кругом вокруг точки города, и у спутника
+    /// в круг попадает весь сосед: Кавасаки показывал Токийскую башню,
+    /// Нитерой — статую Христа, Шарджа — Дубайскую рамку. Человек такое
+    /// проверит только на месте, поэтому проверяем здесь.
+    ///
+    /// Правило то же, что в сборщике: место уходит городу, который и
+    /// ближе, и не меньше. Одного «ближе» мало — точка Ховры стоит на
+    /// другом берегу в двух километрах от Форта Уильям, и Калькутта
+    /// осталась бы без своих музеев.
+    func testМестаНеЗаимствованыУБольшогоСоседа() throws {
+        let cities = try CityLoader.loadFromBundle()
+
+        for city in cities {
+            for place in CityFacts.landmarks(for: city.id) {
+                guard let spot = place.coordinate else { continue }
+                let own = city.distance(to: spot)
+
+                let thief = cities.first { other in
+                    other.id != city.id
+                        && other.population >= city.population
+                        && abs(other.coordinate.latitude - spot.latitude) <= 1.5
+                        && abs(other.coordinate.longitude - spot.longitude) <= 1.8
+                        && other.distance(to: spot) < own
+                }
+                XCTAssertNil(thief, "«\(place.ru)» ближе к «\(thief?.nameRU ?? "")», "
+                                    + "а приписано городу \(city.nameRU)")
+            }
+        }
+    }
+
     func testСсылкиНаФотографииБезопасны() throws {
         let cities = try CityLoader.loadFromBundle()
         for city in cities {

@@ -66,6 +66,33 @@ def is_neighbour_city(item, cities_by_name):
     return distance_km((item["lon"], item["lat"]), (twin["lon"], twin["lat"])) < 5
 
 
+def belongs_to_bigger_neighbour(item, city, cities):
+    """Место стоит в соседнем городе, который больше этого.
+
+    Запрос идёт кругом вокруг точки города, и у спутника в круг попадает
+    весь сосед: Кавасаки получал Токийскую башню, Нитерой — статую
+    Христа, Шарджа — Дубайскую рамку. Человеку это врёт прямым текстом,
+    а проверить он сможет только на месте.
+
+    Правило: место уходит городу, который и ближе, и не меньше. Только
+    «ближе» — мало: точка Ховры стоит на другом берегу в двух километрах
+    от Форта Уильям, и Калькутта осталась бы без собственных музеев.
+    """
+    if item.get("lat") is None:
+        return False
+    own = distance_km((item["lon"], item["lat"]), (city["lon"], city["lat"]))
+    for other in cities:
+        if other["id"] == city["id"] or other["population"] < city["population"]:
+            continue
+        # Грубая отсечка по градусам до тяжёлой формулы: городов восемьсот,
+        # а интересны только соседние.
+        if abs(other["lat"] - item["lat"]) > 1.5 or abs(other["lon"] - item["lon"]) > 1.8:
+            continue
+        if distance_km((item["lon"], item["lat"]), (other["lon"], other["lat"])) < own:
+            return True
+    return False
+
+
 def deduplicate(items, city_root):
     """Убирает повторы одного объекта.
 
@@ -129,6 +156,10 @@ def main():
         limit = int(sys.argv[sys.argv.index("--limit") + 1])
 
     cities = json.loads(CITIES.read_text(encoding="utf-8"))["cities"]
+    # Соседей ищем среди всех городов, даже когда собираем только часть:
+    # иначе с `--limit` у спутника не окажется соседа, и он снова заберёт
+    # себе чужие места.
+    everyone = list(cities)
     # Сначала столицы и крупные: если прогон прервётся, важное уже собрано.
     cities.sort(key=lambda c: -(c["population"] * (4 if c["capital"] else 1)))
     if limit:
@@ -157,6 +188,8 @@ def main():
             if not item or item["ru"] in seen:
                 continue
             if is_neighbour_city(item, cities_by_name):
+                continue
+            if belongs_to_bigger_neighbour(item, city, everyone):
                 continue
             seen.add(item["ru"])
             items.append(item)
