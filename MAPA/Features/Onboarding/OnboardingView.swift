@@ -60,9 +60,14 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
+            // Плотное затемнение, а не обычное: первый запуск — это не
+            // панель поверх карты, а единственное, что сейчас нужно.
+            // Карта за ним остаётся видимой ровно настолько, чтобы было
+            // понятно, куда человек попал.
             Rectangle()
-                .fill(DS.Color.scrim)
+                .fill(DS.Color.scrimOpaque)
                 .ignoresSafeArea()
+                .contentShape(Rectangle())
                 .accessibilityHidden(true)
 
             card
@@ -96,7 +101,7 @@ struct OnboardingView: View {
     private var hello: some View {
         VStack(spacing: DS.Space.md) {
             Image(systemName: "globe.europe.africa.fill")
-                .font(.system(size: 44, weight: .regular))
+                .font(DS.Font.glyphHero)
                 .foregroundStyle(accent)
                 .padding(.top, DS.Space.xs)
 

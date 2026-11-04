@@ -28,6 +28,10 @@ struct AccountSheet: View {
     /// Открыть список стран. Снять отметку иначе можно было, только найдя
     /// страну на карте, — а именно её человек обычно и не может найти.
     let onEditMarks: () -> Void
+    /// Открыть панель оформления. Из главной панели внизу выбор палитры
+    /// убран — это настройка, а не место, — но прятать его на три
+    /// касания вглубь тоже нельзя: полотнами и цветами люди играют.
+    let onOpenAppearance: () -> Void
 
     @State private var draftName: String = ""
     @State private var isEditingName = false
@@ -154,6 +158,7 @@ struct AccountSheet: View {
                 countrySection("Хочу", wishlist, status: .wishlist)
                 marksRow
                 routesRow
+                appearanceRow
             }
 
             Group {
@@ -284,6 +289,27 @@ struct AccountSheet: View {
                 .padding(.horizontal, -DS.Space.screen)
             }
         }
+    }
+
+    private var appearanceRow: some View {
+        Button(action: onOpenAppearance) {
+            HStack(spacing: DS.Space.sm) {
+                Image(systemName: "paintpalette")
+                    .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                    .foregroundStyle(accent)
+                Text("Оформление")
+                    .font(DS.Font.body)
+                    .foregroundStyle(DS.Color.ink)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: DS.Size.glyph, weight: .bold))
+                    .foregroundStyle(DS.Color.inkTertiary)
+            }
+            .padding(DS.Space.sm)
+            .dsGlass(radius: DS.Radius.md, shadow: .low)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var marksRow: some View {

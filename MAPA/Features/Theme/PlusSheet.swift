@@ -66,7 +66,7 @@ struct PlusSheet: View {
                 .frame(width: 38, height: 4)
 
             Text("MAPA+")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(DS.Font.brand)
                 .foregroundStyle(DS.Gradient.accent)
 
             Text("Пятнадцать полотен, где меняется не цвет, а материал карты, и восемь палитр к ним.")

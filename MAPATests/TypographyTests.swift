@@ -30,11 +30,33 @@ final class TypographyTests: XCTestCase {
 
     func testПотолокРостаСоблюдается() {
         for style in [DS.Font.hero, DS.Font.display, DS.Font.numeral,
-                      DS.Font.title, DS.Font.body, DS.Font.caption, DS.Font.micro] {
+                      DS.Font.title, DS.Font.body, DS.Font.caption, DS.Font.micro,
+                      DS.Font.credit, DS.Font.glyphTab, DS.Font.glyphNotice,
+                      DS.Font.glyphHero, DS.Font.brand, DS.Font.brandSmall] {
             let biggest = style.size(for: .accessibility5)
             XCTAssertLessThanOrEqual(biggest, style.size * style.cap + 0.01,
                                      "ступень \(style.size) перерастает свой потолок")
         }
+    }
+
+    func testНасыщенностьМеняетсяБезПотериШкалы() {
+        // Тонкий глобус на экране загрузки — та же ступень, что и обычный
+        // в приветствии. Если бы `weight` терял потолок или текстовый
+        // стиль, два одинаковых значка росли бы по-разному.
+        let base = DS.Font.glyphHero
+        let thin = base.weight(.thin)
+
+        XCTAssertEqual(thin.size, base.size)
+        XCTAssertEqual(thin.cap, base.cap)
+        XCTAssertEqual(thin.textStyle, base.textStyle)
+        XCTAssertEqual(thin.size(for: .accessibility5), base.size(for: .accessibility5))
+    }
+
+    func testПодписьКФотографииРастётДоКонца() {
+        // Самый мелкий текст в приложении — и единственный, которому
+        // потолок роста противопоказан.
+        let credit = DS.Font.credit
+        XCTAssertGreaterThan(credit.size(for: .accessibility5), credit.size * 1.8)
     }
 
     func testРазмерНеУменьшаетсяСРостомНастройки() {

@@ -26,6 +26,20 @@ public extension DS {
         public static let callout   = FontStyle(14, .regular,  .default, .callout)
         public static let caption   = FontStyle(13, .medium,   .default, .caption1)
         public static let micro     = FontStyle(11, .semibold, .default, .caption2)
+        /// Авторство фотографии. Мельче всего в приложении — и растёт без
+        /// потолка: подпись «кто снял» и так на пределе читаемости, и
+        /// человеку с крупным шрифтом она нужна крупной.
+        public static let credit    = FontStyle(10, .regular,  .default, .caption2)
+
+        // Значки и знак приложения. Раньше эти размеры стояли числами
+        // прямо в экранах, и значок в панели не рос вместе с подписью под
+        // ним: человек с крупным шрифтом получал мелкую иконку и большое
+        // слово. Кегль у значка свой — он рисуется, а не читается.
+        public static let glyphTab    = FontStyle(17, .medium,  .default, .body,       cap: 1.3)
+        public static let glyphNotice = FontStyle(34, .light,   .default, .title1,     cap: 1.3)
+        public static let glyphHero   = FontStyle(44, .regular, .default, .largeTitle, cap: 1.2)
+        public static let brand       = FontStyle(34, .heavy,   .rounded, .largeTitle, cap: 1.4)
+        public static let brandSmall  = FontStyle(22, .heavy,   .rounded, .title2,     cap: 1.5)
 
         /// Разрядка для мелких заглавных подписей («КОНТИНЕНТЫ»).
         public static let overlineTracking: CGFloat = 1.4
@@ -72,6 +86,15 @@ public extension DS {
             let scaled = UIFontMetrics(forTextStyle: textStyle)
                 .scaledValue(for: size, compatibleWith: traits)
             return min(scaled, size * cap)
+        }
+
+        /// Та же ступень другой насыщенности.
+        ///
+        /// Нужна редко и по делу: глобус на экране загрузки тоньше, чем тот
+        /// же глобус в приветствии, — но размер и правила роста у них одни,
+        /// и разводить ради насыщенности две ступени шкалы незачем.
+        public func weight(_ weight: SwiftUI.Font.Weight) -> FontStyle {
+            FontStyle(size, weight, design, textStyle, cap: cap)
         }
 
         public func font(for typeSize: DynamicTypeSize) -> SwiftUI.Font {

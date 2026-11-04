@@ -121,7 +121,7 @@ struct CountryRouteSection: View {
 
                 if let credit = stop.photo?.credit {
                     Text(credit)
-                        .font(.system(size: DS.Size.glyphSm))
+                        .font(DS.Font.credit)
                         .foregroundStyle(DS.Color.inkTertiary.opacity(0.8))
                         .lineLimit(1)
                 }

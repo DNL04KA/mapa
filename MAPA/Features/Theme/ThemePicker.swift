@@ -357,7 +357,7 @@ struct ThemePicker: View {
         VStack(alignment: .leading, spacing: DS.Space.sm) {
             HStack(spacing: DS.Space.xs) {
                 Text("MAPA+")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .font(DS.Font.brandSmall)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.white, DS.Palette.indigoSoft],
@@ -454,7 +454,14 @@ struct ThemePicker: View {
             ?? code.uppercased()
     }
 
+    /// Витрина дизайн-системы — инструмент разработки.
+    ///
+    /// В сборке для магазина её нет: человеку, выбирающему цвет карты,
+    /// список токенов и пресетов движения не объясняет ничего, а место
+    /// под кнопкой занимает и вопросы вызывает.
+    @ViewBuilder
     private var footer: some View {
+        #if DEBUG
         Button(action: onOpenGallery) {
             HStack(spacing: DS.Space.xs) {
                 Image(systemName: "paintpalette")
@@ -468,6 +475,7 @@ struct ThemePicker: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        #endif
     }
 
     private var dismissDrag: some Gesture {

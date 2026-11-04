@@ -24,6 +24,9 @@ struct CountryCardView: View {
 
     @State private var dragOffset: CGFloat = 0
     @State private var preview: Landmark?
+    /// Обложка не дошла. Тогда подпись к ней не нужна: имя снимка и автор
+    /// без самого снимка — подпись к пустому месту.
+    @State private var coverMissing = false
 
     private var facts: CountryFacts? { CountryFacts.facts(for: country.id) }
     private var routeStops: [CountryRoutePlanner.Stop] {
@@ -134,10 +137,15 @@ struct CountryCardView: View {
         Rectangle()
             .fill(tint.opacity(0.16))
             .frame(width: size.width, height: size.height)
-            .overlay { RemoteImage(url: cover.large ?? cover.small) }
+            .overlay {
+                RemoteImage(url: cover.large ?? cover.small) { loaded in
+                    coverMissing = !loaded
+                }
+            }
             .clipped()
             .contentShape(Rectangle())
             .onTapGesture {
+                guard !coverMissing else { return }
                 Haptics.shared.tap(.light)
                 withAnimation(motion.animation(.smooth)) { preview = cover }
             }
@@ -160,16 +168,18 @@ struct CountryCardView: View {
             CountryHeroArt(country: country, status: status, accent: theme.accent)
                 .frame(width: 54, height: 38)
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text(cover.name)
-                    .font(DS.Font.caption)
-                    .foregroundStyle(DS.Color.ink)
-                    .lineLimit(1)
-                if let credit = cover.credit {
-                    Text(credit)
-                        .font(.system(size: DS.Size.glyphSm))
-                        .foregroundStyle(DS.Color.inkTertiary)
+            if !coverMissing {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(cover.name)
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.ink)
                         .lineLimit(1)
+                    if let credit = cover.credit {
+                        Text(credit)
+                            .font(DS.Font.credit)
+                            .foregroundStyle(DS.Color.inkTertiary)
+                            .lineLimit(1)
+                    }
                 }
             }
 
@@ -491,7 +501,7 @@ struct CountryCardView: View {
 
                             if let credit = place.credit {
                                 Text(credit)
-                                    .font(.system(size: DS.Size.glyphSm))
+                                    .font(DS.Font.credit)
                                     .foregroundStyle(DS.Color.inkTertiary)
                                     .lineLimit(2)
                                     .fixedSize(horizontal: false, vertical: true)

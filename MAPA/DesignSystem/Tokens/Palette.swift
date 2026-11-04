@@ -107,6 +107,16 @@ public extension DS {
         public static let scrim        = adaptive(light: .black.opacity(0.18),
                                                   dark:  Palette.void.opacity(0.45))
 
+        /// Затемнение для экранов, которые забирают себе весь первый план.
+        ///
+        /// Обычного `scrim` хватает панели снизу: под ней карта и должна
+        /// оставаться видимой — человек её не бросал. Первому запуску он
+        /// слабоват: сквозь него читались и подсказка «коснись страны», и
+        /// вторая акцентная кнопка, и нижняя панель. Две главные кнопки
+        /// разного действия на одном экране — это не выбор, это растерянность.
+        public static let scrimOpaque  = adaptive(light: .black.opacity(0.46),
+                                                  dark:  Palette.void.opacity(0.86))
+
         // Акцент
         public static let accent       = Palette.indigo
         public static let accentSoft   = Palette.indigoSoft

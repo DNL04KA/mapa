@@ -233,7 +233,10 @@ struct CitySheet: View {
 
             if let distance = distanceFromHome {
                 fact(value: distance, caption: "от дома", icon: "arrow.triangle.swap")
-            } else {
+            } else if city.name != city.displayName {
+                // Как город подписан на карте — но только если подпись
+                // отличается от заголовка. На английском телефоне «Kyoto»
+                // под заголовком «Kyoto» ничего не сообщает.
                 fact(value: city.name, caption: "на карте", icon: "textformat")
             }
         }
