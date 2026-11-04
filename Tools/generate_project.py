@@ -320,6 +320,13 @@ def write_scheme(with_tests: bool):
 
 
 def generate():
+    # Язык проекта по умолчанию — английский (`developmentRegion` в шаблоне).
+    #
+    # Он отвечает не за язык кода, а за то, что увидит телефон, языка
+    # которого у нас нет. С `ru` француз, немец и японец получали русский
+    # интерфейс — для приложения про путешествия это худший из возможных
+    # ответов. Русский при этом остаётся полноценным переводом, а не
+    # запасным вариантом.
     tree = scan(SRC_ROOT, APP)
     sources, resources = [], []
     collect(tree, sources, resources)
@@ -494,7 +501,7 @@ def generate():
 			}};
 			buildConfigurationList = {project_cfg_list} /* Build configuration list for PBXProject "{app}" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = ru;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
