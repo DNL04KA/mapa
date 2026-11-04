@@ -218,7 +218,7 @@ LIMIT 60
 """)
 
 
-def inside_box(west, south, east, north, min_links=12, limit=60):
+def inside_box(west, south, east, north, min_links=12, limit=60, require_russian=True):
     """Известные объекты внутри прямоугольника — запрос по стране целиком.
 
     Нужен там, где смотреть едут не в город. У Танзании в списке «что
@@ -229,7 +229,14 @@ def inside_box(west, south, east, north, min_links=12, limit=60):
 
     Координаты возвращаются вместе с записью: прямоугольник страны задевает
     соседей, и попадание в сам контур проверяет уже вызывающий.
+
+    `require_russian` снимается только для стран, где после обычного отбора
+    не осталось ничего: у национального парка Мозамбика русской подписи в
+    Викиданных нет, и требование её отсекало страну целиком. Английское
+    название честнее пустой карточки — так его и пишут в путеводителях.
     """
+    russian = ('?item rdfs:label ?ru . FILTER(LANG(?ru) = "ru")' if require_russian
+               else 'OPTIONAL {{ ?item rdfs:label ?ru . FILTER(LANG(?ru) = "ru") }}')
     return sparql(f"""
 SELECT ?item ?ru ?en ?img ?links ?loc (GROUP_CONCAT(DISTINCT ?class; separator=" ") AS ?classes)
        (GROUP_CONCAT(DISTINCT ?heritage; separator=" ") AS ?heritages) WHERE {{
@@ -241,7 +248,7 @@ SELECT ?item ?ru ?en ?img ?links ?loc (GROUP_CONCAT(DISTINCT ?class; separator="
   ?item wikibase:sitelinks ?links .
   FILTER(?links > {min_links})
   ?item wdt:P31 ?class .
-  ?item rdfs:label ?ru . FILTER(LANG(?ru) = "ru")
+  {russian}
   ?item rdfs:label ?en . FILTER(LANG(?en) = "en")
   OPTIONAL {{ ?item wdt:P18 ?img }}
   OPTIONAL {{ ?item wdt:P1435 ?heritage }}

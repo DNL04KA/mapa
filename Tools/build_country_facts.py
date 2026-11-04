@@ -133,6 +133,43 @@ def main():
         if index % 10 == 0:
             print(f"  {index}/{len(empty)}", flush=True)
 
+    # Третий проход — там, где и границы ничего не дали.
+    #
+    # Шесть стран оставались с пустой карточкой: Мозамбик, Гвинея-Бисау,
+    # Эсватини, Тринидад, Багамы, Западная Сахара. Причина не в отборе, а
+    # в запросе — он требовал русскую подпись и больше двенадцати
+    # языковых ссылок. У национального парка Горонгоза русского названия
+    # в Викиданных нет, и страна отсекалась целиком.
+    #
+    # Поэтому для оставшихся пустыми порог ниже, а название берётся
+    # английское, если русского нет. Для стран, где и так всё нашлось,
+    # ничего не меняется: послабление их не касается.
+    still = [f for f in features if f["properties"]["id"] not in found]
+    if still:
+        print(f"стран без мест после границ: {len(still)} — спрашиваем мягче",
+              flush=True)
+    for feature in still:
+        cid = feature["properties"]["id"]
+        outline = rings(feature["geometry"])
+        if not outline:
+            continue
+        west, south, east, north = bounds(outline)
+        data = wd.inside_box(west, south, east, north,
+                             min_links=4, limit=120, require_russian=False)
+        if data is None:
+            continue
+        for row in data.get("results", {}).get("bindings", []):
+            point = wd.coordinate(row)
+            if not point or not contains(outline, point[0], point[1]):
+                continue
+            if "ru" not in row:
+                row = dict(row)
+                row["ru"] = {"value": row["en"]["value"]}
+            item = wd.accept(row, include, exclude, strong, skip_names=skip,
+                             always=wd.is_world_heritage(row))
+            if item:
+                found.setdefault(cid, {}).setdefault(item["ru"], item)
+
     raw = {}
     for country, items in found.items():
         best = sorted(items.values(), key=lambda i: -i["links"])[:PER_COUNTRY]
