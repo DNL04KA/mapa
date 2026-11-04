@@ -191,6 +191,46 @@ final class WorldMapViewModel: ObservableObject {
         for id in wishlist { travelLog.set(.wishlist, for: String(id)) }
         persist()
     }
+
+    /// Собрать маршруты по кодам стран: `MAPA_ROUTES=JPN,ITA`.
+    ///
+    /// Пустой экран маршрутов честен, но показывать в магазине нечего, а
+    /// составить маршрут пальцем на симуляторе нечем. Маршрут берётся тот
+    /// самый, что предложит человеку планировщик, — никаких выдуманных
+    /// городов. Повторный запуск ничего не удваивает.
+    ///
+    /// `MAPA_ROUTE_START=2026-03-14` назначает маршрутам день выезда:
+    /// у маршрута с датами и у наброска разный вид, и снять надо оба.
+    private func seedRoutesFromEnvironment() {
+        let ids = ProcessInfo.processInfo.environment["MAPA_ROUTES"]?.split(separator: ",") ?? []
+        guard !ids.isEmpty, let geometry else { return }
+
+        let start = ProcessInfo.processInfo.environment["MAPA_ROUTE_START"].flatMap { value -> Date? in
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.date(from: value)
+        }
+
+        var added = false
+        for id in ids.reversed() {
+            let code = String(id)
+            guard !routes.contains(where: { $0.points.first?.countryID == code }),
+                  let country = geometry.country(id: code) else { continue }
+            let stops = CountryRoutePlanner.suggest(for: cities(of: country))
+            guard stops.count > 1 else { continue }
+            var route = CountryRoutePlanner.route(
+                title: country.displayName,
+                countryID: country.id,
+                countryName: country.displayName,
+                stops: stops
+            )
+            route.startDate = start
+            routes.insert(route, at: 0)
+            added = true
+        }
+        if added { persistRoutes() }
+    }
     #endif
 
     // MARK: - Загрузка
@@ -216,6 +256,7 @@ final class WorldMapViewModel: ObservableObject {
 
             #if DEBUG
             seedMarksFromEnvironment()
+            seedRoutesFromEnvironment()
             #endif
 
             rebuildMarked(excluding: nil)
@@ -707,6 +748,36 @@ final class WorldMapViewModel: ObservableObject {
             editingRoute = route
         }
         rebuildRouteLine()
+        frameRoute(route, reduceMotion: reduceMotion)
+    }
+
+    /// Подвести камеру к маршруту.
+    ///
+    /// Без этого открытый маршрут остаётся там, где камеру бросили: берёшь
+    /// из списка японский, а на экране по-прежнему Европа, и кажется, что
+    /// маршрут пустой. Рамка строится по точкам, а не по стране: маршрут
+    /// бывает и из двух соседних стран.
+    private func frameRoute(_ route: Route, reduceMotion: Bool) {
+        let points = route.points.map(\.unitPoint)
+        guard let first = points.first, viewport.width > 0 else { return }
+
+        var box = CGRect(origin: first, size: .zero)
+        for point in points.dropFirst() {
+            box = box.union(CGRect(origin: point, size: .zero))
+        }
+
+        // Рамка из одной точки — и из двух городов на одной широте — имеет
+        // нулевую сторону, а по нулю кадр не считается. Раздуваем до градуса
+        // с небольшим: этого хватает, чтобы точка оказалась в середине.
+        let minSpan: CGFloat = 0.004
+        if box.width < minSpan { box = box.insetBy(dx: -(minSpan - box.width) / 2, dy: 0) }
+        if box.height < minSpan { box = box.insetBy(dx: 0, dy: -(minSpan - box.height) / 2) }
+
+        // Своего потолка здесь не надо: ближе `MapCamera.maxZoom` камера не
+        // подойдёт в любом случае, а маршрут из двух соседних городов должен
+        // быть виден как маршрут, а не как точка.
+        let target = camera.fitting(box, in: viewport, padding: 0.34)
+        move(to: target.clamped(in: viewport), reduceMotion: reduceMotion)
     }
 
     /// Наброски по странам, которые человек отметил.
@@ -805,6 +876,18 @@ final class WorldMapViewModel: ObservableObject {
         route.points[index] = point
         editingRoute = route
         rebuildRouteLine()
+    }
+
+    /// Назначить или убрать день выезда.
+    ///
+    /// Остальные даты из него считаются, хранить их незачем: поменял
+    /// длительность одной остановки — поехали все следующие, и две копии
+    /// правды разошлись бы в первый же вечер.
+    func setStartDate(_ date: Date?) {
+        guard var route = editingRoute else { return }
+        route.startDate = date
+        editingRoute = route
+        syncOpenRoute()
     }
 
     /// Закрыть маршрут. Пустой и одиночный не сохраняем: маршрут из одной точки —

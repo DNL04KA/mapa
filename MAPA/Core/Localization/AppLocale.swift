@@ -12,6 +12,21 @@ enum AppLocale {
     static var isRussian: Bool {
         (Bundle.main.preferredLocalizations.first ?? "ru").hasPrefix("ru")
     }
+
+    /// Язык приложения плюс регион телефона.
+    ///
+    /// Нужна датам: подпись «14 мар» должна быть на языке, на котором
+    /// говорит приложение, а порядок дня и месяца — тот, к которому человек
+    /// привык у себя. Если взять просто `Locale.current`, у француза с
+    /// английским приложением даты станут французскими; если взять голый
+    /// язык — американскими, с месяцем впереди.
+    static var current: Locale {
+        let language = Bundle.main.preferredLocalizations.first ?? "ru"
+        guard let region = Locale.current.region?.identifier else {
+            return Locale(identifier: language)
+        }
+        return Locale(identifier: "\(language)_\(region)")
+    }
 }
 
 public extension Country {

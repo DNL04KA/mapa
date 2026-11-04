@@ -23,6 +23,7 @@
 "Архитектура" = "Architecture";
 "Атлас" = "Atlas";
 "Африка" = "Africa";
+"Без дат" = "No dates yet";
 "Был" = "Been";
 "В бандле нет файла %@" = "File %@ is missing from the bundle";
 "В бандле нет файла cities.json" = "cities.json is missing from the bundle";
@@ -49,6 +50,7 @@
 "Выбор" = "Selection";
 "Выбрать своё фото" = "Choose your own photo";
 "Вывеска в ночном городе" = "A sign in a night city";
+"Выезд" = "Departure";
 "Выйти" = "Sign out";
 "Выцветшая типографская краска" = "Faded printing ink";
 "Где ты был" = "Where you have been";
@@ -159,6 +161,8 @@
 "На симуляторе не ощущается — нужен телефон" = "Cannot be felt in the simulator — you need a phone";
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
+"Назначить" = "Set dates";
+"Назначить даты маршрута" = "Set the route dates";
 "Найти страну или город" = "Find a country or city";
 "Найти страну" = "Find a country";
 "Настройки" = "Settings";
@@ -313,6 +317,7 @@
 "Тёплая бумага с тенью" = "Warm paper with a shadow";
 "Тёплые от охры до сливы" = "Warm, from ochre to plum";
 "Убрать %@" = "Remove %@";
+"Убрать даты" = "Remove the dates";
 "Убрать отметку дома" = "Remove the home mark";
 "Убрать отметку" = "Remove the mark";
 "Уголь" = "Charcoal";
@@ -373,6 +378,7 @@
 "открыт" = "unlocked";
 "открыть" = "unlock";
 "оценка" = "rating";
+"по %@" = "to %@";
 "скоро" = "soon";
 "сохранили" = "saves";
 "среднее" = "average";

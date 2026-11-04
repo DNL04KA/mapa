@@ -137,19 +137,26 @@ struct Route: Identifiable, Equatable, Codable {
     var points: [RoutePoint]
     var createdAt: Date
     var reviews: [RouteReview]
+    /// День выезда. `nil` — маршрут пока без дат, и это нормальное
+    /// состояние: сначала собирают порядок городов, даты появляются позже.
+    /// Подставлять «сегодня» за человека нельзя — он увидит числа, которых
+    /// не называл, и поверит им.
+    var startDate: Date?
 
     init(
         id: UUID = UUID(),
         title: String = "",
         points: [RoutePoint] = [],
         createdAt: Date = Date(),
-        reviews: [RouteReview] = []
+        reviews: [RouteReview] = [],
+        startDate: Date? = nil
     ) {
         self.id = id
         self.title = title
         self.points = points
         self.createdAt = createdAt
         self.reviews = reviews
+        self.startDate = startDate
     }
 
     /// Средняя оценка. `nil`, если не оценивал никто — это не то же самое,
@@ -162,6 +169,41 @@ struct Route: Identifiable, Equatable, Codable {
     var myReview: RouteReview? { reviews.first(where: \.isMine) }
 
     var totalDays: Int { points.reduce(0) { $0 + $1.days } }
+
+    /// Когда приезжаем в точку и когда из неё уезжаем.
+    ///
+    /// День отъезда из города — это день приезда в следующий: в поездке
+    /// не бывает суток между двумя городами, которые никому не
+    /// принадлежат. Поэтому ночёвок в городе ровно `days`, а последняя
+    /// дата маршрута — отъезд из последней точки.
+    ///
+    /// Пусто, пока нет `startDate`: без дня выезда любые числа будут
+    /// выдуманы.
+    func schedule(calendar: Calendar = .current) -> [Stay] {
+        guard let startDate else { return [] }
+
+        var result: [Stay] = []
+        var arrival = calendar.startOfDay(for: startDate)
+        for point in points {
+            guard let departure = calendar.date(byAdding: .day, value: max(point.days, 0), to: arrival) else {
+                break
+            }
+            result.append(Stay(arrival: arrival, departure: departure))
+            arrival = departure
+        }
+        return result
+    }
+
+    /// День возвращения. `nil`, если дат нет или маршрут пуст.
+    func endDate(calendar: Calendar = .current) -> Date? {
+        schedule(calendar: calendar).last?.departure
+    }
+
+    /// Сколько дней в точке и какого числа.
+    struct Stay: Equatable {
+        let arrival: Date
+        let departure: Date
+    }
 
     /// Сколько точек уже пройдено.
     var visitedCount: Int { points.filter(\.isVisited).count }

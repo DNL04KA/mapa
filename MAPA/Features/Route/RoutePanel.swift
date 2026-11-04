@@ -22,6 +22,7 @@ struct RoutePanel: View {
     let onTogglePassed: (RoutePoint) -> Void
     let onSetPhoto: (RoutePoint, UIImage?) -> Void
     let onChangeDays: (RoutePoint, Int) -> Void
+    let onSetStartDate: (Date?) -> Void
     let onRate: (Int, String) -> Void
     let onRemoveReview: () -> Void
     let onDone: () -> Void
@@ -58,6 +59,7 @@ struct RoutePanel: View {
                 // Пять городов — это больше пятисот точек высоты, и всё, что
                 // лежало под ними, человек просто не находил: отзывы были
                 // написаны, но для него их не существовало.
+                dates
                 ratingBar
 
                 ScrollView {
@@ -194,6 +196,90 @@ struct RoutePanel: View {
         return parts.joined(separator: " · ")
     }
 
+    // MARK: - Даты
+
+    /// Когда едем.
+    ///
+    /// Пока даты нет, маршрут — это порядок городов и ничего больше: ни
+    /// «сколько осталось», ни билета, ни брони. Поэтому строка стоит до
+    /// точек, а не в конце списка, и у неё единственное действие.
+    @ViewBuilder
+    private var dates: some View {
+        if !route.points.isEmpty {
+            HStack(spacing: DS.Space.sm) {
+                Image(systemName: "calendar")
+                    .font(.system(size: DS.Size.glyph, weight: .semibold))
+                    .foregroundStyle(accent)
+
+                if route.startDate == nil {
+                    Text("Без дат")
+                        .font(DS.Font.caption)
+                        .foregroundStyle(DS.Color.inkTertiary)
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        Haptics.shared.tap(.light)
+                        onSetStartDate(Calendar.current.startOfDay(for: Date()))
+                    } label: {
+                        Text("Назначить")
+                            .font(DS.Font.caption)
+                            .foregroundStyle(accent)
+                            .padding(.horizontal, DS.Space.sm)
+                            .frame(height: 30)
+                            .background { Capsule().fill(accent.opacity(0.12)) }
+                            .contentShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Назначить даты маршрута")
+                } else {
+                    DatePicker(
+                        "Выезд",
+                        selection: Binding(
+                            get: { route.startDate ?? Date() },
+                            set: { onSetStartDate(Calendar.current.startOfDay(for: $0)) }
+                        ),
+                        displayedComponents: .date
+                    )
+                    .labelsHidden()
+                    .datePickerStyle(.compact)
+                    .tint(accent)
+
+                    if let range = rangeText {
+                        Text(range)
+                            .font(DS.Font.caption)
+                            .foregroundStyle(DS.Color.inkSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Button {
+                        Haptics.shared.tap(.soft)
+                        onSetStartDate(nil)
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: DS.Size.glyphSm, weight: .bold))
+                            .foregroundStyle(DS.Color.inkTertiary)
+                            .frame(width: 30, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Убрать даты")
+                }
+            }
+            .frame(minHeight: DS.Size.hitTarget)
+        }
+    }
+
+    /// «по 26 марта» — когда вернёшься. День выезда виден в самом выборе
+    /// даты, повторять его второй раз незачем.
+    private var rangeText: String? {
+        guard let end = route.endDate() else { return nil }
+        return String(format: NSLocalizedString("по %@", comment: ""), TripDateFormat.day(end))
+    }
+
     // MARK: - Точки
 
     @ViewBuilder
@@ -205,9 +291,13 @@ struct RoutePanel: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
+            // Расписание считается один раз на список, а не в каждой
+            // строке: `body` зовут часто, а дат столько же, сколько точек.
+            let schedule = route.schedule()
+
             VStack(spacing: 0) {
                 ForEach(Array(route.points.enumerated()), id: \.element.id) { index, point in
-                    row(point, at: index)
+                    row(point, at: index, stay: schedule.indices.contains(index) ? schedule[index] : nil)
                         .dsReveal(index)
                         .offset(y: offset(for: index))
                         .zIndex(point.id == draggingID ? 1 : 0)
@@ -217,7 +307,7 @@ struct RoutePanel: View {
         }
     }
 
-    private func row(_ point: RoutePoint, at index: Int) -> some View {
+    private func row(_ point: RoutePoint, at index: Int, stay: Route.Stay?) -> some View {
         HStack(alignment: .top, spacing: DS.Space.xs) {
             // Номер с пунктиром — то же, что в ленте по стране. Список точек
             // и маршрут по стране это одна и та же вещь в двух местах, и
@@ -250,7 +340,15 @@ struct RoutePanel: View {
                 }
 
                 HStack(spacing: DS.Space.xs) {
-                    if let country = point.countryName {
+                    if let arrival = stay?.arrival {
+                        // Дата вытесняет страну, а не добавляется к ней:
+                        // строка узкая, а «когда» в поездке важнее, чем
+                        // «в какой стране» — страна и так видна на карте.
+                        Text(TripDateFormat.day(arrival))
+                            .font(DS.Font.micro)
+                            .foregroundStyle(DS.Color.inkSecondary)
+                            .monospacedDigit()
+                    } else if let country = point.countryName {
                         Text(country)
                             .font(DS.Font.micro)
                             .foregroundStyle(DS.Color.inkSecondary)

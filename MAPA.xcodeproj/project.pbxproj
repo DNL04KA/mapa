@@ -46,6 +46,7 @@
 		24C139F0D57429CDBC76FE9E /* TravelLog.swift in Build */ = {isa = PBXBuildFile; fileRef = E13BCBB013A952D97A4D48B0 /* TravelLog.swift */; };
 		30EF63FEE6566959B7011803 /* TravelLogStorage.swift in Build */ = {isa = PBXBuildFile; fileRef = 4F5B597299E617BB667CE47E /* TravelLogStorage.swift */; };
 		52CC8F7BFBD435F50527A31E /* TravelStatistics.swift in Build */ = {isa = PBXBuildFile; fileRef = 47D0B962DAE8AB2C26311BFF /* TravelStatistics.swift */; };
+		40AA4534944438D2EB036103 /* TripDateFormat.swift in Build */ = {isa = PBXBuildFile; fileRef = F91A8B7096B9E4561D79BFF5 /* TripDateFormat.swift */; };
 		4C034D2E963983025E46109C /* AnimatedNumber.swift in Build */ = {isa = PBXBuildFile; fileRef = EAC4266E406B9BFAE2761C70 /* AnimatedNumber.swift */; };
 		6911CBD44D751DEB0589A8AC /* AuroraBackground.swift in Build */ = {isa = PBXBuildFile; fileRef = E25D2604A33282B2FF92E08C /* AuroraBackground.swift */; };
 		4FDCD02B037D7F607CE7EA96 /* GlassSurface.swift in Build */ = {isa = PBXBuildFile; fileRef = 1E80D5B466C2A3FFDDA0F86C /* GlassSurface.swift */; };
@@ -123,6 +124,7 @@
 		E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */; };
 		49A9EC2757665DE69E65DF7F /* KeyboardInsetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */; };
 		C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C98420008F958B62B6FF46 /* RouteCodableTests.swift */; };
+		CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */; };
 		7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54AB977091945F179EC0145 /* SearchTests.swift */; };
 		EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0128D85165C2D030CAA039BE /* ShopTests.swift */; };
 		CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */; };
@@ -169,6 +171,7 @@
 		E13BCBB013A952D97A4D48B0 /* TravelLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLog.swift; sourceTree = "<group>"; };
 		4F5B597299E617BB667CE47E /* TravelLogStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLogStorage.swift; sourceTree = "<group>"; };
 		47D0B962DAE8AB2C26311BFF /* TravelStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelStatistics.swift; sourceTree = "<group>"; };
+		F91A8B7096B9E4561D79BFF5 /* TripDateFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripDateFormat.swift; sourceTree = "<group>"; };
 		EAC4266E406B9BFAE2761C70 /* AnimatedNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedNumber.swift; sourceTree = "<group>"; };
 		E25D2604A33282B2FF92E08C /* AuroraBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraBackground.swift; sourceTree = "<group>"; };
 		1E80D5B466C2A3FFDDA0F86C /* GlassSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassSurface.swift; sourceTree = "<group>"; };
@@ -247,6 +250,7 @@
 		3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryTests.swift; sourceTree = "<group>"; };
 		813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInsetTests.swift; sourceTree = "<group>"; };
 		70C98420008F958B62B6FF46 /* RouteCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCodableTests.swift; sourceTree = "<group>"; };
+		5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFocusTests.swift; sourceTree = "<group>"; };
 		E54AB977091945F179EC0145 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
 		0128D85165C2D030CAA039BE /* ShopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopTests.swift; sourceTree = "<group>"; };
 		91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsTests.swift; sourceTree = "<group>"; };
@@ -390,6 +394,7 @@
 				E13BCBB013A952D97A4D48B0 /* TravelLog.swift */,
 				4F5B597299E617BB667CE47E /* TravelLogStorage.swift */,
 				47D0B962DAE8AB2C26311BFF /* TravelStatistics.swift */,
+				F91A8B7096B9E4561D79BFF5 /* TripDateFormat.swift */,
 			);
 			path = Travel;
 			sourceTree = "<group>";
@@ -712,6 +717,7 @@
 				3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */,
 				813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */,
 				70C98420008F958B62B6FF46 /* RouteCodableTests.swift */,
+				5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */,
 				E54AB977091945F179EC0145 /* SearchTests.swift */,
 				0128D85165C2D030CAA039BE /* ShopTests.swift */,
 				91B2C330FDBBBFBB32BDAB6F /* StatisticsTests.swift */,
@@ -792,7 +798,7 @@
 			};
 			buildConfigurationList = 938CBF74E81D18A798197C2C /* Build configuration list for PBXProject "MAPA" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = ru;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -875,6 +881,7 @@
 				24C139F0D57429CDBC76FE9E /* TravelLog.swift */,
 				30EF63FEE6566959B7011803 /* TravelLogStorage.swift */,
 				52CC8F7BFBD435F50527A31E /* TravelStatistics.swift */,
+				40AA4534944438D2EB036103 /* TripDateFormat.swift */,
 				4C034D2E963983025E46109C /* AnimatedNumber.swift */,
 				6911CBD44D751DEB0589A8AC /* AuroraBackground.swift */,
 				4FDCD02B037D7F607CE7EA96 /* GlassSurface.swift */,
@@ -948,6 +955,7 @@
 				E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */,
 				49A9EC2757665DE69E65DF7F /* KeyboardInsetTests.swift in Sources */,
 				C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */,
+				CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */,
 				7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */,
 				EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */,
 				CE7D6A1B1AD89AA2D375756C /* StatisticsTests.swift in Sources */,

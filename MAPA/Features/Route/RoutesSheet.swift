@@ -379,6 +379,12 @@ struct RoutesSheet: View {
             return String(format: NSLocalizedString("%@ из %@ пройдено", comment: ""),
                           "\(route.visitedCount)", "\(route.points.count)")
         }
+        // Даты вместо числа городов: если поездка назначена, первое, что
+        // ищут в списке, — когда она. Сколько в ней городов, видно по самой
+        // строке, стоит её открыть.
+        if let start = route.startDate, let end = route.endDate() {
+            return TripDateFormat.range(from: start, to: end) + " · " + Plural.days(route.totalDays)
+        }
         var parts = [Plural.cities(route.points.count)]
         if route.totalDays > 0 {
             parts.append(Plural.days(route.totalDays))

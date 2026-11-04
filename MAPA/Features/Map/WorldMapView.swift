@@ -98,9 +98,12 @@ struct WorldMapView: View {
         case let id? where id.hasPrefix("city-"):
             guard let city = model.cities.first(where: { $0.id == String(id.dropFirst(5)) }) else { return }
             model.focus(on: city, reduceMotion: true)
-        case "route":
+        case "route", "route-edit":
             guard let route = model.routes.first else { return }
             model.openRoute(route, reduceMotion: true)
+            // Развёрнутая панель — это редактор: дни, даты, порядок точек.
+            // Свёрнутая показывает карту, и для снимка карты она лучше.
+            routeExpanded = ProcessInfo.processInfo.environment["MAPA_SCREEN"] == "route-edit"
         case let id? where id.hasPrefix("card-"):
             guard let country = model.geometry?.country(id: String(id.dropFirst(5))) else { return }
             model.select(country, reduceMotion: true)
@@ -299,6 +302,7 @@ struct WorldMapView: View {
                     updated.days = max(1, min(60, days))
                     model.update(updated)
                 },
+                onSetStartDate: { model.setStartDate($0) },
                 onRate: { model.rateOpenRoute($0, text: $1) },
                 onRemoveReview: { model.removeMyReview() },
                 onDone: {
@@ -620,6 +624,12 @@ struct WorldMapView: View {
                 },
                 onEditMarks: {
                     withAnimation(motion.animation(.smooth)) { showsMarks = true }
+                },
+                onOpenAppearance: {
+                    withAnimation(motion.animation(.smooth)) {
+                        showsAccount = false
+                        showsThemes = true
+                    }
                 }
             )
             .themedPanel(activeTheme)
@@ -768,11 +778,30 @@ struct WorldMapView: View {
         }
     }
 
+    /// Показывать ли вкладку сообщества.
+    ///
+    /// Обычно — только с подключённым сервером. В показе для снимков
+    /// магазина её тоже надо видеть: там на экране живые данные, и
+    /// витрина без входа в них выглядела бы странно.
+    private var showsCommunityTab: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["MAPA_DEMO_COMMUNITY"] == "1" { return true }
+        #endif
+        return BackendConfig.isConfigured
+    }
+
     /// Нижняя панель.
     ///
     /// Раньше это были шесть одинаковых серых иконок без подложки и подписей
     /// поверх бледной карты: понять, где маршруты, а где оформление, было
     /// нельзя. Подложка возвращает читаемость, подписи — смысл.
+    ///
+    /// Четыре места, и все четыре — места, а не действия и не настройки.
+    /// «Оформление» отсюда убрано: выбор палитры — настройка, он уже лежит
+    /// в настройках, и держать его в главной навигации значило отдать ей
+    /// четверть под обои. Освободившееся место занял раздел с чужими
+    /// маршрутами: до него раньше можно было добраться единственным путём —
+    /// открыть «Маршруты» и найти там кнопку, то есть почти никак.
     private var mapTabBar: some View {
         HStack(spacing: 0) {
             tabItem(icon: "person.crop.circle",
@@ -787,15 +816,27 @@ struct WorldMapView: View {
                 withAnimation(motion.animation(.smooth)) { showsRoutes = true }
             }
 
+            // Сообщество — только когда сервер подключён. Вкладка, которая
+            // на каждое касание отвечает «пока не подключено», хуже, чем
+            // её отсутствие: место в главной навигации занято, а делать
+            // там нечего. Пока сервера нет, вход остаётся в «Маршрутах».
+            //
+            // Люди, а не глобус: глобус у правого края карты уже значит
+            // «показать весь мир», и два одинаковых значка с разным
+            // смыслом на одном экране — это ловушка.
+            if showsCommunityTab {
+                tabItem(icon: "person.2",
+                        title: "Сообщество",
+                        isActive: showsCommunity) {
+                    withAnimation(motion.animation(.smooth)) { showsCommunity = true }
+                }
+            }
+
             tabItem(icon: "square.and.arrow.up",
                     title: "Поделиться",
                     isActive: false,
                     isEnabled: !model.statistics.isEmpty) {
                 withAnimation(motion.animation(.smooth)) { showsExport = true }
-            }
-
-            tabItem(icon: "paintpalette", title: "Оформление", isActive: false) {
-                withAnimation(motion.animation(.smooth)) { showsThemes = true }
             }
         }
         .padding(.horizontal, DS.Space.xxs)
@@ -833,7 +874,7 @@ struct WorldMapView: View {
         } label: {
             VStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 17, weight: .medium))
+                    .font(DS.Font.glyphTab)
                 Text(title)
                     // Растёт вместе с настройкой телефона, но не до конца:
                     // панель лежит поверх карты, и выше трети экрана ей
@@ -1057,7 +1098,7 @@ struct MapLoadingView: View {
     var body: some View {
         VStack(spacing: DS.Space.md) {
             Image(systemName: "globe.europe.africa")
-                .font(.system(size: 44, weight: .thin))
+                .font(DS.Font.glyphHero.weight(.thin))
                 .foregroundStyle(DS.Gradient.accent)
                 .opacity(isPulsing ? 1 : 0.35)
                 .scaleEffect(isPulsing ? 1 : 0.94)
@@ -1085,7 +1126,7 @@ struct MapErrorView: View {
     var body: some View {
         VStack(spacing: DS.Space.md) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 34, weight: .light))
+                .font(DS.Font.glyphNotice)
                 .foregroundStyle(DS.Color.danger)
 
             Text("Карта не открылась")

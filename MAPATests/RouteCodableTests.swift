@@ -41,6 +41,27 @@ final class RouteCodableTests: XCTestCase {
         XCTAssertFalse(route.points[0].isVisited)
         XCTAssertNil(route.points[0].photoID)
         XCTAssertNil(route.points[0].countryName)
+        // Даты появились последними. Старый маршрут — без дат, и это не
+        // «первое января»: выдуманная дата хуже отсутствующей.
+        XCTAssertNil(route.startDate)
+        XCTAssertTrue(route.schedule().isEmpty)
+    }
+
+    func testДатаВыездаПереживаетЗаписьИЧтение() throws {
+        let start = Date(timeIntervalSince1970: 1_772_323_200)  // 1 марта 2026
+        let route = Route(
+            title: "Япония",
+            points: [RoutePoint(name: "Токио", coordinate: Coordinate(longitude: 139.7, latitude: 35.7))],
+            startDate: start
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let back = try decoder.decode(Route.self, from: encoder.encode(route))
+
+        XCTAssertEqual(back.startDate?.timeIntervalSince1970, start.timeIntervalSince1970)
     }
 
     func testЗаписьИЧтениеСовпадают() throws {
@@ -75,6 +96,52 @@ final class RouteCodableTests: XCTestCase {
         XCTAssertEqual(route.visitedCount, 2)
         XCTAssertTrue(route.isInProgress)
         XCTAssertFalse(route.isComplete)
+    }
+
+    func testДатыОстановокИдутПодрядИБезДыр() {
+        var calendar = Calendar(identifier: .gregorian)
+        guard let utc = TimeZone(identifier: "UTC") else { return XCTFail("нет UTC") }
+        calendar.timeZone = utc
+
+        func point(_ name: String, days: Int) -> RoutePoint {
+            RoutePoint(name: name, coordinate: Coordinate(longitude: 0, latitude: 0), days: days)
+        }
+
+        // 1 марта 2026, полночь UTC.
+        let start = Date(timeIntervalSince1970: 1_772_323_200)
+        let route = Route(
+            title: "Тест",
+            points: [point("а", days: 3), point("б", days: 2), point("в", days: 1)],
+            startDate: start
+        )
+
+        let schedule = route.schedule(calendar: calendar)
+        XCTAssertEqual(schedule.count, 3)
+
+        // Уехал из города — в тот же день приехал в следующий: суток
+        // между двумя городами в поездке не бывает.
+        XCTAssertEqual(schedule[0].departure, schedule[1].arrival)
+        XCTAssertEqual(schedule[1].departure, schedule[2].arrival)
+
+        let day: TimeInterval = 86_400
+        XCTAssertEqual(schedule[0].arrival.timeIntervalSince(start), 0)
+        XCTAssertEqual(schedule[0].departure.timeIntervalSince(start), 3 * day)
+        XCTAssertEqual(schedule[2].departure.timeIntervalSince(start), 6 * day)
+
+        // Возвращение — отъезд из последней точки, и ровно `totalDays`
+        // от выезда: если эти два числа разойдутся, человек купит
+        // обратный билет не на тот день.
+        XCTAssertEqual(route.endDate(calendar: calendar), schedule[2].departure)
+        XCTAssertEqual(route.endDate(calendar: calendar)?.timeIntervalSince(start),
+                       Double(route.totalDays) * day)
+    }
+
+    func testБезДатыВыездаРасписанияНет() {
+        let route = Route(title: "Тест", points: [
+            RoutePoint(name: "а", coordinate: Coordinate(longitude: 0, latitude: 0)),
+        ])
+        XCTAssertTrue(route.schedule().isEmpty)
+        XCTAssertNil(route.endDate())
     }
 
     func testСреднейОценкиНетПокаНиктоНеОценил() {
