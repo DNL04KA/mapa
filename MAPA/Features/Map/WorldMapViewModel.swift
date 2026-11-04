@@ -271,6 +271,8 @@ final class WorldMapViewModel: ObservableObject {
             seedRoutesFromEnvironment()
             #endif
 
+            await sweepOrphanPhotos()
+
             rebuildMarked(excluding: nil)
             refreshStatistics()
             state = .ready
@@ -311,6 +313,25 @@ final class WorldMapViewModel: ObservableObject {
             routesFailure = .unreadable
             return []
         }
+    }
+
+    /// Убрать снимки, на которые больше никто не ссылается.
+    ///
+    /// Удаление маршрута уносило запись и оставляло файлы: на диске
+    /// копились фотографии, которые некому показать и некому убрать.
+    ///
+    /// Только при целых маршрутах. После сбоя чтения список пуст — и
+    /// «ни на что не ссылаются» означало бы «удалить все снимки разом»,
+    /// то есть ровно ту потерю, от которой мы и защищаемся.
+    private func sweepOrphanPhotos() async {
+        guard routesFailure == nil else { return }
+        let used = Set(routes.flatMap { $0.points.compactMap(\.photoID) })
+        await Task.detached(priority: .utility) {
+            let store = PhotoStore.routes
+            for id in store.storedIDs() where !used.contains(id) {
+                store.delete(id: id)
+            }
+        }.value
     }
 
     func updateViewport(_ size: CGSize) {
@@ -970,6 +991,18 @@ final class WorldMapViewModel: ObservableObject {
     func deleteRoute(_ route: Route) {
         routes.removeAll { $0.id == route.id }
         if editingRoute?.id == route.id { editingRoute = nil }
+
+        // Снимки уходят вместе с маршрутом: ссылок на них больше нет, а
+        // место они занимают настоящее. Удаляем в стороне от главного
+        // потока — список может быть длинным.
+        let photos = route.points.compactMap(\.photoID)
+        if !photos.isEmpty {
+            Task.detached(priority: .utility) {
+                let store = PhotoStore.routes
+                for id in photos { store.delete(id: id) }
+            }
+        }
+
         Haptics.shared.warning()
         persistRoutes()
     }
