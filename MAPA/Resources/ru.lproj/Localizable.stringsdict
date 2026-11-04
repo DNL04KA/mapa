@@ -2,108 +2,184 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>plural.countries</key>
+	<key>plural.cities</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d страна</string>
-			<key>few</key><string>%d страны</string>
-			<key>many</key><string>%d стран</string>
-			<key>other</key><string>%d страны</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d города</string>
+			<key>many</key>
+			<string>%d городов</string>
+			<key>one</key>
+			<string>%d город</string>
+			<key>other</key>
+			<string>%d города</string>
 		</dict>
 	</dict>
 	<key>plural.continents</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d континент</string>
-			<key>few</key><string>%d континента</string>
-			<key>many</key><string>%d континентов</string>
-			<key>other</key><string>%d континента</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d континента</string>
+			<key>many</key>
+			<string>%d континентов</string>
+			<key>one</key>
+			<string>%d континент</string>
+			<key>other</key>
+			<string>%d континента</string>
 		</dict>
 	</dict>
-	<key>plural.cities</key>
+	<key>plural.countries</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d город</string>
-			<key>few</key><string>%d города</string>
-			<key>many</key><string>%d городов</string>
-			<key>other</key><string>%d города</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d страны</string>
+			<key>many</key>
+			<string>%d стран</string>
+			<key>one</key>
+			<string>%d страна</string>
+			<key>other</key>
+			<string>%d страны</string>
 		</dict>
 	</dict>
 	<key>plural.days</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d день</string>
-			<key>few</key><string>%d дня</string>
-			<key>many</key><string>%d дней</string>
-			<key>other</key><string>%d дня</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d дня</string>
+			<key>many</key>
+			<string>%d дней</string>
+			<key>one</key>
+			<string>%d день</string>
+			<key>other</key>
+			<string>%d дня</string>
+		</dict>
+	</dict>
+	<key>plural.photos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d фотографии</string>
+			<key>many</key>
+			<string>%d фотографий</string>
+			<key>one</key>
+			<string>%d фотография</string>
+			<key>other</key>
+			<string>%d фотографии</string>
 		</dict>
 	</dict>
 	<key>plural.places</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d место</string>
-			<key>few</key><string>%d места</string>
-			<key>many</key><string>%d мест</string>
-			<key>other</key><string>%d места</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d места</string>
+			<key>many</key>
+			<string>%d мест</string>
+			<key>one</key>
+			<string>%d место</string>
+			<key>other</key>
+			<string>%d места</string>
 		</dict>
 	</dict>
 	<key>plural.points</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d точка</string>
-			<key>few</key><string>%d точки</string>
-			<key>many</key><string>%d точек</string>
-			<key>other</key><string>%d точки</string>
-		</dict>
-	</dict>
-	<key>plural.routes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
-		<key>n</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d маршрут</string>
-			<key>few</key><string>%d маршрута</string>
-			<key>many</key><string>%d маршрутов</string>
-			<key>other</key><string>%d маршрута</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d точки</string>
+			<key>many</key>
+			<string>%d точек</string>
+			<key>one</key>
+			<string>%d точка</string>
+			<key>other</key>
+			<string>%d точки</string>
 		</dict>
 	</dict>
 	<key>plural.reviews</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d отзыв</string>
-			<key>few</key><string>%d отзыва</string>
-			<key>many</key><string>%d отзывов</string>
-			<key>other</key><string>%d отзыва</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d отзыва</string>
+			<key>many</key>
+			<string>%d отзывов</string>
+			<key>one</key>
+			<string>%d отзыв</string>
+			<key>other</key>
+			<string>%d отзыва</string>
+		</dict>
+	</dict>
+	<key>plural.routes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>few</key>
+			<string>%d маршрута</string>
+			<key>many</key>
+			<string>%d маршрутов</string>
+			<key>one</key>
+			<string>%d маршрут</string>
+			<key>other</key>
+			<string>%d маршрута</string>
 		</dict>
 	</dict>
 </dict>

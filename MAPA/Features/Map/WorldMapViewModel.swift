@@ -753,9 +753,10 @@ final class WorldMapViewModel: ObservableObject {
     }
 
     /// Файл с копией карты — для настроек.
-    func makeBackup() -> URL? {
-        Backup.write(log: travelLog, routes: routes)
+    func makeBackup(profile: Profile?, appearance: Backup.Appearance?) -> URL? {
+        Backup.write(log: travelLog, routes: routes, profile: profile, appearance: appearance)
     }
+
 
     /// Принять копию: отметки и маршруты заменяются целиком.
     ///
@@ -763,8 +764,14 @@ final class WorldMapViewModel: ObservableObject {
     /// деле непредсказуемо: человек восстанавливает копию, когда хочет
     /// вернуть то состояние, а не получить смесь из двух.
     @discardableResult
-    func restore(from url: URL, reduceMotion: Bool) -> Bool {
-        guard let backup = Backup.read(from: url) else { return false }
+    func restore(from url: URL, reduceMotion: Bool) -> Backup? {
+        guard let backup = Backup.read(from: url) else { return nil }
+
+        // Снимки раскладываем до того, как маршруты попадут на экран:
+        // иначе человек секунду смотрит на свои точки с пустыми рамками
+        // и решает, что фотографии не вернулись.
+        backup.restorePhotos()
+
         // Восстановление — это и есть ответ на «файл не прочитался»:
         // человек принёс целые данные, и запись снова разрешена.
         logFailure = nil
@@ -777,7 +784,7 @@ final class WorldMapViewModel: ObservableObject {
         persist()
         persistRoutes()
         Haptics.shared.success()
-        return true
+        return backup
     }
 
     func startRoute(reduceMotion: Bool) {

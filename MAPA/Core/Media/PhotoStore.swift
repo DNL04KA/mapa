@@ -50,6 +50,39 @@ struct PhotoStore {
         UIImage(contentsOfFile: url(for: id).path)
     }
 
+    /// Снимок байтами, как он лежит на диске.
+    ///
+    /// Копии нужен файл, а не картинка: разобрать JPEG в `UIImage` и
+    /// сжать обратно — значит терять качество на каждой копии, хотя
+    /// копировать надо ровно то, что есть.
+    func data(id: String) -> Data? {
+        try? Data(contentsOf: url(for: id))
+    }
+
+    /// Положить снимок под тем же именем.
+    ///
+    /// Имя обязано сохраниться: в маршруте лежит ссылка на него, и
+    /// снимок с новым именем стал бы чужим файлом рядом с пустой рамкой.
+    @discardableResult
+    func restore(id: String, data: Data) -> Bool {
+        guard !id.isEmpty, !id.contains("/"), !id.contains("..") else { return false }
+        do {
+            try data.write(to: url(for: id), options: .atomic)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// Что вообще лежит в папке.
+    ///
+    /// Нужно уборке: файл, на который не ссылается ни один маршрут,
+    /// не вернётся сам — его некому показать и некому удалить.
+    func storedIDs() -> [String] {
+        let files = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        return files.filter { $0.hasSuffix(".jpg") }.map { String($0.dropLast(4)) }
+    }
+
     func delete(id: String) {
         try? FileManager.default.removeItem(at: url(for: id))
     }

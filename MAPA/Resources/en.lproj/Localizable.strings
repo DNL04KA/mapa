@@ -35,6 +35,7 @@
 "Вид и язык" = "Look and language";
 "Винтаж" = "Vintage";
 "Витрина недоступна. Проверь сеть и попробуй ещё раз." = "The store is not responding. Check your connection and try again.";
+"Внутри: %@" = "Inside: %@";
 "Волны дюн" = "Dune waves";
 "Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-colour charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
 "Восстановить из копии" = "Restore from a backup";
@@ -66,6 +67,8 @@
 "Гранит" = "Granite";
 "Границы — Natural Earth" = "Borders — Natural Earth";
 "Дальше" = "Next";
+"Данные записаны новой версией" = "Saved by a newer version";
+"Данные не прочитались" = "Your data could not be read";
 "Движение" = "Motion";
 "Дизайн-система · этап 1" = "Design system · stage 1";
 "Дизайн-система" = "Design system";
@@ -181,6 +184,7 @@
 "Новый маршрут" = "New route";
 "Ночь" = "Night";
 "О приложении" = "About";
+"Обнови MAPA, чтобы их открыть. Пока запись остановлена — файл не пострадает." = "Update MAPA to open it. Saving is paused until then, so the file stays intact.";
 "Один раз и навсегда — это не подписка" = "Once and for good — this is not a subscription";
 "Один цвет на всю карту" = "One colour for the whole map";
 "Однажды доберусь" = "One day I will get there";
@@ -329,6 +333,7 @@
 "Успех" = "Success";
 "Файл городов повреждён" = "The cities file is damaged";
 "Файл границ повреждён: %@" = "The borders file is damaged: %@";
+"Файл на месте, но приложение его не понимает. Запись остановлена, чтобы ничего не затереть." = "The file is there, but the app does not understand it. Saving is paused so nothing gets overwritten.";
 "Флаги" = "Flags";
 "Фоновый дрейф градиентов" = "Background gradient drift";
 "Фото сообщества" = "Community photos";
@@ -366,6 +371,7 @@
 "загрузка" = "load";
 "зум" = "zoom";
 "кадр" = "frame";
+"маршруты" = "routes";
 "мира открыто" = "of the world";
 "на карте" = "on the map";
 "не отмечено" = "not marked";
@@ -377,8 +383,10 @@
 "от дома" = "from home";
 "открыт" = "unlocked";
 "открыть" = "unlock";
+"отметки" = "marks";
 "оценка" = "rating";
 "по %@" = "to %@";
+"профиль" = "profile";
 "скоро" = "soon";
 "сохранили" = "saves";
 "среднее" = "average";

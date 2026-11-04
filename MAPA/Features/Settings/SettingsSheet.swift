@@ -17,6 +17,8 @@ struct SettingsSheet: View {
     let accent: Color
     /// Копия карты — то, что уедет в файл.
     let backup: () -> URL?
+    /// Сколько снимков уедет вместе с ней.
+    let backupPhotos: Int
     /// Возвращает `false`, если файл оказался чужим.
     let onRestore: (URL) -> Bool
     let onOpenAppearance: () -> Void
@@ -26,6 +28,16 @@ struct SettingsSheet: View {
     @State private var dragOffset: CGFloat = 0
     @State private var isImporting = false
     @State private var note: String?
+
+    /// Состав копии человеческим языком.
+    private var contents: String {
+        let parts = [String(localized: "отметки"),
+                     String(localized: "маршруты"),
+                     String(localized: "профиль"),
+                     Plural.photos(backupPhotos)]
+        return String(format: NSLocalizedString("Внутри: %@", comment: ""),
+                      parts.joined(separator: ", "))
+    }
 
     private var version: String {
         let info = Bundle.main.infoDictionary
@@ -150,6 +162,14 @@ struct SettingsSheet: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            // Что именно внутри — словами и до нажатия. Копия, которая
+            // обещает «всё», а возвращает половину, хуже отсутствия копии:
+            // на неё рассчитывают.
+            Text(contents)
+                .font(DS.Font.micro)
+                .foregroundStyle(DS.Color.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
 
             row("square.and.arrow.down", "Восстановить из копии", detail: nil) {
                 isImporting = true

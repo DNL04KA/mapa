@@ -525,9 +525,25 @@ struct WorldMapView: View {
             SettingsSheet(
                 shop: shop,
                 accent: activeTheme.accent,
-                backup: { model.makeBackup() },
+                backup: {
+                    model.makeBackup(
+                        profile: account.profile,
+                        appearance: .init(surfaceID: surface.id, paletteID: palette.id)
+                    )
+                },
+                backupPhotos: Backup.photoCount(routes: model.routes, profile: account.profile),
                 onRestore: { url in
-                    model.restore(from: url, reduceMotion: motion.reduceMotion)
+                    guard let backup = model.restore(from: url, reduceMotion: motion.reduceMotion) else {
+                        return false
+                    }
+                    // Профиль и оформление живут не во вью-модели карты,
+                    // поэтому возвращает их тот, у кого они есть.
+                    if let restored = backup.profile { account.restore(restored) }
+                    if let appearance = backup.appearance {
+                        onSelectSurface(MapSurface.surface(id: appearance.surfaceID))
+                        onSelectPalette(MapPalette.palette(id: appearance.paletteID))
+                    }
+                    return true
                 },
                 onOpenAppearance: {
                     withAnimation(motion.animation(.smooth)) {

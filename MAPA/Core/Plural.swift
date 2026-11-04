@@ -16,6 +16,7 @@ enum Plural {
     static func places(_ count: Int) -> String { localized("plural.places", count) }
     static func routes(_ count: Int) -> String { localized("plural.routes", count) }
     static func reviews(_ count: Int) -> String { localized("plural.reviews", count) }
+    static func photos(_ count: Int) -> String { localized("plural.photos", count) }
 
     private static func localized(_ key: String, _ count: Int) -> String {
         String(format: NSLocalizedString(key, comment: ""), count)

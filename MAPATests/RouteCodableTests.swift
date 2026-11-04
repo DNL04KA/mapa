@@ -168,7 +168,8 @@ final class BackupTests: XCTestCase {
                               cityName: "Варшава"))
 
         let route = Route(title: "Италия", points: [])
-        guard let url = Backup.write(log: log, routes: [route]) else {
+        guard let url = Backup.write(log: log, routes: [route],
+                                     profile: nil, appearance: nil) else {
             return XCTFail("копия не записалась")
         }
         defer { try? FileManager.default.removeItem(at: url) }

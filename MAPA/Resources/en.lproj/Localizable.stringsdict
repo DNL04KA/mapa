@@ -66,15 +66,36 @@
 			<string>%d days</string>
 		</dict>
 	</dict>
+	<key>plural.photos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d photo</string>
+			<key>other</key>
+			<string>%d photos</string>
+		</dict>
+	</dict>
 	<key>plural.places</key>
 	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
 		<key>n</key>
 		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d place</string>
-			<key>other</key><string>%d places</string>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d place</string>
+			<key>other</key>
+			<string>%d places</string>
 		</dict>
 	</dict>
 	<key>plural.points</key>
@@ -93,17 +114,6 @@
 			<string>%d stops</string>
 		</dict>
 	</dict>
-	<key>plural.routes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key><string>%#@n@</string>
-		<key>n</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key><string>d</string>
-			<key>one</key><string>%d route</string>
-			<key>other</key><string>%d routes</string>
-		</dict>
-	</dict>
 	<key>plural.reviews</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -118,6 +128,22 @@
 			<string>%d review</string>
 			<key>other</key>
 			<string>%d reviews</string>
+		</dict>
+	</dict>
+	<key>plural.routes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d route</string>
+			<key>other</key>
+			<string>%d routes</string>
 		</dict>
 	</dict>
 </dict>

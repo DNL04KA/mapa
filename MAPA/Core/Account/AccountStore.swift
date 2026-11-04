@@ -78,6 +78,16 @@ final class AccountStore: ObservableObject {
     }
     #endif
 
+    /// Принять профиль из копии.
+    ///
+    /// Именно заменить, а не слить: человек восстанавливает копию, чтобы
+    /// вернуть то состояние целиком. Идентификатор берётся из копии —
+    /// это тот же человек, просто на другом телефоне.
+    func restore(_ restored: Profile) {
+        profile = restored
+        storage.save(restored)
+    }
+
     func setAvatar(_ avatar: Avatar) {
         guard avatar != profile.avatar else { return }
         // Старое своё фото удаляем сразу: иначе в папке копятся снимки,
