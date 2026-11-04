@@ -14,6 +14,20 @@ private struct RoutesSnapshot: Codable {
     var version: Int
     var routes: [Route]
     var updatedAt: Date
+
+    /// Нынешний формат. Поднимается вместе со схемой, и каждый переход
+    /// получает свой шаг в `migrated(_:)`.
+    static let currentVersion = 1
+
+    /// Привести снимок к нынешнему формату.
+    ///
+    /// Поля, добавленные необязательными — день выезда, например, —
+    /// переходов не требуют: старый файл читается и получает `nil`.
+    /// Шаг понадобится первому изменению, которое нельзя выразить
+    /// необязательным полем, и писать его в спешке будет уже поздно.
+    static func migrated(_ snapshot: RoutesSnapshot) -> RoutesSnapshot {
+        snapshot
+    }
 }
 
 struct FileRouteStorage: RouteStorage {
@@ -31,15 +45,23 @@ struct FileRouteStorage: RouteStorage {
     func load() async throws -> [Route] {
         try await Task.detached(priority: .userInitiated) {
             guard FileManager.default.fileExists(atPath: fileURL.path) else { return [] }
-            let data = try Data(contentsOf: fileURL)
+            guard let data = try? Data(contentsOf: fileURL) else {
+                throw StorageFailure.unreadable
+            }
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            return try decoder.decode(RoutesSnapshot.self, from: data).routes
+            let stored = try SchemaProbe.decode(RoutesSnapshot.self,
+                                                from: data,
+                                                supported: RoutesSnapshot.currentVersion,
+                                                using: decoder)
+            return RoutesSnapshot.migrated(stored).routes
         }.value
     }
 
     func save(_ routes: [Route]) async throws {
-        let snapshot = RoutesSnapshot(version: 1, routes: routes, updatedAt: Date())
+        let snapshot = RoutesSnapshot(version: RoutesSnapshot.currentVersion,
+                                      routes: routes,
+                                      updatedAt: Date())
         try await Task.detached(priority: .utility) {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .iso8601

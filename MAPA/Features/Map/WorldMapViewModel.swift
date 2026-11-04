@@ -56,6 +56,18 @@ final class WorldMapViewModel: ObservableObject {
     /// Всё, что рисуется поверх базовой суши.
     @Published private(set) var overlay = MapOverlayState()
     /// Страна под открытым шитом.
+    /// Отметки не прочитались, и запись в их файл остановлена.
+    ///
+    /// Пустой журнал и журнал, который не удалось разобрать, выглядят на
+    /// экране одинаково — и это стоило бы человеку всей карты: приложение
+    /// показало бы пустоту, а первая же отметка записала бы её поверх
+    /// файла. Поэтому пока здесь что-то есть, `persist()` молчит.
+    @Published private(set) var logFailure: StorageFailure?
+    /// То же самое для маршрутов. Два отдельных замка, а не один общий:
+    /// испорченный файл маршрутов не повод запретить человеку отмечать
+    /// страны.
+    @Published private(set) var routesFailure: StorageFailure?
+
     @Published private(set) var selectedCountry: Country?
     /// Прогресс растекания краски, 0…1.
     @Published var bloomProgress: CGFloat = 0
@@ -251,8 +263,8 @@ final class WorldMapViewModel: ObservableObject {
             // Города не критичны для карты: если файл не читается,
             // приложение работает без них.
             cities = (try? CityLoader.loadFromBundle()) ?? []
-            travelLog = (try? await storage.load()) ?? TravelLog()
-            routes = (try? await routeStorage.load()) ?? []
+            travelLog = await loadLog()
+            routes = await loadRoutes()
 
             #if DEBUG
             seedMarksFromEnvironment()
@@ -265,6 +277,39 @@ final class WorldMapViewModel: ObservableObject {
             focusOnMyWorldIfNeeded()
         } catch {
             state = .failed(error.localizedDescription)
+        }
+    }
+
+    /// Прочитать отметки, а при неудаче — запомнить, какую именно.
+    ///
+    /// Возвращается пустой журнал, потому что показывать на карте всё
+    /// равно нечего. Разница с прежним поведением в том, что этот пустой
+    /// журнал теперь некуда записать: замок стоит в `persist()`.
+    private func loadLog() async -> TravelLog {
+        do {
+            let log = try await storage.load()
+            logFailure = nil
+            return log
+        } catch let failure as StorageFailure {
+            logFailure = failure
+            return TravelLog()
+        } catch {
+            logFailure = .unreadable
+            return TravelLog()
+        }
+    }
+
+    private func loadRoutes() async -> [Route] {
+        do {
+            let stored = try await routeStorage.load()
+            routesFailure = nil
+            return stored
+        } catch let failure as StorageFailure {
+            routesFailure = failure
+            return []
+        } catch {
+            routesFailure = .unreadable
+            return []
         }
     }
 
@@ -720,6 +765,10 @@ final class WorldMapViewModel: ObservableObject {
     @discardableResult
     func restore(from url: URL, reduceMotion: Bool) -> Bool {
         guard let backup = Backup.read(from: url) else { return false }
+        // Восстановление — это и есть ответ на «файл не прочитался»:
+        // человек принёс целые данные, и запись снова разрешена.
+        logFailure = nil
+        routesFailure = nil
         travelLog = backup.log
         routes = backup.routes
         rebuildMarked(excluding: nil)
@@ -1021,6 +1070,7 @@ final class WorldMapViewModel: ObservableObject {
     }
 
     private func persistRoutes() {
+        guard routesFailure == nil else { return }
         let snapshot = routes
         let previous = routeSaveTask
         routeSaveTask = Task { [routeStorage] in
@@ -1036,6 +1086,8 @@ final class WorldMapViewModel: ObservableObject {
     }
 
     private func persist() {
+        // Файл, который мы не поняли, не переписываем: там данные человека.
+        guard logFailure == nil else { return }
         let snapshot = travelLog
         let previous = saveTask
         saveTask = Task { [storage] in

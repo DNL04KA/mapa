@@ -14,12 +14,27 @@ protocol TravelLogStorage {
 ///
 /// Статус хранится строкой, а не индексом: если завтра в перечислении
 /// поменяется порядок, старые файлы не превратятся в кашу.
-/// `version` — задел на миграции, когда формат придётся менять.
+/// `version` читается при каждом открытии: файл, записанный версией новее
+/// этой, мы не трогаем вовсе — в нём есть то, чего мы не умеем записать
+/// обратно.
 private struct TravelLogSnapshot: Codable {
     var version: Int
     var statuses: [String: String]
     var home: HomePlace?
     var updatedAt: Date
+
+    /// Нынешний формат. Меняется вместе со схемой, и каждый переход
+    /// получает свой шаг в `migrated(_:)`.
+    static let currentVersion = 1
+
+    /// Привести снимок к нынешнему формату.
+    ///
+    /// Переходов пока нет — формат один. Место для них есть здесь, а не
+    /// россыпью необязательных полей по всей модели: иначе через год
+    /// никто не скажет, какая версия что значила.
+    static func migrated(_ snapshot: TravelLogSnapshot) -> TravelLogSnapshot {
+        snapshot
+    }
 }
 
 /// Файловое хранилище в Application Support.
@@ -44,13 +59,19 @@ struct FileTravelLogStorage: TravelLogStorage {
                 return TravelLog()
             }
 
-            let data = try Data(contentsOf: fileURL)
+            guard let data = try? Data(contentsOf: fileURL) else {
+                throw StorageFailure.unreadable
+            }
             // Даты в .iso8601, как и в маршрутах: один формат на оба файла,
             // иначе копия карты и копия маршрутов расходятся в мелочи,
             // которая всплывёт при первом же обмене файлами.
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
-            let snapshot = try decoder.decode(TravelLogSnapshot.self, from: data)
+            let stored = try SchemaProbe.decode(TravelLogSnapshot.self,
+                                                from: data,
+                                                supported: TravelLogSnapshot.currentVersion,
+                                                using: decoder)
+            let snapshot = TravelLogSnapshot.migrated(stored)
 
             // Неизвестные статусы просто отбрасываем: лучше потерять одну отметку,
             // чем уронить загрузку всей карты.
@@ -61,7 +82,7 @@ struct FileTravelLogStorage: TravelLogStorage {
 
     func save(_ log: TravelLog) async throws {
         let snapshot = TravelLogSnapshot(
-            version: 1,
+            version: TravelLogSnapshot.currentVersion,
             statuses: log.statuses.mapValues(\.rawValue),
             home: log.home,
             updatedAt: Date()

@@ -739,6 +739,16 @@ struct WorldMapView: View {
                         .transition(motion.transition(.move(edge: .top).combined(with: .opacity)))
                 }
 
+                // Беда с файлом данных — поверх всего и сразу: человек
+                // должен узнать о ней до того, как начнёт отмечать карту
+                // заново, решив, что всё пропало.
+                if let failure = model.logFailure ?? model.routesFailure, !showsSearch {
+                    StorageAlertBar(failure: failure, accent: activeTheme.accent) {
+                        withAnimation(motion.animation(.smooth)) { showsSettings = true }
+                    }
+                    .transition(motion.transition(.move(edge: .top).combined(with: .opacity)))
+                }
+
                 if showsDebug {
                     HStack {
                         MapDebugOverlay(
