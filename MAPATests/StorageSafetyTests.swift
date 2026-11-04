@@ -83,6 +83,28 @@ final class StorageSafetyTests: XCTestCase {
         XCTAssertTrue(log.statuses.isEmpty, "первый запуск — это не поломка")
     }
 
+    func testНастоящийСтарыйФайлПервойВерсииЧитается() async throws {
+        // Ровно то, что записывала прежняя версия: номер формата, статусы
+        // строками и дом. Пока переходов между версиями нет, проверка
+        // сторожит сам факт чтения по номеру формата.
+        write(OldFiles.travelLogV1)
+        let log = try await FileTravelLogStorage(fileName: fileName).load()
+
+        XCTAssertEqual(log.status(for: "ITA"), .visited)
+        XCTAssertEqual(log.status(for: "JPN"), .wishlist)
+        XCTAssertEqual(log.home?.cityName, "Варшава")
+    }
+
+    func testНеизвестныйСтатусНеРонитВсюКарту() async throws {
+        write(OldFiles.travelLogWithUnknownStatus)
+        let log = try await FileTravelLogStorage(fileName: fileName).load()
+
+        // Потерять одну непонятную отметку лучше, чем всю карту: файл
+        // прочитан, и запись не останавливается.
+        XCTAssertEqual(log.status(for: "ITA"), .visited)
+        XCTAssertNil(log.status(for: "XXX"))
+    }
+
     // MARK: - Маршруты
 
     func testИспорченныйФайлМаршрутовНеЧитается() async {
@@ -95,6 +117,17 @@ final class StorageSafetyTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? StorageFailure, .unreadable)
         }
+    }
+
+    func testНастоящийСтарыйФайлМаршрутовЧитается() async throws {
+        write(OldFiles.routesV1)
+        let routes = try await FileRouteStorage(fileName: fileName).load()
+
+        XCTAssertEqual(routes.map(\.title), ["Италия"])
+        XCTAssertEqual(routes[0].points.map(\.name), ["Рим"])
+        // Поля, появившиеся позже, читаются пустыми, а не придуманными.
+        XCTAssertNil(routes[0].startDate)
+        XCTAssertFalse(routes[0].points[0].isVisited)
     }
 
     func testФайлМаршрутовБудущейВерсииНеЧитается() async {
@@ -174,4 +207,31 @@ private final class FailingRouteStorage: RouteStorage {
 private final class SpyRouteStorage: RouteStorage {
     func load() async throws -> [Route] { [] }
     func save(_ routes: [Route]) async throws {}
+}
+
+/// Файлы, какими их писали прежние версии приложения.
+///
+/// Лежат строками, а не собираются кодом: смысл проверки в том, чтобы
+/// читался настоящий старый файл, а не то, что сегодняшний кодировщик
+/// считает старым форматом.
+private enum OldFiles {
+
+    static let travelLogV1 = """
+    {"version":1,"statuses":{"ITA":"visited","JPN":"wishlist","POL":"living"},\
+    "home":{"countryID":"POL","cityName":"Варшава","longitude":21,"latitude":52.2},\
+    "updatedAt":"2026-02-01T10:00:00Z"}
+    """
+
+    static let travelLogWithUnknownStatus = """
+    {"version":1,"statuses":{"ITA":"visited","XXX":"teleported"},\
+    "updatedAt":"2026-02-01T10:00:00Z"}
+    """
+
+    static let routesV1 = """
+    {"version":1,"updatedAt":"2026-02-01T10:00:00Z","routes":[\
+    {"id":"6B29FC40-CA47-1067-B31D-00DD010662DA","title":"Италия",\
+    "createdAt":"2026-01-10T10:00:00Z","reviews":[],"points":[\
+    {"id":"6B29FC40-CA47-1067-B31D-00DD010662DB","name":"Рим",\
+    "longitude":12.5,"latitude":41.9,"days":3,"budget":0,"note":""}]}]}
+    """
 }
