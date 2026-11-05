@@ -758,7 +758,8 @@ struct WorldMapView: View {
                 // Беда с файлом данных — поверх всего и сразу: человек
                 // должен узнать о ней до того, как начнёт отмечать карту
                 // заново, решив, что всё пропало.
-                if let failure = model.logFailure ?? model.routesFailure, !showsSearch {
+                if let failure = model.logFailure ?? model.routesFailure ?? account.failure,
+                   !showsSearch {
                     StorageAlertBar(failure: failure, accent: activeTheme.accent) {
                         withAnimation(motion.animation(.smooth)) { showsSettings = true }
                     }

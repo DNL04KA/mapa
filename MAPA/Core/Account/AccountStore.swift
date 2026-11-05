@@ -13,6 +13,9 @@ final class AccountStore: ObservableObject {
 
     @Published private(set) var profile: Profile
     @Published private(set) var state: State = .idle
+    /// Профиль не прочитался, и запись в его файл остановлена.
+    /// Тот же замок, что у карты и маршрутов, и по той же причине.
+    @Published private(set) var failure: StorageFailure?
 
     enum State: Equatable {
         case idle
@@ -28,11 +31,22 @@ final class AccountStore: ObservableObject {
          auth: AuthService = UnavailableAuthService()) {
         self.storage = storage
         self.auth = auth
-        let stored = storage.load()
+
+        // Файл профиля читается так же, как карта и маршруты: не вышло —
+        // значит не пишем. Имя, никнейм и аватарка потерялись бы тише
+        // всего, а восстановить их потом было бы неоткуда.
+        let stored: Profile?
+        do {
+            stored = try storage.load()
+        } catch {
+            stored = nil
+            self.failure = (error as? StorageFailure) ?? .unreadable
+        }
+
         self.profile = stored ?? Profile.local()
-        if stored == nil {
+        if stored == nil, failure == nil {
             storage.save(profile)
-        } else if Self.defaultNames.contains(profile.name) {
+        } else if stored != nil, Self.defaultNames.contains(profile.name) {
             // Раньше имя по умолчанию записывалось в файл, и на английском
             // телефоне человек видел «Путешественник». Стираем его один
             // раз: пустое имя показывается на языке телефона.
@@ -50,7 +64,7 @@ final class AccountStore: ObservableObject {
 
     func rename(_ name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, trimmed != profile.name else { return }
+        guard !trimmed.isEmpty, trimmed != profile.name, failure == nil else { return }
         profile.name = trimmed
         storage.save(profile)
     }
@@ -63,7 +77,7 @@ final class AccountStore: ObservableObject {
     /// бы обещать уникальность, которую мы не можем обеспечить.
     @discardableResult
     func createProfile(handle: String, name: String) -> Bool {
-        guard Handle.isValid(handle) else { return false }
+        guard Handle.isValid(handle), failure == nil else { return false }
         profile.handle = Handle.normalized(handle)
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { profile.name = trimmed }
@@ -84,12 +98,15 @@ final class AccountStore: ObservableObject {
     /// вернуть то состояние целиком. Идентификатор берётся из копии —
     /// это тот же человек, просто на другом телефоне.
     func restore(_ restored: Profile) {
+        // Копия — это и есть ответ на «файл не прочитался»: человек принёс
+        // целые данные, и запись снова разрешена.
+        failure = nil
         profile = restored
         storage.save(restored)
     }
 
     func setAvatar(_ avatar: Avatar) {
-        guard avatar != profile.avatar else { return }
+        guard avatar != profile.avatar, failure == nil else { return }
         // Старое своё фото удаляем сразу: иначе в папке копятся снимки,
         // на которые уже никто не смотрит.
         if case let .photo(old) = profile.avatar, case .photo(let new) = avatar, old != new {
@@ -127,8 +144,25 @@ final class AccountStore: ObservableObject {
 // MARK: - Хранилище профиля
 
 protocol ProfileStorage {
-    func load() -> Profile?
+    /// `nil` — профиля ещё нет, это первый запуск.
+    /// Ошибка — файл есть, но прочитать его не вышло; тогда писать поверх
+    /// нельзя, там имя, никнейм и аватарка человека.
+    func load() throws -> Profile?
     func save(_ profile: Profile)
+}
+
+/// То, что лежит в файле профиля.
+///
+/// Первая версия писала профиль голым, без обёртки и без номера формата —
+/// и это оказалось единственным хранилищем без него. Такой файл читается
+/// по-прежнему и переписывается в новом виде при первом же изменении
+/// профиля: миграция здесь не требует ничего от человека.
+private struct ProfileSnapshot: Codable {
+    var version: Int
+    var profile: Profile
+    var updatedAt: Date
+
+    static let currentVersion = 2
 }
 
 struct FileProfileStorage: ProfileStorage {
@@ -149,20 +183,43 @@ struct FileProfileStorage: ProfileStorage {
     /// инициализаторе вьюмодели, до первого кадра, а в файле — несколько
     /// сотен байт. Асинхронность здесь дала бы экран без имени и аватарки
     /// на один кадр, и ради этого не стоит.
-    func load() -> Profile? {
-        guard let data = try? Data(contentsOf: fileURL) else { return nil }
+    func load() throws -> Profile? {
+        guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
+        guard let data = try? Data(contentsOf: fileURL) else {
+            throw StorageFailure.unreadable
+        }
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try? decoder.decode(Profile.self, from: data)
+
+        if let version = SchemaProbe.version(in: data) {
+            guard version <= ProfileSnapshot.currentVersion else {
+                throw StorageFailure.futureVersion(found: version,
+                                                   supported: ProfileSnapshot.currentVersion)
+            }
+            guard let snapshot = try? decoder.decode(ProfileSnapshot.self, from: data) else {
+                throw StorageFailure.unreadable
+            }
+            return snapshot.profile
+        }
+
+        // Без номера формата — значит первая версия, профиль записан голым.
+        guard let old = try? decoder.decode(Profile.self, from: data) else {
+            throw StorageFailure.unreadable
+        }
+        return old
     }
 
     /// А запись уходит с главного актора, как и в остальных хранилищах:
     /// её результата никто не ждёт, а случается она на каждое изменение
     /// профиля — имя, аватарка, никнейм, вход.
     func save(_ profile: Profile) {
+        let snapshot = ProfileSnapshot(version: ProfileSnapshot.currentVersion,
+                                       profile: profile,
+                                       updatedAt: Date())
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        guard let data = try? encoder.encode(profile) else { return }
+        guard let data = try? encoder.encode(snapshot) else { return }
         let url = fileURL
         Task.detached(priority: .utility) {
             try? data.write(to: url, options: .atomic)
@@ -176,7 +233,7 @@ struct FileProfileStorage: ProfileStorage {
 /// по правилу «протокол + файловая реализация + эфемерная».
 struct EphemeralProfileStorage: ProfileStorage {
     var initial: Profile?
-    func load() -> Profile? { initial }
+    func load() throws -> Profile? { initial }
     func save(_ profile: Profile) {}
 }
 
