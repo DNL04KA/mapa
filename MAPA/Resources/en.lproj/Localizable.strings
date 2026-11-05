@@ -41,6 +41,7 @@
 "Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-color charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
 "Восстановить из копии" = "Restore from a backup";
 "Восстановить покупку" = "Restore purchase";
+"Впереди" = "Ahead";
 "Всё открыто — выбирай любое" = "Everything is unlocked — pick any";
 "Всё, что появится дальше — карта, карточки стран, маршруты — собирается только из этих токенов." = "Everything that follows — the map, country cards, routes — is built from these tokens alone.";
 "Вулкан" = "Volcano";
@@ -109,6 +110,7 @@
 "Здесь будут те, чьи маршруты оценили выше всего." = "This is where the people with the best-rated routes will be.";
 "Здесь мой дом" = "This is my home";
 "Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать." = "Routes by other people will appear here — with photos, budgets and reviews. We did not fill this section with invented ones: you cannot travel by those.";
+"Идут сейчас" = "Under way";
 "Идёт сейчас" = "Under way";
 "Из них собирается всё остальное" = "Everything else is built from these";
 "Изменить аватарку" = "Change avatar";
@@ -171,6 +173,7 @@
 "Мята" = "Mint";
 "На симуляторе не ощущается — нужен телефон" = "Cannot be felt in the simulator — you need a phone";
 "На этом телефоне" = "On this phone";
+"Наброски" = "Drafts";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
 "Название" = "Name";
 "Название маршрута" = "Route name";
@@ -213,6 +216,7 @@
 "Открыть фотографию" = "Open photo";
 "Отмена" = "Cancel";
 "Отменён" = "Cancelled";
+"Отменённые" = "Cancelled";
 "Отметить" = "Set it";
 "Отметить пройденной" = "Mark as done";
 "Отметить списком" = "Mark from a list";
@@ -267,6 +271,7 @@
 "Продолжить маршрут %@. %@" = "Continue route %@. %@";
 "Пройден" = "Completed";
 "Пройден целиком" = "Completed";
+"Пройденные" = "Completed";
 "Пропустить" = "Skip";
 "Профиль не найден" = "Profile not found";
 "Профиль" = "Profile";

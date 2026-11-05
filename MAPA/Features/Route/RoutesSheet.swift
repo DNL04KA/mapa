@@ -133,10 +133,59 @@ struct RoutesSheet: View {
     // MARK: - Свои
 
     private var mine: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xs) {
-            SectionHeader("Твои маршруты")
-            ForEach(Array(routes.enumerated()), id: \.element.id) { index, route in
-                row(route).dsReveal(index)
+        VStack(alignment: .leading, spacing: DS.Space.md) {
+            ForEach(groups, id: \.status) { group in
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    SectionHeader(group.title)
+                    ForEach(Array(group.routes.enumerated()), id: \.element.id) { index, route in
+                        row(route).dsReveal(index)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Поездки по состояниям: сначала та, что идёт, потом ближайшая,
+    /// потом наброски и только в конце прошлое.
+    ///
+    /// Плоский список по времени создания путал: черновик, план на март и
+    /// прошлогодняя поездка выглядели одинаково и стояли вперемешку.
+    private var groups: [StatusGroup] { Self.groups(for: routes) }
+
+    static func groups(for routes: [Route]) -> [StatusGroup] {
+        let byStatus = Dictionary(grouping: routes, by: \.status)
+        return JourneyStatus.allCases
+            .sorted { $0.listOrder < $1.listOrder }
+            .compactMap { status in
+                guard let found = byStatus[status], !found.isEmpty else { return nil }
+                return StatusGroup(status: status, routes: found.sorted(by: Self.earlierFirst))
+            }
+    }
+
+    /// Внутри раздела — по дате выезда: ближайшая поездка выше. Без дат
+    /// сравнивать нечего, и тогда порядок прежний — по времени создания.
+    private static func earlierFirst(_ lhs: Route, _ rhs: Route) -> Bool {
+        switch (lhs.startDate, rhs.startDate) {
+        case let (left?, right?): return left < right
+        case (nil, _?):           return false
+        case (_?, nil):           return true
+        default:                  return lhs.createdAt > rhs.createdAt
+        }
+    }
+
+    struct StatusGroup {
+        let status: JourneyStatus
+        let routes: [Route]
+
+        /// Заголовок раздела — про поездки, а не про состояние одной из них:
+        /// «Идут сейчас», а не «Идёт сейчас».
+        var title: LocalizedStringKey {
+            switch status {
+            case .inProgress: return "Идут сейчас"
+            case .planned:    return "Впереди"
+            case .draft:      return "Наброски"
+            case .completed:  return "Пройденные"
+            case .cancelled:  return "Отменённые"
             }
         }
     }

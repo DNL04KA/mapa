@@ -62,6 +62,10 @@ final class WorldMapViewModel: ObservableObject {
     /// экране одинаково — и это стоило бы человеку всей карты: приложение
     /// показало бы пустоту, а первая же отметка записала бы её поверх
     /// файла. Поэтому пока здесь что-то есть, `persist()` молчит.
+    /// Наброски по отмеченным странам. Пересобираются при смене отметок
+    /// и маршрутов — см. `rebuildSuggestions()`.
+    @Published private(set) var suggestedCountryRoutes: [CountrySuggestion] = []
+
     @Published private(set) var logFailure: StorageFailure?
     /// То же самое для маршрутов. Два отдельных замка, а не один общий:
     /// испорченный файл маршрутов не повод запретить человеку отмечать
@@ -275,6 +279,7 @@ final class WorldMapViewModel: ObservableObject {
 
             rebuildMarked(excluding: nil)
             refreshStatistics()
+            rebuildSuggestions()
             state = .ready
             focusOnMyWorldIfNeeded()
         } catch {
@@ -862,8 +867,18 @@ final class WorldMapViewModel: ObservableObject {
     /// Сначала «хочу»: набросок полезнее всего там, куда ещё собираешься.
     /// Потом «был» — по ним ездят второй раз и достраивают маршрут.
     /// Страны без городов и с одной точкой отсеиваются: маршрут из одного
-    /// города — это не маршрут.
-    var suggestedCountryRoutes: [CountrySuggestion] {
+    /// города — это не маршрут. Страны, по которым маршрут уже взят, тоже:
+    /// они стоят выше, в своих поездках, и предлагать их второй раз значит
+    /// получить два одинаковых маршрута в списке.
+    ///
+    /// Считается при смене отметок и маршрутов, а не в теле экрана: пока
+    /// лист открыт, планировщик перебирал отмеченные страны и фильтровал
+    /// восемьсот городов на каждое обновление.
+    private func rebuildSuggestions() {
+        suggestedCountryRoutes = makeSuggestions()
+    }
+
+    private func makeSuggestions() -> [CountrySuggestion] {
         guard let geometry else { return [] }
 
         let order: [TravelStatus] = [.wishlist, .visited, .living]
@@ -878,8 +893,10 @@ final class WorldMapViewModel: ObservableObject {
                 return lhs.0.areaKm2 > rhs.0.areaKm2
             }
 
+        let taken = Set(routes.compactMap { $0.points.first?.countryID })
+
         var result: [CountrySuggestion] = []
-        for (country, _) in marked {
+        for (country, _) in marked where !taken.contains(country.id) {
             let stops = CountryRoutePlanner.suggest(for: cities(of: country))
             guard stops.count > 1 else { continue }
             result.append(CountrySuggestion(country: country, stops: stops))
@@ -894,6 +911,15 @@ final class WorldMapViewModel: ObservableObject {
     /// сказал «беру», и потерять это из-за случайного свайпа он не должен.
     func takeSuggestedRoute(_ stops: [CountryRoutePlanner.Stop], for country: Country, reduceMotion: Bool) {
         guard stops.count > 1 else { return }
+
+        // Набросок по стране, которая уже взята, открывает существующую
+        // поездку вместо второй такой же. Осознанная вторая поездка в ту
+        // же страну по-прежнему собирается руками — через «Новый маршрут».
+        if let existing = routes.first(where: { $0.points.first?.countryID == country.id }) {
+            openRoute(existing, reduceMotion: reduceMotion)
+            return
+        }
+
         let route = CountryRoutePlanner.route(
             title: country.displayName,
             countryID: country.id,
@@ -1141,6 +1167,9 @@ final class WorldMapViewModel: ObservableObject {
     }
 
     private func persistRoutes() {
+        // Список поездок изменился — значит изменилось и то, что ещё
+        // имеет смысл предлагать.
+        rebuildSuggestions()
         guard routesFailure == nil else { return }
         let snapshot = routes
         let previous = routeSaveTask
@@ -1157,6 +1186,9 @@ final class WorldMapViewModel: ObservableObject {
     }
 
     private func persist() {
+        // Отметки изменились — значит изменилось и то, что имеет смысл
+        // предлагать: наброски строятся по отмеченным странам.
+        rebuildSuggestions()
         // Файл, который мы не поняли, не переписываем: там данные человека.
         guard logFailure == nil else { return }
         let snapshot = travelLog
