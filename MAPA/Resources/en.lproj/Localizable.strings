@@ -69,6 +69,7 @@
 "Дальше" = "Next";
 "Данные записаны новой версией" = "Saved by a newer version";
 "Данные не прочитались" = "Your data could not be read";
+"Даты есть — можно считать запланированной" = "The dates are set — call it planned?";
 "Движение" = "Motion";
 "Дизайн-система · этап 1" = "Design system · stage 1";
 "Дизайн-система" = "Design system";
@@ -157,6 +158,7 @@
 "Миллиметровка и пунктир" = "Graph paper and dashes";
 "Мир открыт на %@ процента, " = "World unlocked %@ percent, ";
 "Мир открыт на" = "World unlocked";
+"Можно сменить состояние" = "The status can be changed";
 "Мои маршруты" = "My routes";
 "Море" = "Sea";
 "Моя карта MAPA" = "My MAPA map";
@@ -166,6 +168,8 @@
 "На симуляторе не ощущается — нужен телефон" = "Cannot be felt in the simulator — you need a phone";
 "На этом телефоне" = "On this phone";
 "Набросок собран из главных городов страны и их настоящих достопримечательностей. Порядок — по географии, дни — по числу мест. Всё это правится, как только маршрут твой." = "The draft is assembled from the country's main cities and their real landmarks. The order follows geography, the days follow the number of places. All of it is editable once the route is yours.";
+"Название" = "Name";
+"Название маршрута" = "Route name";
 "Назначить" = "Set dates";
 "Назначить даты маршрута" = "Set the route dates";
 "Найти страну или город" = "Find a country or city";
@@ -205,6 +209,7 @@
 "Открыть фотографию" = "Open photo";
 "Отмена" = "Cancel";
 "Отменён" = "Cancelled";
+"Отметить" = "Set it";
 "Отметить пройденной" = "Mark as done";
 "Отметить списком" = "Mark from a list";
 "Отметить страну можно списком в профиле, а найти конкретную — поиском" = "Mark a country from the list in your profile; find a particular one with search";
@@ -246,6 +251,8 @@
 "Поставить дом в этой точке" = "Set home at this point";
 "Поставить оценку" = "Give a rating";
 "Потом" = "Later";
+"Похоже, поездка началась" = "Looks like the trip has started";
+"Похоже, поездка позади" = "Looks like the trip is over";
 "Почта" = "Email";
 "Появятся вместе с маршрутами" = "They will arrive with routes";
 "Приблизить" = "Zoom in";

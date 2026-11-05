@@ -23,6 +23,8 @@ struct RoutePanel: View {
     let onSetPhoto: (RoutePoint, UIImage?) -> Void
     let onChangeDays: (RoutePoint, Int) -> Void
     let onSetStartDate: (Date?) -> Void
+    let onRename: (String) -> Void
+    let onSetStatus: (JourneyStatus) -> Void
     let onRate: (Int, String) -> Void
     let onRemoveReview: () -> Void
     let onDone: () -> Void
@@ -35,6 +37,8 @@ struct RoutePanel: View {
     @State private var photoTarget: RoutePoint?
     @State private var photoItem: PhotosPickerItem?
     @State private var isPickingPhoto = false
+    @State private var draftTitle = ""
+    @FocusState private var titleFocused: Bool
 
     private let rowHeight: CGFloat = 104
 
@@ -59,13 +63,22 @@ struct RoutePanel: View {
                 // Пять городов — это больше пятисот точек высоты, и всё, что
                 // лежало под ними, человек просто не находил: отзывы были
                 // написаны, но для него их не существовало.
+                header
                 dates
-                ratingBar
+
+                // Оценка — у пройденной поездки и ни у какой другой.
+                // Ставить звёзды плану, в который ещё не съездил, не
+                // значит ничего: оценивают то, что уже случилось.
+                if route.status == .completed {
+                    ratingBar
+                }
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: DS.Space.md) {
                         points
-                        reviews
+                        if route.status == .completed {
+                            reviews
+                        }
                     }
                     .padding(.bottom, DS.Space.xs)
                 }
@@ -194,6 +207,132 @@ struct RoutePanel: View {
                                 "\(Int(route.totalDistanceKm))"))
         }
         return parts.joined(separator: " · ")
+    }
+
+    // MARK: - Шапка редактора
+
+    /// Имя поездки и её состояние.
+    ///
+    /// Имя правится здесь, а не в свёрнутой полосе: та живёт поверх карты
+    /// и нужна для «где я остановился», а не для редактуры. Состояние
+    /// стоит рядом с именем, потому что это одно решение — «что это за
+    /// поездка и что с ней сейчас».
+    private var header: some View {
+        VStack(alignment: .leading, spacing: DS.Space.sm) {
+            TextField("Название", text: $draftTitle)
+                .font(DS.Font.headline)
+                .foregroundStyle(DS.Color.ink)
+                .focused($titleFocused)
+                .submitLabel(.done)
+                .onSubmit(commitTitle)
+                .onChange(of: titleFocused) { focused in
+                    if !focused { commitTitle() }
+                }
+                .padding(.horizontal, DS.Space.sm)
+                .frame(height: DS.Size.controlHeight)
+                .dsGlass(radius: DS.Radius.md, shadow: .low)
+                .accessibilityLabel("Название маршрута")
+
+            statusRow
+
+            if let suggested = route.suggestedStatus() {
+                suggestion(suggested)
+            }
+        }
+        .onAppear { draftTitle = route.title }
+        .onChange(of: route.id) { _ in draftTitle = route.title }
+    }
+
+    private var statusRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: DS.Space.xs) {
+                ForEach(JourneyStatus.allCases) { status in
+                    statusChip(status)
+                }
+            }
+            .padding(.horizontal, 1)
+        }
+    }
+
+    private func statusChip(_ status: JourneyStatus) -> some View {
+        let isOn = route.status == status
+        return Button {
+            Haptics.shared.tap(.light)
+            onSetStatus(status)
+        } label: {
+            HStack(spacing: DS.Space.xxs) {
+                Image(systemName: status.icon)
+                    .font(.system(size: DS.Size.glyphSm, weight: .semibold))
+                Text(status.title)
+                    .font(DS.Font.caption)
+            }
+            .foregroundStyle(isOn ? DS.Color.inkOnAccent : DS.Color.inkSecondary)
+            .padding(.horizontal, DS.Space.sm)
+            .frame(height: 32)
+            .background {
+                Capsule().fill(isOn ? AnyShapeStyle(accent) : AnyShapeStyle(DS.Color.surfaceRaised.opacity(0.6)))
+            }
+            .overlay {
+                Capsule().strokeBorder(isOn ? Color.clear : DS.Color.hairline, lineWidth: 1)
+            }
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? [.isSelected] : [])
+    }
+
+    /// Предложение сменить состояние.
+    ///
+    /// Приложение видит, что даты прошли или все точки пройдены, но
+    /// переключать само не станет: поездку могли отменить или перенести.
+    /// Поэтому это строка с кнопкой, а не молчаливое изменение.
+    private func suggestion(_ status: JourneyStatus) -> some View {
+        HStack(spacing: DS.Space.xs) {
+            Image(systemName: status.icon)
+                .font(.system(size: DS.Size.glyphSm, weight: .semibold))
+                .foregroundStyle(accent)
+
+            Text(suggestionText(for: status))
+                .font(DS.Font.micro)
+                .foregroundStyle(DS.Color.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+
+            Button {
+                Haptics.shared.tap(.light)
+                onSetStatus(status)
+            } label: {
+                Text("Отметить")
+                    .font(DS.Font.caption)
+                    .foregroundStyle(accent)
+                    .padding(.horizontal, DS.Space.sm)
+                    .frame(height: 30)
+                    .background { Capsule().fill(accent.opacity(0.12)) }
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(DS.Space.sm)
+        .dsGlass(radius: DS.Radius.md, shadow: .low)
+    }
+
+    private func suggestionText(for status: JourneyStatus) -> LocalizedStringKey {
+        switch status {
+        case .inProgress: return "Похоже, поездка началась"
+        case .completed:  return "Похоже, поездка позади"
+        case .planned:    return "Даты есть — можно считать запланированной"
+        default:          return "Можно сменить состояние"
+        }
+    }
+
+    /// Пустое имя не записываем: у маршрута есть расчётное название из
+    /// первого и последнего города, и оно лучше пустой строки.
+    private func commitTitle() {
+        let trimmed = draftTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != route.title else { return }
+        onRename(trimmed)
+        draftTitle = trimmed
     }
 
     // MARK: - Даты

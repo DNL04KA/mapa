@@ -303,6 +303,8 @@ struct WorldMapView: View {
                     model.update(updated)
                 },
                 onSetStartDate: { model.setStartDate($0) },
+                onRename: { model.renameRoute($0) },
+                onSetStatus: { model.setStatus($0) },
                 onRate: { model.rateOpenRoute($0, text: $1) },
                 onRemoveReview: { model.removeMyReview() },
                 onDone: {

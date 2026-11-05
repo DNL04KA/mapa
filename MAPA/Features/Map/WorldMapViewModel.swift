@@ -955,6 +955,26 @@ final class WorldMapViewModel: ObservableObject {
         rebuildRouteLine()
     }
 
+    /// Переименовать поездку.
+    ///
+    /// Пустое имя не ошибка, а возврат к расчётному: у маршрута есть
+    /// название из первого и последнего города, и оно лучше пустой строки
+    /// в списке.
+    func renameRoute(_ title: String) {
+        guard var route = editingRoute else { return }
+        route.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        editingRoute = route
+        syncOpenRoute()
+    }
+
+    /// Сменить состояние поездки. Только по решению человека.
+    func setStatus(_ status: JourneyStatus) {
+        guard var route = editingRoute, route.status != status else { return }
+        route.status = status
+        editingRoute = route
+        syncOpenRoute()
+    }
+
     /// Назначить или убрать день выезда.
     ///
     /// Остальные даты из него считаются, хранить их незачем: поменял
