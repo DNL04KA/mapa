@@ -103,6 +103,7 @@
 		4862264EDC307E5C1E0392E5 /* OnboardingView.swift in Build */ = {isa = PBXBuildFile; fileRef = 9741BFDFBD10242692546840 /* OnboardingView.swift */; };
 		F30305ABE93A38888CBBF795 /* RatingStars.swift in Build */ = {isa = PBXBuildFile; fileRef = 4E11AD648F2CB36EAD376AEC /* RatingStars.swift */; };
 		1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift in Build */ = {isa = PBXBuildFile; fileRef = 0850B19A6F2435CAC30DD278 /* RoutePanel.swift */; };
+		9BBE0F8A5DE2CE04174FE01F /* RoutePointEditor.swift in Build */ = {isa = PBXBuildFile; fileRef = B95BF9F7F9AF0FBEE42CCF83 /* RoutePointEditor.swift */; };
 		644B9A95B247A9EBC96A839E /* RoutesSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */; };
 		4F3F4AE384F8C1DB71BE02F6 /* SearchSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = 183BAE8B3416FEFC58E437A6 /* SearchSheet.swift */; };
 		9480C4BDA91535C4A0BE5705 /* SettingsSheet.swift in Build */ = {isa = PBXBuildFile; fileRef = BD37DBD027ABAE6156BCFF36 /* SettingsSheet.swift */; };
@@ -131,6 +132,7 @@
 		D9C12A49B571E13540C1BE48 /* PhotoCleanupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */; };
 		C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */; };
 		C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C98420008F958B62B6FF46 /* RouteCodableTests.swift */; };
+		358F95C43DC62990B1EF2746 /* RouteEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */; };
 		CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */; };
 		7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54AB977091945F179EC0145 /* SearchTests.swift */; };
 		EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0128D85165C2D030CAA039BE /* ShopTests.swift */; };
@@ -236,6 +238,7 @@
 		9741BFDFBD10242692546840 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		4E11AD648F2CB36EAD376AEC /* RatingStars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingStars.swift; sourceTree = "<group>"; };
 		0850B19A6F2435CAC30DD278 /* RoutePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePanel.swift; sourceTree = "<group>"; };
+		B95BF9F7F9AF0FBEE42CCF83 /* RoutePointEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePointEditor.swift; sourceTree = "<group>"; };
 		16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutesSheet.swift; sourceTree = "<group>"; };
 		183BAE8B3416FEFC58E437A6 /* SearchSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchSheet.swift; sourceTree = "<group>"; };
 		BD37DBD027ABAE6156BCFF36 /* SettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSheet.swift; sourceTree = "<group>"; };
@@ -265,6 +268,7 @@
 		7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCleanupTests.swift; sourceTree = "<group>"; };
 		ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStorageTests.swift; sourceTree = "<group>"; };
 		70C98420008F958B62B6FF46 /* RouteCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCodableTests.swift; sourceTree = "<group>"; };
+		1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEditingTests.swift; sourceTree = "<group>"; };
 		5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFocusTests.swift; sourceTree = "<group>"; };
 		E54AB977091945F179EC0145 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
 		0128D85165C2D030CAA039BE /* ShopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopTests.swift; sourceTree = "<group>"; };
@@ -603,6 +607,7 @@
 			children = (
 				4E11AD648F2CB36EAD376AEC /* RatingStars.swift */,
 				0850B19A6F2435CAC30DD278 /* RoutePanel.swift */,
+				B95BF9F7F9AF0FBEE42CCF83 /* RoutePointEditor.swift */,
 				16BFBE6E7AF4F0FE46C12B4B /* RoutesSheet.swift */,
 			);
 			path = Route;
@@ -740,6 +745,7 @@
 				7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */,
 				ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */,
 				70C98420008F958B62B6FF46 /* RouteCodableTests.swift */,
+				1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */,
 				5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */,
 				E54AB977091945F179EC0145 /* SearchTests.swift */,
 				0128D85165C2D030CAA039BE /* ShopTests.swift */,
@@ -962,6 +968,7 @@
 				4862264EDC307E5C1E0392E5 /* OnboardingView.swift */,
 				F30305ABE93A38888CBBF795 /* RatingStars.swift */,
 				1A6F2B45CEC0BFE52B24A92A /* RoutePanel.swift */,
+				9BBE0F8A5DE2CE04174FE01F /* RoutePointEditor.swift */,
 				644B9A95B247A9EBC96A839E /* RoutesSheet.swift */,
 				4F3F4AE384F8C1DB71BE02F6 /* SearchSheet.swift */,
 				9480C4BDA91535C4A0BE5705 /* SettingsSheet.swift */,
@@ -986,6 +993,7 @@
 				D9C12A49B571E13540C1BE48 /* PhotoCleanupTests.swift in Sources */,
 				C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */,
 				C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */,
+				358F95C43DC62990B1EF2746 /* RouteEditingTests.swift in Sources */,
 				CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */,
 				7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */,
 				EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */,

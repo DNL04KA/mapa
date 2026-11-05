@@ -953,6 +953,9 @@ final class WorldMapViewModel: ObservableObject {
         route.points[index] = point
         editingRoute = route
         rebuildRouteLine()
+        // Сразу на диск: дни, бюджет и заметка — это правки, а не черновик
+        // до закрытия экрана. Потерять их из-за случайного свайпа нельзя.
+        syncOpenRoute()
     }
 
     /// Переименовать поездку.
@@ -963,6 +966,14 @@ final class WorldMapViewModel: ObservableObject {
     func renameRoute(_ title: String) {
         guard var route = editingRoute else { return }
         route.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        editingRoute = route
+        syncOpenRoute()
+    }
+
+    /// Заметка о поездке.
+    func setRouteNote(_ note: String) {
+        guard var route = editingRoute, route.note != note else { return }
+        route.note = note
         editingRoute = route
         syncOpenRoute()
     }

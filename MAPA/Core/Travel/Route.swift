@@ -144,6 +144,13 @@ struct Route: Identifiable, Equatable, Codable {
     var startDate: Date?
     /// Что сейчас с поездкой. Ставит человек; приложение только подсказывает.
     var status: JourneyStatus
+    /// Заметка о поездке: зачем она, что не забыть, как съездилось.
+    ///
+    /// Одно поле, а не «описание» и «заметка» по отдельности: два
+    /// одинаковых на вид поля человек не различает и заполняет наугад.
+    /// Описание для чужих глаз появится вместе с публикацией, и тогда ему
+    /// понадобится своё место.
+    var note: String
 
     init(
         id: UUID = UUID(),
@@ -152,7 +159,8 @@ struct Route: Identifiable, Equatable, Codable {
         createdAt: Date = Date(),
         reviews: [RouteReview] = [],
         startDate: Date? = nil,
-        status: JourneyStatus = .draft
+        status: JourneyStatus = .draft,
+        note: String = ""
     ) {
         self.id = id
         self.title = title
@@ -161,6 +169,7 @@ struct Route: Identifiable, Equatable, Codable {
         self.reviews = reviews
         self.startDate = startDate
         self.status = status
+        self.note = note
     }
 
     /// Старые маршруты не знают про состояние.
@@ -179,6 +188,7 @@ struct Route: Identifiable, Equatable, Codable {
         startDate = try container.decodeIfPresent(Date.self, forKey: .startDate)
         status = try container.decodeIfPresent(JourneyStatus.self, forKey: .status)
             ?? Self.derivedStatus(points: points)
+        note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
     }
 
     /// Состояние по тому, что уже отмечено пройденным.

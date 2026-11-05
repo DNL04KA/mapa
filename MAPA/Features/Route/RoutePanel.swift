@@ -25,6 +25,8 @@ struct RoutePanel: View {
     let onSetStartDate: (Date?) -> Void
     let onRename: (String) -> Void
     let onSetStatus: (JourneyStatus) -> Void
+    let onSetNote: (String) -> Void
+    let onUpdatePoint: (RoutePoint) -> Void
     let onRate: (Int, String) -> Void
     let onRemoveReview: () -> Void
     let onDone: () -> Void
@@ -38,7 +40,10 @@ struct RoutePanel: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var isPickingPhoto = false
     @State private var draftTitle = ""
+    @State private var draftNote = ""
+    @State private var editingPoint: RoutePoint?
     @FocusState private var titleFocused: Bool
+    @FocusState private var noteFocused: Bool
 
     private let rowHeight: CGFloat = 104
 
@@ -48,6 +53,51 @@ struct RoutePanel: View {
             panel
         }
         .ignoresSafeArea(edges: .bottom)
+        #if DEBUG
+        // Открыть правку остановки сразу: у симулятора в командной строке
+        // нет пальцев, а снять этот экран надо. Только отладка.
+        .onAppear {
+            if ProcessInfo.processInfo.environment["MAPA_SCREEN"] == "route-point" {
+                editingPoint = route.points.first
+            }
+        }
+        #endif
+        .sheet(item: $editingPoint) { point in
+            RoutePointEditor(
+                point: current(point),
+                accent: accent,
+                arrival: arrival(of: point),
+                onChangeDays: { days in
+                    var updated = current(point)
+                    updated.days = max(1, min(60, days))
+                    onUpdatePoint(updated)
+                },
+                onChangeBudget: { budget in
+                    var updated = current(point)
+                    updated.budget = max(0, budget)
+                    onUpdatePoint(updated)
+                },
+                onChangeNote: { note in
+                    var updated = current(point)
+                    updated.note = note
+                    onUpdatePoint(updated)
+                },
+                onDone: { editingPoint = nil }
+            )
+            .presentationDetents([.medium, .large])
+        }
+    }
+
+    /// Точка в её нынешнем виде: лист открыт по значению, а дни в нём
+    /// меняются, и показывать надо свежее, а не то, с чем открыли.
+    private func current(_ point: RoutePoint) -> RoutePoint {
+        route.points.first { $0.id == point.id } ?? point
+    }
+
+    private func arrival(of point: RoutePoint) -> Date? {
+        guard let index = route.points.firstIndex(where: { $0.id == point.id }) else { return nil }
+        let schedule = route.schedule()
+        return schedule.indices.contains(index) ? schedule[index].arrival : nil
     }
 
     private var panel: some View {
@@ -206,6 +256,11 @@ struct RoutePanel: View {
             parts.append(String(format: NSLocalizedString("%@ км", comment: ""),
                                 "\(Int(route.totalDistanceKm))"))
         }
+        // Деньги — последними и только когда они посчитаны: нулевой
+        // бюджет в итогах читается как «поездка бесплатная».
+        if route.totalBudget > 0 {
+            parts.append("€\(route.totalBudget)")
+        }
         return parts.joined(separator: " · ")
     }
 
@@ -238,9 +293,21 @@ struct RoutePanel: View {
             if let suggested = route.suggestedStatus() {
                 suggestion(suggested)
             }
+
+            TextField("Заметка о поездке", text: $draftNote, axis: .vertical)
+                .font(DS.Font.callout)
+                .foregroundStyle(DS.Color.ink)
+                .lineLimit(1...4)
+                .focused($noteFocused)
+                .onChange(of: noteFocused) { focused in
+                    if !focused { commitNote() }
+                }
+                .padding(DS.Space.sm)
+                .frame(minHeight: DS.Size.controlHeight, alignment: .topLeading)
+                .dsGlass(radius: DS.Radius.md, shadow: .low)
         }
-        .onAppear { draftTitle = route.title }
-        .onChange(of: route.id) { _ in draftTitle = route.title }
+        .onAppear { loadDrafts() }
+        .onChange(of: route.id) { _ in loadDrafts() }
     }
 
     private var statusRow: some View {
@@ -328,6 +395,18 @@ struct RoutePanel: View {
 
     /// Пустое имя не записываем: у маршрута есть расчётное название из
     /// первого и последнего города, и оно лучше пустой строки.
+    private func loadDrafts() {
+        draftTitle = route.title
+        draftNote = route.note
+    }
+
+    private func commitNote() {
+        let trimmed = draftNote.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != route.note else { return }
+        onSetNote(trimmed)
+        draftNote = trimmed
+    }
+
     private func commitTitle() {
         let trimmed = draftTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != route.title else { return }
@@ -457,11 +536,30 @@ struct RoutePanel: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: DS.Space.xs) {
-                    Text(point.name)
-                        .font(DS.Font.subhead)
-                        .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
-                        .strikethrough(point.isVisited, color: DS.Color.inkTertiary)
-                        .lineLimit(1)
+                    Button {
+                        Haptics.shared.tap(.light)
+                        editingPoint = point
+                    } label: {
+                        HStack(spacing: DS.Space.xxs) {
+                            Text(point.name)
+                                .font(DS.Font.subhead)
+                                .foregroundStyle(point.isVisited ? DS.Color.inkSecondary : DS.Color.ink)
+                                .strikethrough(point.isVisited, color: DS.Color.inkTertiary)
+                                .lineLimit(1)
+
+                            // Скрепка там, где есть что прочитать: заметка
+                            // и бюджет не видны в строке, и без знака о них
+                            // никто не вспомнит.
+                            if !point.note.isEmpty || point.budget > 0 {
+                                Image(systemName: "text.alignleft")
+                                    .font(.system(size: DS.Size.glyphSm, weight: .semibold))
+                                    .foregroundStyle(DS.Color.inkTertiary)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Правка остановки: \(point.name)")
 
                     Spacer(minLength: 0)
 

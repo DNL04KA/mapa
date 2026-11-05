@@ -25,6 +25,7 @@
 "Африка" = "Africa";
 "Без дат" = "No dates yet";
 "Был" = "Been";
+"Бюджет остановки" = "Budget for this stop";
 "В бандле нет файла %@" = "File %@ is missing from the bundle";
 "В бандле нет файла cities.json" = "cities.json is missing from the bundle";
 "Версия" = "Version";
@@ -74,6 +75,7 @@
 "Дизайн-система · этап 1" = "Design system · stage 1";
 "Дизайн-система" = "Design system";
 "Дней в %@: %@" = "Days in %@: %@";
+"Дней здесь" = "Days here";
 "Добавить фото: %@" = "Add a photo: %@";
 "Дом · %@" = "Home · %@";
 "Доступность" = "Accessibility";
@@ -99,6 +101,8 @@
 "Закрыть" = "Close";
 "Заливка страны" = "Country fill";
 "Заливка страны, награды" = "Country fill, awards";
+"Заметка" = "Note";
+"Заметка о поездке" = "A note about the trip";
 "Запланирован" = "Planned";
 "Звери" = "Animals";
 "Звёздное небо под картой" = "A starry sky beneath the map";
@@ -255,6 +259,7 @@
 "Похоже, поездка позади" = "Looks like the trip is over";
 "Почта" = "Email";
 "Появятся вместе с маршрутами" = "They will arrive with routes";
+"Правка остановки: %@" = "Edit stop: %@";
 "Приблизить" = "Zoom in";
 "Приглушённые тона одной семьи" = "Muted tones of one family";
 "Применить" = "Apply";
@@ -361,6 +366,7 @@
 "Черновик" = "Draft";
 "Чертёж" = "Blueprint";
 "Что даёт вход" = "What signing in gives you";
+"Что не забыть" = "What not to forget";
 "Что посмотреть" = "What to see";
 "Что смотреть — расскажут те, кто был" = "Those who have been there will tell you what to see";
 "Что стоит знать тому, кто поедет за тобой?" = "What should the next traveller know?";

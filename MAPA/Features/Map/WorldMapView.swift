@@ -98,12 +98,12 @@ struct WorldMapView: View {
         case let id? where id.hasPrefix("city-"):
             guard let city = model.cities.first(where: { $0.id == String(id.dropFirst(5)) }) else { return }
             model.focus(on: city, reduceMotion: true)
-        case "route", "route-edit":
+        case "route", "route-edit", "route-point":
             guard let route = model.routes.first else { return }
             model.openRoute(route, reduceMotion: true)
             // Развёрнутая панель — это редактор: дни, даты, порядок точек.
             // Свёрнутая показывает карту, и для снимка карты она лучше.
-            routeExpanded = ProcessInfo.processInfo.environment["MAPA_SCREEN"] == "route-edit"
+            routeExpanded = ProcessInfo.processInfo.environment["MAPA_SCREEN"] != "route"
         case let id? where id.hasPrefix("card-"):
             guard let country = model.geometry?.country(id: String(id.dropFirst(5))) else { return }
             model.select(country, reduceMotion: true)
@@ -305,6 +305,8 @@ struct WorldMapView: View {
                 onSetStartDate: { model.setStartDate($0) },
                 onRename: { model.renameRoute($0) },
                 onSetStatus: { model.setStatus($0) },
+                onSetNote: { model.setRouteNote($0) },
+                onUpdatePoint: { model.update($0) },
                 onRate: { model.rateOpenRoute($0, text: $1) },
                 onRemoveReview: { model.removeMyReview() },
                 onDone: {
