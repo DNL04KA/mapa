@@ -37,7 +37,7 @@
 "Витрина недоступна. Проверь сеть и попробуй ещё раз." = "The store is not responding. Check your connection and try again.";
 "Внутри: %@" = "Inside: %@";
 "Волны дюн" = "Dune waves";
-"Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-colour charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
+"Восемь палитр — от одноцветного угля до неоновой вывески. Любая ложится на любое полотно, и это твои сто с лишним сочетаний." = "Eight palettes, from single-color charcoal to a neon sign. Any of them fits any canvas — that is over a hundred combinations.";
 "Восстановить из копии" = "Restore from a backup";
 "Восстановить покупку" = "Restore purchase";
 "Всё открыто — выбирай любое" = "Everything is unlocked — pick any";
@@ -80,7 +80,7 @@
 "Живу" = "Live here";
 "Загружаем карту мира" = "Loading the world map";
 "Закат" = "Sunset";
-"Закрась мир" = "Colour the world";
+"Закрась мир" = "Color the world";
 "Закрыть выбор аватарки" = "Close avatar picker";
 "Закрыть выбор оформления" = "Close appearance picker";
 "Закрыть выбор статуса" = "Close status picker";
@@ -186,7 +186,7 @@
 "О приложении" = "About";
 "Обнови MAPA, чтобы их открыть. Пока запись остановлена — файл не пострадает." = "Update MAPA to open it. Saving is paused until then, so the file stays intact.";
 "Один раз и навсегда — это не подписка" = "Once and for good — this is not a subscription";
-"Один цвет на всю карту" = "One colour for the whole map";
+"Один цвет на всю карту" = "One color for the whole map";
 "Однажды доберусь" = "One day I will get there";
 "Океания" = "Oceania";
 "Они лежат только на этом телефоне" = "They live on this phone only";
@@ -258,8 +258,8 @@
 "Пустой ответ" = "Empty response";
 "Пустыня" = "Desert";
 "Путешественник" = "Traveller";
-"Пятнадцать полотен, где меняется не цвет, а материал карты, и восемь палитр к ним." = "Fifteen canvases where the map changes its material, not just its colour — and eight palettes to match.";
-"Пятнадцать полотен, где меняется не цвет, а материал карты: пергамент со штриховкой пером, миллиметровка чертежа, звёздное небо под сушей." = "Fifteen canvases where the map changes its material, not just its colour: parchment hatched with a quill, draughtsman's graph paper, a starry sky beneath the land.";
+"Пятнадцать полотен, где меняется не цвет, а материал карты, и восемь палитр к ним." = "Fifteen canvases where the map changes its material, not just its color — and eight palettes to match.";
+"Пятнадцать полотен, где меняется не цвет, а материал карты: пергамент со штриховкой пером, миллиметровка чертежа, звёздное небо под сушей." = "Fifteen canvases where the map changes its material, not just its color: parchment hatched with a quill, draftsman's graph paper, a starry sky beneath the land.";
 "Работает на всех твоих устройствах" = "Works on all your devices";
 "Развернуть подробности" = "Expand details";
 "Рассвет" = "Dawn";
@@ -292,7 +292,7 @@
 "Сохранить имя" = "Save name";
 "Сохранить копию" = "Save a backup";
 "Сохранить" = "Save";
-"Страна в цвете своего флага" = "A country in the colours of its flag";
+"Страна в цвете своего флага" = "A country in the colors of its flag";
 "Страна или город" = "Country or city";
 "Страна" = "Country";
 "Строки развёртки" = "Scan lines";
@@ -342,10 +342,10 @@
 "Хвоя, мох и молодая листва" = "Conifer, moss and new leaves";
 "Хочу побывать: %@" = "Want to go: %@";
 "Хочу" = "Want to go";
-"Цвет самого полотна" = "The canvas's own colour";
-"Цвет страны — с её флага" = "A country's colour comes from its flag";
-"Цвет" = "Colour";
-"Цвета" = "Colours";
+"Цвет самого полотна" = "The canvas's own color";
+"Цвет страны — с её флага" = "A country's color comes from its flag";
+"Цвет" = "Color";
+"Цвета" = "Colors";
 "Чернила" = "Ink";
 "Чертёж" = "Blueprint";
 "Что даёт вход" = "What signing in gives you";
