@@ -98,11 +98,13 @@
 "Закрыть" = "Close";
 "Заливка страны" = "Country fill";
 "Заливка страны, награды" = "Country fill, awards";
+"Запланирован" = "Planned";
 "Звери" = "Animals";
 "Звёздное небо под картой" = "A starry sky beneath the map";
 "Здесь будут те, чьи маршруты оценили выше всего." = "This is where the people with the best-rated routes will be.";
 "Здесь мой дом" = "This is my home";
 "Здесь появятся маршруты других людей — с фотографиями, бюджетом и отзывами. Мы не стали заполнять раздел выдуманными: по ним нельзя поехать." = "Routes by other people will appear here — with photos, budgets and reviews. We did not fill this section with invented ones: you cannot travel by those.";
+"Идёт сейчас" = "Under way";
 "Из них собирается всё остальное" = "Everything else is built from these";
 "Изменить аватарку" = "Change avatar";
 "Изменить имя" = "Edit name";
@@ -202,6 +204,7 @@
 "Открыть за %@" = "Unlock for %@";
 "Открыть фотографию" = "Open photo";
 "Отмена" = "Cancel";
+"Отменён" = "Cancelled";
 "Отметить пройденной" = "Mark as done";
 "Отметить списком" = "Mark from a list";
 "Отметить страну можно списком в профиле, а найти конкретную — поиском" = "Mark a country from the list in your profile; find a particular one with search";
@@ -250,6 +253,7 @@
 "Применить" = "Apply";
 "Примерная оценка" = "Rough estimate";
 "Продолжить маршрут %@. %@" = "Continue route %@. %@";
+"Пройден" = "Completed";
 "Пройден целиком" = "Completed";
 "Пропустить" = "Skip";
 "Профиль не найден" = "Profile not found";
@@ -347,6 +351,7 @@
 "Цвет" = "Color";
 "Цвета" = "Colors";
 "Чернила" = "Ink";
+"Черновик" = "Draft";
 "Чертёж" = "Blueprint";
 "Что даёт вход" = "What signing in gives you";
 "Что посмотреть" = "What to see";

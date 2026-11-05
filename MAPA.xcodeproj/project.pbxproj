@@ -41,6 +41,7 @@
 		A7D74BD93048CD42BF893E6F /* CountryPicker.swift in Build */ = {isa = PBXBuildFile; fileRef = 960114080EA14DC037640BE2 /* CountryPicker.swift */; };
 		3EC49CA5146C197A76C52B6F /* CountryRoutePlanner.swift in Build */ = {isa = PBXBuildFile; fileRef = 9F9660914D36A1164B5AE3A3 /* CountryRoutePlanner.swift */; };
 		066642841266D540CE63E0CA /* HomePlace.swift in Build */ = {isa = PBXBuildFile; fileRef = AA546965FC0E06732212DD30 /* HomePlace.swift */; };
+		32FEC0F4515EC5B5224937B9 /* JourneyStatus.swift in Build */ = {isa = PBXBuildFile; fileRef = 72163B22422730C21FC0FBDC /* JourneyStatus.swift */; };
 		8A437101834BF5E9741951C3 /* Route.swift in Build */ = {isa = PBXBuildFile; fileRef = 0D0930F3F63BE06CE85AB2E0 /* Route.swift */; };
 		9955EFD257CC3DEC8FAFE5F6 /* RouteStorage.swift in Build */ = {isa = PBXBuildFile; fileRef = 305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */; };
 		01B2FE9C51F9E6771077F182 /* StorageFailure.swift in Build */ = {isa = PBXBuildFile; fileRef = 1C136894ACBC90E3A9D5900D /* StorageFailure.swift */; };
@@ -125,6 +126,7 @@
 		8CE61E326CA66E21540CB4EB /* CommunityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E46965A9C8CF71B9675BF05 /* CommunityTests.swift */; };
 		381590EEA63538F3AF945BA0 /* CountryPickerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFB6B73BA6440F0ACAE88260 /* CountryPickerTests.swift */; };
 		E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */; };
+		7073A542B952AE6A9DD58E89 /* JourneyStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08F19242627A70C3B15025 /* JourneyStatusTests.swift */; };
 		49A9EC2757665DE69E65DF7F /* KeyboardInsetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */; };
 		D9C12A49B571E13540C1BE48 /* PhotoCleanupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */; };
 		C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */; };
@@ -172,6 +174,7 @@
 		960114080EA14DC037640BE2 /* CountryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryPicker.swift; sourceTree = "<group>"; };
 		9F9660914D36A1164B5AE3A3 /* CountryRoutePlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryRoutePlanner.swift; sourceTree = "<group>"; };
 		AA546965FC0E06732212DD30 /* HomePlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePlace.swift; sourceTree = "<group>"; };
+		72163B22422730C21FC0FBDC /* JourneyStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyStatus.swift; sourceTree = "<group>"; };
 		0D0930F3F63BE06CE85AB2E0 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteStorage.swift; sourceTree = "<group>"; };
 		1C136894ACBC90E3A9D5900D /* StorageFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageFailure.swift; sourceTree = "<group>"; };
@@ -257,6 +260,7 @@
 		1E46965A9C8CF71B9675BF05 /* CommunityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityTests.swift; sourceTree = "<group>"; };
 		CFB6B73BA6440F0ACAE88260 /* CountryPickerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountryPickerTests.swift; sourceTree = "<group>"; };
 		3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryTests.swift; sourceTree = "<group>"; };
+		7C08F19242627A70C3B15025 /* JourneyStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyStatusTests.swift; sourceTree = "<group>"; };
 		813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInsetTests.swift; sourceTree = "<group>"; };
 		7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCleanupTests.swift; sourceTree = "<group>"; };
 		ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStorageTests.swift; sourceTree = "<group>"; };
@@ -401,6 +405,7 @@
 				960114080EA14DC037640BE2 /* CountryPicker.swift */,
 				9F9660914D36A1164B5AE3A3 /* CountryRoutePlanner.swift */,
 				AA546965FC0E06732212DD30 /* HomePlace.swift */,
+				72163B22422730C21FC0FBDC /* JourneyStatus.swift */,
 				0D0930F3F63BE06CE85AB2E0 /* Route.swift */,
 				305BD3EDDF6E6BF37F322315 /* RouteStorage.swift */,
 				1C136894ACBC90E3A9D5900D /* StorageFailure.swift */,
@@ -730,6 +735,7 @@
 				1E46965A9C8CF71B9675BF05 /* CommunityTests.swift */,
 				CFB6B73BA6440F0ACAE88260 /* CountryPickerTests.swift */,
 				3DB2DC8340A3C3790512E4E7 /* GeometryTests.swift */,
+				7C08F19242627A70C3B15025 /* JourneyStatusTests.swift */,
 				813DB6328481ACBEC585ED5D /* KeyboardInsetTests.swift */,
 				7F9216C0A7E20A25EE03A7FD /* PhotoCleanupTests.swift */,
 				ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */,
@@ -894,6 +900,7 @@
 				A7D74BD93048CD42BF893E6F /* CountryPicker.swift */,
 				3EC49CA5146C197A76C52B6F /* CountryRoutePlanner.swift */,
 				066642841266D540CE63E0CA /* HomePlace.swift */,
+				32FEC0F4515EC5B5224937B9 /* JourneyStatus.swift */,
 				8A437101834BF5E9741951C3 /* Route.swift */,
 				9955EFD257CC3DEC8FAFE5F6 /* RouteStorage.swift */,
 				01B2FE9C51F9E6771077F182 /* StorageFailure.swift */,
@@ -974,6 +981,7 @@
 				8CE61E326CA66E21540CB4EB /* CommunityTests.swift in Sources */,
 				381590EEA63538F3AF945BA0 /* CountryPickerTests.swift in Sources */,
 				E57F0FD96DB7B510C8A109B4 /* GeometryTests.swift in Sources */,
+				7073A542B952AE6A9DD58E89 /* JourneyStatusTests.swift in Sources */,
 				49A9EC2757665DE69E65DF7F /* KeyboardInsetTests.swift in Sources */,
 				D9C12A49B571E13540C1BE48 /* PhotoCleanupTests.swift in Sources */,
 				C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */,

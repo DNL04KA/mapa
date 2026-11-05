@@ -130,15 +130,36 @@ final class StorageSafetyTests: XCTestCase {
         XCTAssertFalse(routes[0].points[0].isVisited)
     }
 
+    func testФайлМаршрутовПервойВерсииПереезжаетНаВторую() async throws {
+        write(OldFiles.routesV1)
+        let storage = FileRouteStorage(fileName: fileName)
+
+        let routes = try await storage.load()
+        XCTAssertEqual(routes.count, 1)
+
+        // Состояние выведено при чтении, а не поставлено черновиком всем
+        // подряд: точки в этом файле не пройдены.
+        XCTAssertEqual(routes[0].status, .draft)
+
+        try await storage.save(routes)
+        let raw = (try? String(contentsOf: fileURL, encoding: .utf8)) ?? ""
+        XCTAssertTrue(raw.contains("\"version\":2"), "файл должен перезаписаться новым форматом")
+
+        // Повторный запуск миграции ничего не ломает и не выводит заново.
+        let again = try await storage.load()
+        XCTAssertEqual(again[0].status, .draft)
+        XCTAssertEqual(again[0].title, "Италия")
+    }
+
     func testФайлМаршрутовБудущейВерсииНеЧитается() async {
-        write(#"{"version":7,"routes":[],"updatedAt":"2026-01-01T00:00:00Z"}"#)
+        write(#"{"version":77,"routes":[],"updatedAt":"2026-01-01T00:00:00Z"}"#)
         let storage = FileRouteStorage(fileName: fileName)
 
         do {
             _ = try await storage.load()
             XCTFail("файл новой версии открывать нельзя")
         } catch {
-            XCTAssertEqual(error as? StorageFailure, .futureVersion(found: 7, supported: 1))
+            XCTAssertEqual(error as? StorageFailure, .futureVersion(found: 77, supported: 2))
         }
     }
 }

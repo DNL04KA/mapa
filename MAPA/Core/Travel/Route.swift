@@ -142,6 +142,8 @@ struct Route: Identifiable, Equatable, Codable {
     /// Подставлять «сегодня» за человека нельзя — он увидит числа, которых
     /// не называл, и поверит им.
     var startDate: Date?
+    /// Что сейчас с поездкой. Ставит человек; приложение только подсказывает.
+    var status: JourneyStatus
 
     init(
         id: UUID = UUID(),
@@ -149,7 +151,8 @@ struct Route: Identifiable, Equatable, Codable {
         points: [RoutePoint] = [],
         createdAt: Date = Date(),
         reviews: [RouteReview] = [],
-        startDate: Date? = nil
+        startDate: Date? = nil,
+        status: JourneyStatus = .draft
     ) {
         self.id = id
         self.title = title
@@ -157,6 +160,68 @@ struct Route: Identifiable, Equatable, Codable {
         self.createdAt = createdAt
         self.reviews = reviews
         self.startDate = startDate
+        self.status = status
+    }
+
+    /// Старые маршруты не знают про состояние.
+    ///
+    /// Ставить всем «черновик» было бы неправдой: часть из них уже
+    /// пройдена, и человек увидел бы свои поездки в разделе набросков.
+    /// Поэтому состояние выводится из того, что в маршруте уже записано, —
+    /// из пройденных точек.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        points = try container.decode([RoutePoint].self, forKey: .points)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        reviews = try container.decodeIfPresent([RouteReview].self, forKey: .reviews) ?? []
+        startDate = try container.decodeIfPresent(Date.self, forKey: .startDate)
+        status = try container.decodeIfPresent(JourneyStatus.self, forKey: .status)
+            ?? Self.derivedStatus(points: points)
+    }
+
+    /// Состояние по тому, что уже отмечено пройденным.
+    static func derivedStatus(points: [RoutePoint]) -> JourneyStatus {
+        guard !points.isEmpty else { return .draft }
+        let visited = points.filter(\.isVisited).count
+        if visited == points.count { return .completed }
+        if visited > 0 { return .inProgress }
+        return .draft
+    }
+
+    /// Какое состояние приложение предложит сегодня.
+    ///
+    /// `nil` — предлагать нечего. Само ничего не меняется: поездку могли
+    /// перенести, отменить или просто не поехать, и календарь об этом не
+    /// знает. Предложение показывается там, где человек может ответить.
+    func suggestedStatus(on date: Date = Date(), calendar: Calendar = .current) -> JourneyStatus? {
+        guard !status.isPast else { return nil }
+
+        // Отметки пройденного — сигнал сильнее календаря: человек сам
+        // сказал, что был там, а дата могла съехать.
+        if !points.isEmpty {
+            let visited = points.filter(\.isVisited).count
+            if visited == points.count { return .completed }
+            if visited > 0, status != .inProgress { return .inProgress }
+        }
+
+        guard let startDate, let endDate = endDate(calendar: calendar) else { return nil }
+        let today = calendar.startOfDay(for: date)
+        let start = calendar.startOfDay(for: startDate)
+
+        switch status {
+        case .planned where today >= start && today < endDate:
+            return .inProgress
+        case .planned where today >= endDate:
+            return .completed
+        case .inProgress where today >= endDate:
+            return .completed
+        case .draft where startDate > today:
+            return .planned
+        default:
+            return nil
+        }
     }
 
     /// Средняя оценка. `nil`, если не оценивал никто — это не то же самое,
