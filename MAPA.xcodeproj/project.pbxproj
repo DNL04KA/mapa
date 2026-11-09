@@ -133,6 +133,7 @@
 		C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */; };
 		C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C98420008F958B62B6FF46 /* RouteCodableTests.swift */; };
 		358F95C43DC62990B1EF2746 /* RouteEditingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */; };
+		9550D93D53DA730821D5A21D /* RouteFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08A8177FA702608BBC18DFD /* RouteFlowTests.swift */; };
 		CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */; };
 		7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E54AB977091945F179EC0145 /* SearchTests.swift */; };
 		EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0128D85165C2D030CAA039BE /* ShopTests.swift */; };
@@ -269,6 +270,7 @@
 		ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStorageTests.swift; sourceTree = "<group>"; };
 		70C98420008F958B62B6FF46 /* RouteCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteCodableTests.swift; sourceTree = "<group>"; };
 		1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEditingTests.swift; sourceTree = "<group>"; };
+		D08A8177FA702608BBC18DFD /* RouteFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFlowTests.swift; sourceTree = "<group>"; };
 		5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFocusTests.swift; sourceTree = "<group>"; };
 		E54AB977091945F179EC0145 /* SearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTests.swift; sourceTree = "<group>"; };
 		0128D85165C2D030CAA039BE /* ShopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopTests.swift; sourceTree = "<group>"; };
@@ -746,6 +748,7 @@
 				ACB58F5AC7F5678A3EBB05C6 /* ProfileStorageTests.swift */,
 				70C98420008F958B62B6FF46 /* RouteCodableTests.swift */,
 				1CEA48FE7F08873D894424CE /* RouteEditingTests.swift */,
+				D08A8177FA702608BBC18DFD /* RouteFlowTests.swift */,
 				5B6B7B8A264B7BB7056823B9 /* RouteFocusTests.swift */,
 				E54AB977091945F179EC0145 /* SearchTests.swift */,
 				0128D85165C2D030CAA039BE /* ShopTests.swift */,
@@ -994,6 +997,7 @@
 				C0EB0F058E9A3CC596E37E7D /* ProfileStorageTests.swift in Sources */,
 				C4F4079542B6C8A79FB1E6EE /* RouteCodableTests.swift in Sources */,
 				358F95C43DC62990B1EF2746 /* RouteEditingTests.swift in Sources */,
+				9550D93D53DA730821D5A21D /* RouteFlowTests.swift in Sources */,
 				CB50039EA054DC594FEC462B /* RouteFocusTests.swift in Sources */,
 				7DF863081FAE6C5E5DF8C640 /* SearchTests.swift in Sources */,
 				EC7D466F19A28E6FDE12D4AB /* ShopTests.swift in Sources */,
