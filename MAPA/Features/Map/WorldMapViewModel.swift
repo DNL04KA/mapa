@@ -984,6 +984,67 @@ final class WorldMapViewModel: ObservableObject {
         syncOpenRoute()
     }
 
+    // MARK: - Города и места
+
+    /// Города, где человек был.
+    ///
+    /// Объединение двух источников: отмеченных вручную и тех, чья точка
+    /// в маршруте пройдена. Второе — не копия первого, а вывод: прошёл
+    /// точку, значит был в городе. Хранить это дважды значит однажды
+    /// рассогласовать, поэтому union считается при показе.
+    var visitedCityIDs: Set<String> {
+        var result = travelLog.visitedCities
+        for route in routes {
+            for point in route.points where point.isVisited {
+                if let id = point.cityID { result.insert(id) }
+            }
+        }
+        return result
+    }
+
+    func isCityVisited(_ city: City) -> Bool {
+        visitedCityIDs.contains(city.id)
+    }
+
+    /// Отметка пришла из пройденной точки маршрута, а не поставлена руками.
+    func isCityVisitedByRoute(_ city: City) -> Bool {
+        routes.contains { route in
+            route.points.contains { $0.isVisited && $0.cityID == city.id }
+        }
+    }
+
+    /// Отметка города руками.
+    ///
+    /// Снять отметку с города, чья точка в маршруте пройдена, нельзя —
+    /// и это правильно: отметка там уже стоит, и убирать её надо там же,
+    /// где поставил.
+    func toggleCityVisited(_ city: City) {
+        let wasVisited = travelLog.isCityVisited(city.id)
+        travelLog.setCityVisited(!wasVisited, cityID: city.id)
+        if !wasVisited { Haptics.shared.countryFill() } else { Haptics.shared.countryClear() }
+        refreshStatistics()
+        persist()
+    }
+
+    func isPlaceVisited(_ landmark: Landmark) -> Bool {
+        guard let key = VisitedPlace.key(for: landmark) else { return false }
+        return travelLog.isPlaceVisited(key)
+    }
+
+    /// Отметить место увиденным.
+    ///
+    /// Места без координат отметить нельзя: ключ у места — это его
+    /// координата, а по названию два разных собора в одном городе не
+    /// различить.
+    func togglePlaceVisited(_ landmark: Landmark, cityID: String?) {
+        guard let place = VisitedPlace(landmark: landmark, cityID: cityID) else { return }
+        let wasVisited = travelLog.isPlaceVisited(place.key)
+        travelLog.setPlaceVisited(!wasVisited, place: place)
+        Haptics.shared.tap(wasVisited ? .soft : .light)
+        refreshStatistics()
+        persist()
+    }
+
     /// Переименовать поездку.
     ///
     /// Пустое имя не ошибка, а возврат к расчётному: у маршрута есть
@@ -1080,6 +1141,9 @@ final class WorldMapViewModel: ObservableObject {
         editingRoute = route
         rebuildRouteLine()
         syncOpenRoute()
+        // Город считается посещённым вместе с точкой, поэтому счётчики
+        // меняются здесь же.
+        refreshStatistics()
 
         guard didPass,
               let countryID = point.countryID,
@@ -1182,7 +1246,9 @@ final class WorldMapViewModel: ObservableObject {
     // MARK: - Служебное
 
     private func refreshStatistics() {
-        statistics = TravelStatistics.make(log: travelLog, geometry: geometry)
+        statistics = TravelStatistics.make(log: travelLog,
+                                           geometry: geometry,
+                                           visitedCities: visitedCityIDs.count)
     }
 
     private func persist() {

@@ -14,6 +14,14 @@ struct CitySheet: View {
     let home: HomePlace?
     let isHome: Bool
     let accent: Color
+    /// Человек был в этом городе — сам отметил или прошёл точку маршрута.
+    let isVisited: Bool
+    /// Отметка города пришла из пройденной точки маршрута: снимать её
+    /// здесь нельзя, убирать надо там, где поставил.
+    let isVisitedByRoute: Bool
+    let onToggleVisited: () -> Void
+    let isPlaceVisited: (Landmark) -> Bool
+    let onTogglePlace: (Landmark) -> Void
     let onSetHome: () -> Void
     /// Открыть страну, в которой город стоит.
     let onOpenCountry: () -> Void
@@ -203,6 +211,7 @@ struct CitySheet: View {
             .buttonStyle(.plain)
             .accessibilityLabel("\(number). \(step.place.name)")
             .accessibilityHint("Открыть фотографию")
+            .overlay(alignment: .topTrailing) { seenMark(step.place) }
 
             Text(step.place.name)
                 .font(DS.Font.caption)
@@ -221,6 +230,29 @@ struct CitySheet: View {
         }
         .frame(width: 152, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Галочка «видел своими глазами».
+    ///
+    /// Прямо на снимке, а не отдельной кнопкой под ним: отмечают места
+    /// обычно вечером того же дня, пролистывая список, и лишнее касание
+    /// здесь стоит дороже, чем аккуратность вёрстки.
+    @ViewBuilder
+    private func seenMark(_ place: Landmark) -> some View {
+        let seen = isPlaceVisited(place)
+        Button {
+            onTogglePlace(place)
+        } label: {
+            Image(systemName: seen ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: DS.Size.iconSm, weight: .semibold))
+                .foregroundStyle(seen ? AnyShapeStyle(DS.Gradient.statusForeground(.visited))
+                                      : AnyShapeStyle(Color.white.opacity(0.75)))
+                .shadow(color: .black.opacity(0.35), radius: 3)
+                .frame(width: 34, height: 34)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(seen ? "Видел: \(place.name)" : "Отметить: \(place.name)")
     }
 
     private var facts: some View {
@@ -284,6 +316,14 @@ struct CitySheet: View {
     /// когда он открыт.
     private var actions: some View {
         DS.Reflow(spacing: DS.Space.xs) {
+            smallButton(isVisited ? String(localized: "Ты здесь был")
+                                  : String(localized: "Был здесь"),
+                        icon: isVisited ? "checkmark.circle.fill" : "checkmark.circle",
+                        isOn: isVisited,
+                        action: onToggleVisited)
+                .disabled(isVisitedByRoute)
+                .opacity(isVisitedByRoute ? 0.6 : 1)
+
             smallButton(countryName ?? String(localized: "Страна"),
                         icon: "map", action: onOpenCountry)
             smallButton(isHome ? String(localized: "Твой дом здесь")

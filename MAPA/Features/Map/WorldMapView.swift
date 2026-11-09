@@ -232,6 +232,11 @@ struct WorldMapView: View {
                 home: model.travelLog.home,
                 isHome: model.isSelectedCityHome,
                 accent: activeTheme.accent,
+                isVisited: model.isCityVisited(city),
+                isVisitedByRoute: model.isCityVisitedByRoute(city),
+                onToggleVisited: { model.toggleCityVisited(city) },
+                isPlaceVisited: { model.isPlaceVisited($0) },
+                onTogglePlace: { model.togglePlaceVisited($0, cityID: city.id) },
                 onSetHome: { model.setHome(at: city, reduceMotion: motion.reduceMotion) },
                 onOpenCountry: {
                     guard let country = model.geometry?.country(id: city.countryID) else { return }

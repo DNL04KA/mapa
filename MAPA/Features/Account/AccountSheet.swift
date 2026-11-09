@@ -219,6 +219,14 @@ struct AccountSheet: View {
         DS.Reflow(spacing: DS.Space.xs) {
             summaryTile(String(format: "%.1f%%", statistics.worldPercent), "мира открыто")
             summaryTile("\(statistics.exploredCount)", "стран")
+            // Города и места появляются, только когда их есть чем
+            // наполнить: «0 городов» в профиле — это не статистика, а укор.
+            if statistics.visitedCityCount > 0 {
+                summaryTile("\(statistics.visitedCityCount)", "городов")
+            }
+            if statistics.visitedPlaceCount > 0 {
+                summaryTile("\(statistics.visitedPlaceCount)", "мест")
+            }
             summaryTile(homeCity ?? "—", "дом")
         }
     }

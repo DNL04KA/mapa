@@ -21,19 +21,31 @@ private struct TravelLogSnapshot: Codable {
     var version: Int
     var statuses: [String: String]
     var home: HomePlace?
+    var visitedCities: Set<String>?
+    var visitedPlaces: [String: VisitedPlace]?
     var updatedAt: Date
 
     /// Нынешний формат. Меняется вместе со схемой, и каждый переход
     /// получает свой шаг в `migrated(_:)`.
-    static let currentVersion = 1
+    ///
+    /// 1 — страны и дом.
+    /// 2 — появились отмеченные города и места.
+    static let currentVersion = 2
 
     /// Привести снимок к нынешнему формату.
     ///
-    /// Переходов пока нет — формат один. Место для них есть здесь, а не
-    /// россыпью необязательных полей по всей модели: иначе через год
-    /// никто не скажет, какая версия что значила.
+    /// Переход с первой версии делает разбор журнала: городов и мест в
+    /// старом файле нет, и они читаются пустыми — это более ранний
+    /// формат, а не пустая карта. Здесь остаётся поднять номер, чтобы
+    /// файл перезаписался в новом виде.
+    ///
+    /// Повторный запуск безопасен: снимок нынешней версии возвращается
+    /// как есть.
     static func migrated(_ snapshot: TravelLogSnapshot) -> TravelLogSnapshot {
-        snapshot
+        guard snapshot.version < currentVersion else { return snapshot }
+        var result = snapshot
+        result.version = currentVersion
+        return result
     }
 }
 
@@ -76,7 +88,10 @@ struct FileTravelLogStorage: TravelLogStorage {
             // Неизвестные статусы просто отбрасываем: лучше потерять одну отметку,
             // чем уронить загрузку всей карты.
             let statuses = snapshot.statuses.compactMapValues(TravelStatus.init(rawValue:))
-            return TravelLog(statuses: statuses, home: snapshot.home)
+            return TravelLog(statuses: statuses,
+                             home: snapshot.home,
+                             visitedCities: snapshot.visitedCities ?? [],
+                             visitedPlaces: snapshot.visitedPlaces ?? [:])
         }.value
     }
 
@@ -85,6 +100,8 @@ struct FileTravelLogStorage: TravelLogStorage {
             version: TravelLogSnapshot.currentVersion,
             statuses: log.statuses.mapValues(\.rawValue),
             home: log.home,
+            visitedCities: log.visitedCities,
+            visitedPlaces: log.visitedPlaces,
             updatedAt: Date()
         )
 

@@ -58,6 +58,10 @@ enum ExportAnimation {
             wishlistCount: Int((Double(full.wishlistCount) * progress).rounded()),
             exploredCount: Int((Double(full.exploredCount) * progress).rounded()),
             continentsTouched: Int((Double(full.continentsTouched) * progress).rounded()),
+            // Города и места в кадре не участвуют: карточка показывает
+            // проценты и страны, и досчитывать то, чего на ней нет, незачем.
+            visitedCityCount: full.visitedCityCount,
+            visitedPlaceCount: full.visitedPlaceCount,
             continents: full.continents
         )
     }

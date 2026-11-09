@@ -18,6 +18,10 @@ struct TravelStatistics: Equatable {
     /// Страны со статусом «был» или «живу».
     let exploredCount: Int
     let continentsTouched: Int
+    /// Сколько городов отмечено — вручную или пройденной точкой маршрута.
+    let visitedCityCount: Int
+    /// Сколько мест человек видел своими глазами.
+    let visitedPlaceCount: Int
     let continents: [ContinentProgress]
 
     struct ContinentProgress: Identifiable, Equatable {
@@ -46,12 +50,19 @@ struct TravelStatistics: Equatable {
         wishlistCount: 0,
         exploredCount: 0,
         continentsTouched: 0,
+        visitedCityCount: 0,
+        visitedPlaceCount: 0,
         continents: []
     )
 
     var isEmpty: Bool { exploredCount == 0 && wishlistCount == 0 }
 
-    static func make(log: TravelLog, geometry: WorldGeometry?) -> TravelStatistics {
+    /// `visitedCities` приходит снаружи: города отмечаются и вручную, и
+    /// пройденной точкой маршрута, а про маршруты журнал ничего не знает
+    /// и знать не должен.
+    static func make(log: TravelLog,
+                     geometry: WorldGeometry?,
+                     visitedCities: Int = 0) -> TravelStatistics {
         guard let geometry, geometry.totalAreaKm2 > 0 else { return .empty }
 
         var exploredArea: Double = 0
@@ -113,6 +124,8 @@ struct TravelStatistics: Equatable {
             wishlistCount: wishlist,
             exploredCount: visited + living,
             continentsTouched: continents.filter { $0.explored > 0 }.count,
+            visitedCityCount: visitedCities,
+            visitedPlaceCount: log.visitedPlaces.count,
             continents: continents
         )
     }

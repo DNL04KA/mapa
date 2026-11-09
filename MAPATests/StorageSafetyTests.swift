@@ -60,7 +60,7 @@ final class StorageSafetyTests: XCTestCase {
             _ = try await storage.load()
             XCTFail("файл новой версии открывать нельзя")
         } catch {
-            XCTAssertEqual(error as? StorageFailure, .futureVersion(found: 99, supported: 1))
+            XCTAssertEqual(error as? StorageFailure, .futureVersion(found: 99, supported: 2))
         }
     }
 
@@ -255,4 +255,80 @@ private enum OldFiles {
     {"id":"6B29FC40-CA47-1067-B31D-00DD010662DB","name":"Рим",\
     "longitude":12.5,"latitude":41.9,"days":3,"budget":0,"note":""}]}]}
     """
+}
+
+/// Города и места: переход файла журнала на вторую версию.
+@MainActor
+final class VisitedPlacesTests: XCTestCase {
+
+    private var fileName = "visited-\(UUID().uuidString).json"
+
+    private var fileURL: URL {
+        let base = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            .first ?? URL(fileURLWithPath: NSTemporaryDirectory())
+        return base.appendingPathComponent(fileName)
+    }
+
+    override func tearDown() {
+        try? FileManager.default.removeItem(at: fileURL)
+        super.tearDown()
+    }
+
+    func testСтарыйЖурналЧитаетсяИПереезжаетНаВторуюВерсию() async throws {
+        try Data(OldFiles.travelLogV1.utf8).write(to: fileURL, options: .atomic)
+        let storage = FileTravelLogStorage(fileName: fileName)
+
+        var log = try await storage.load()
+        XCTAssertEqual(log.status(for: "ITA"), .visited)
+        // Городов и мест в старом файле нет — это более ранний формат,
+        // а не пустая карта.
+        XCTAssertTrue(log.visitedCities.isEmpty)
+        XCTAssertTrue(log.visitedPlaces.isEmpty)
+
+        log.setCityVisited(true, cityID: "ITA-Rome")
+        try await storage.save(log)
+
+        let raw = (try? String(contentsOf: fileURL, encoding: .utf8)) ?? ""
+        XCTAssertTrue(raw.contains("\"version\":2"), "файл должен перезаписаться новым форматом")
+
+        let back = try await storage.load()
+        XCTAssertTrue(back.isCityVisited("ITA-Rome"))
+        XCTAssertEqual(back.status(for: "ITA"), .visited, "старое не потерялось")
+    }
+
+    func testКлючМестаНеЗависитОтНазвания() {
+        let landmark = Landmark(ru: "Колизей", en: "Colosseum", small: nil, large: nil,
+                                author: nil, license: nil, lon: 12.4922, lat: 41.8902)
+        let renamed = Landmark(ru: "Колизей (Флавиев амфитеатр)", en: "Colosseum",
+                               small: nil, large: nil, author: nil, license: nil,
+                               lon: 12.4922, lat: 41.8902)
+
+        XCTAssertEqual(VisitedPlace.key(for: landmark), VisitedPlace.key(for: renamed),
+                       "каталог пересобирается, а прошлое человека меняться не должно")
+    }
+
+    func testМестоБезКоординатОтметитьНельзя() {
+        let nowhere = Landmark(ru: "Где-то", en: "Somewhere", small: nil, large: nil,
+                               author: nil, license: nil, lon: nil, lat: nil)
+        XCTAssertNil(VisitedPlace.key(for: nowhere))
+        XCTAssertNil(VisitedPlace(landmark: nowhere, cityID: "ITA-Rome"))
+    }
+
+    func testПройденнаяТочкаМаршрутаСчитаетсяПосещённымГородом() async throws {
+        var point = RoutePoint(cityID: "JPN-Tokyo", name: "Токио", countryID: "JPN",
+                               coordinate: Coordinate(longitude: 139.7, latitude: 35.7))
+        point.isVisited = true
+        let route = Route(title: "Япония", points: [point])
+
+        let model = WorldMapViewModel(storage: EphemeralTravelLogStorage(),
+                                      routeStorage: EphemeralRouteStorage(initial: [route]))
+        await model.load()
+
+        XCTAssertTrue(model.visitedCityIDs.contains("JPN-Tokyo"))
+        XCTAssertEqual(model.statistics.visitedCityCount, 1)
+        // В журнале этой отметки нет: она выводится из маршрута, а не
+        // хранится дважды.
+        XCTAssertFalse(model.travelLog.isCityVisited("JPN-Tokyo"))
+    }
 }

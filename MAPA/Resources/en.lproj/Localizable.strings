@@ -25,6 +25,7 @@
 "Африка" = "Africa";
 "Без дат" = "No dates yet";
 "Был" = "Been";
+"Был здесь" = "Been here";
 "Бюджет остановки" = "Budget for this stop";
 "В бандле нет файла %@" = "File %@ is missing from the bundle";
 "В бандле нет файла cities.json" = "cities.json is missing from the bundle";
@@ -34,6 +35,7 @@
 "Взять маршрут по стране: %@" = "Take the route for %@";
 "Взять себе" = "Make it mine";
 "Вид и язык" = "Look and language";
+"Видел: %@" = "Seen: %@";
 "Винтаж" = "Vintage";
 "Витрина недоступна. Проверь сеть и попробуй ещё раз." = "The store is not responding. Check your connection and try again.";
 "Внутри: %@" = "Inside: %@";
@@ -223,6 +225,7 @@
 "Отметить страну можно списком в профиле, а найти конкретную — поиском" = "Mark a country from the list in your profile; find a particular one with search";
 "Отметить страну" = "Mark the country";
 "Отметить страны" = "Mark countries";
+"Отметить: %@" = "Mark as seen: %@";
 "Отмечай страны, где был, собирай маршруты по городам и смотри, сколько мира уже твоё." = "Mark the countries you've been to, build routes between cities and see how much of the world is already yours.";
 "Оформление" = "Appearance";
 "Оценить маршрут" = "Rate the route";
@@ -339,6 +342,7 @@
 "Тумблеры имитируют системные настройки" = "The switches mimic system settings";
 "Ты здесь" = "You are here";
 "Ты" = "You";
+"Ты здесь был" = "You have been here";
 "Тёплая бумага с тенью" = "Warm paper with a shadow";
 "Тёплые от охры до сливы" = "Warm, from ochre to plum";
 "Убрать %@" = "Remove %@";
@@ -389,12 +393,14 @@
 "включено" = "on";
 "выбрана %@" = "%@ selected";
 "выключено" = "off";
+"городов" = "cities";
 "дней" = "days";
 "дом" = "home";
 "загрузка" = "load";
 "зум" = "zoom";
 "кадр" = "frame";
 "маршруты" = "routes";
+"мест" = "places";
 "мира открыто" = "of the world";
 "на карте" = "on the map";
 "не отмечено" = "not marked";
