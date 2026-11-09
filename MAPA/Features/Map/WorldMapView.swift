@@ -8,25 +8,25 @@ struct WorldMapView: View {
     @Environment(\.dsMotion) private var motion
 
     @State private var showsDebug = false
+    /// Что сейчас открыто поверх карты.
+    ///
+    /// Стопка, а не девять отдельных флагов. Флаги позволяли открыть
+    /// две панели одновременно и требовали гасить предыдущую руками —
+    /// про это забывали, и панель оставалась под новой. Стопка же
+    /// описывает то, что есть на самом деле: настройки открываются
+    /// поверх профиля, покупка — поверх оформления, и закрытие снимает
+    /// верхнюю.
+    @State private var openSheets: [MapSheet] = []
     /// Первый запуск показывается один раз и больше не возвращается.
     @AppStorage("onboarding.done") private var onboardingDone = false
     @State private var statsExpanded = false
-    @State private var showsThemes = false
-    @State private var showsPlus = false
-    @State private var showsCommunity = false
-    @State private var showsSettings = false
-    @State private var showsMarks = false
     /// Человек, чью страницу открыли из топа.
     @State private var person: PublicAuthor?
-    @State private var showsAccount = false
-    @State private var showsSearch = false
     /// Платное полотно или палитра, которые сейчас примеряют.
     /// Живёт только пока открыта панель.
     @State private var previewChoice: ThemePreview?
     /// Страна, чья карточка открыта.
     @State private var cardCountry: Country?
-    @State private var showsRoutes = false
-    @State private var showsExport = false
     @State private var routeExpanded = false
     @Environment(\.scenePhase) private var scenePhase
 
@@ -62,6 +62,22 @@ struct WorldMapView: View {
         }
     }
 
+    /// Панель поверх карты.
+    enum MapSheet: Hashable {
+        case account, routes, community, settings, marks, search, themes, plus, export
+    }
+
+    private func isOpen(_ sheet: MapSheet) -> Bool { openSheets.contains(sheet) }
+
+    private func open(_ sheet: MapSheet) {
+        guard !openSheets.contains(sheet) else { return }
+        openSheets.append(sheet)
+    }
+
+    private func close(_ sheet: MapSheet) {
+        openSheets.removeAll { $0 == sheet }
+    }
+
     #if DEBUG
     /// Открыть панель по переменной окружения.
     ///
@@ -71,21 +87,21 @@ struct WorldMapView: View {
     /// это только замена нажатию, и в сборку для магазина не попадает.
     private func openScreenFromEnvironment() {
         switch ProcessInfo.processInfo.environment["MAPA_SCREEN"] {
-        case "routes": showsRoutes = true
-        case "account": showsAccount = true
+        case "routes": open(.routes)
+        case "account": open(.account)
         case "profile-setup":
-            showsAccount = true
+            open(.account)
             account.forgetHandleForScreenshot()
-        case "theme": showsThemes = true
-        case "plus": showsPlus = true
-        case "settings": showsSettings = true
-        case "marks": showsMarks = true
-        case "community": showsCommunity = true
+        case "theme": open(.themes)
+        case "plus": open(.plus)
+        case "settings": open(.settings)
+        case "marks": open(.marks)
+        case "community": open(.community)
         #if DEBUG
         case let id? where id.hasPrefix("person-"):
             // Снимок страницы человека: ищем его по никнейму так же, как
             // это сделает человек.
-            showsCommunity = true
+            open(.community)
             Task {
                 let store = CommunityStore()
                 if case let .found(author) = await store.find(handle: String(id.dropFirst(7))) {
@@ -93,8 +109,8 @@ struct WorldMapView: View {
                 }
             }
         #endif
-        case "search": showsSearch = true
-        case "export": showsExport = true
+        case "search": open(.search)
+        case "export": open(.export)
         case let id? where id.hasPrefix("city-"):
             guard let city = model.cities.first(where: { $0.id == String(id.dropFirst(5)) }) else { return }
             model.focus(on: city, reduceMotion: true)
@@ -254,14 +270,14 @@ struct WorldMapView: View {
     /// Список стран: отметить десяток за минуту, а не искать их на глобусе.
     @ViewBuilder
     private var marksSheet: some View {
-        if showsMarks {
+        if isOpen(.marks) {
             MarksSheet(
                 countries: model.allCountries,
                 log: model.travelLog,
                 accent: activeTheme.accent,
                 onMark: { status, country in model.mark(status, for: country) },
                 onDismiss: {
-                    withAnimation(motion.animation(.smooth)) { showsMarks = false }
+                    withAnimation(motion.animation(.smooth)) { close(.marks) }
                 }
             )
             .themedPanel(activeTheme)
@@ -273,7 +289,7 @@ struct WorldMapView: View {
 
     @ViewBuilder
     private var exportSheet: some View {
-        if showsExport, let geometry = model.geometry {
+        if isOpen(.export), let geometry = model.geometry {
             ExportSheet(
                 theme: activeTheme,
                 geometry: geometry,
@@ -282,7 +298,7 @@ struct WorldMapView: View {
                 route: model.editingRoute,
                 homeCity: model.homeCityName,
                 markedBounds: geometry.bounds(of: model.travelLog.statuses.keys),
-                onDismiss: { withAnimation(motion.animation(.smooth)) { showsExport = false } }
+                onDismiss: { withAnimation(motion.animation(.smooth)) { close(.export) } }
             )
             .themedPanel(activeTheme)
             .zIndex(3)
@@ -326,35 +342,35 @@ struct WorldMapView: View {
 
     @ViewBuilder
     private var routesSheet: some View {
-        if showsRoutes {
+        if isOpen(.routes) {
             RoutesSheet(
                 routes: model.routes,
                 suggestions: model.suggestedCountryRoutes,
                 accent: activeTheme.accent,
                 onOpen: { route in
-                    withAnimation(motion.animation(.smooth)) { showsRoutes = false }
+                    withAnimation(motion.animation(.smooth)) { close(.routes) }
                     routeExpanded = true
                     model.openRoute(route, reduceMotion: motion.reduceMotion)
                 },
                 onCreate: {
-                    withAnimation(motion.animation(.smooth)) { showsRoutes = false }
+                    withAnimation(motion.animation(.smooth)) { close(.routes) }
                     routeExpanded = false
                     model.startRoute(reduceMotion: motion.reduceMotion)
                 },
                 onDelete: { model.deleteRoute($0) },
                 onTakeSuggestion: { suggestion in
-                    withAnimation(motion.animation(.smooth)) { showsRoutes = false }
+                    withAnimation(motion.animation(.smooth)) { close(.routes) }
                     model.takeSuggestedRoute(suggestion.stops, for: suggestion.country,
                                              reduceMotion: motion.reduceMotion)
                     routeExpanded = true
                 },
                 onOpenCommunity: {
                     withAnimation(motion.animation(.smooth)) {
-                        showsRoutes = false
-                        showsCommunity = true
+                        close(.routes)
+                        open(.community)
                     }
                 },
-                onDismiss: { withAnimation(motion.animation(.smooth)) { showsRoutes = false } }
+                onDismiss: { withAnimation(motion.animation(.smooth)) { close(.routes) } }
             )
             .themedPanel(activeTheme)
             .zIndex(3)
@@ -486,7 +502,7 @@ struct WorldMapView: View {
                     // Закрыть его можно одним касанием.
                     if model.travelLog.markedCount < 2 {
                         withAnimation(motion.animation(.smooth).delay(0.35)) {
-                            showsMarks = true
+                            open(.marks)
                         }
                     }
                 }
@@ -498,7 +514,7 @@ struct WorldMapView: View {
     /// Сообщество: топ маршрутов, топ людей и страница человека.
     @ViewBuilder
     private var communitySheets: some View {
-        if showsCommunity {
+        if isOpen(.community) {
             CommunitySheet(
                 accent: activeTheme.accent,
                 country: { model.geometry?.country(id: $0) },
@@ -506,7 +522,7 @@ struct WorldMapView: View {
                     withAnimation(motion.animation(.smooth)) { person = author }
                 },
                 onDismiss: {
-                    withAnimation(motion.animation(.smooth)) { showsCommunity = false }
+                    withAnimation(motion.animation(.smooth)) { close(.community) }
                 }
             )
             .themedPanel(activeTheme)
@@ -530,7 +546,7 @@ struct WorldMapView: View {
     /// Настройки: вид, язык, копия карты и о приложении.
     @ViewBuilder
     private var settingsSheet: some View {
-        if showsSettings {
+        if isOpen(.settings) {
             SettingsSheet(
                 shop: shop,
                 accent: activeTheme.accent,
@@ -556,18 +572,18 @@ struct WorldMapView: View {
                 },
                 onOpenAppearance: {
                     withAnimation(motion.animation(.smooth)) {
-                        showsSettings = false
-                        showsThemes = true
+                        close(.settings)
+                        open(.themes)
                     }
                 },
                 onOpenPlus: {
                     withAnimation(motion.animation(.smooth)) {
-                        showsSettings = false
-                        showsPlus = true
+                        close(.settings)
+                        open(.plus)
                     }
                 },
                 onDismiss: {
-                    withAnimation(motion.animation(.smooth)) { showsSettings = false }
+                    withAnimation(motion.animation(.smooth)) { close(.settings) }
                 }
             )
             .themedPanel(activeTheme)
@@ -578,12 +594,12 @@ struct WorldMapView: View {
     /// Покупка MAPA+.
     @ViewBuilder
     private var plusSheet: some View {
-        if showsPlus {
+        if isOpen(.plus) {
             PlusSheet(
                 shop: shop,
                 accent: activeTheme.accent,
                 onDismiss: {
-                    withAnimation(motion.animation(.smooth)) { showsPlus = false }
+                    withAnimation(motion.animation(.smooth)) { close(.plus) }
                 }
             )
             .themedPanel(activeTheme)
@@ -594,7 +610,7 @@ struct WorldMapView: View {
     /// Поиск страны или города.
     @ViewBuilder
     private var searchSheet: some View {
-        if showsSearch, let geometry = model.geometry {
+        if isOpen(.search), let geometry = model.geometry {
             SearchSheet(
                 index: SearchIndex(countries: geometry.countries, cities: model.cities),
                 accent: activeTheme.accent,
@@ -616,12 +632,12 @@ struct WorldMapView: View {
     }
 
     private func closeSearch() {
-        withAnimation(motion.animation(.smooth)) { showsSearch = false }
+        withAnimation(motion.animation(.smooth)) { close(.search) }
     }
 
     @ViewBuilder
     private var accountSheet: some View {
-        if showsAccount {
+        if isOpen(.account) {
             AccountSheet(
                 account: account,
                 accent: activeTheme.accent,
@@ -631,29 +647,29 @@ struct WorldMapView: View {
                 homeCity: model.homeCityName,
                 routeCount: model.routes.count,
                 onOpenCountry: { country in
-                    withAnimation(motion.animation(.smooth)) { showsAccount = false }
+                    withAnimation(motion.animation(.smooth)) { close(.account) }
                     model.select(country, reduceMotion: motion.reduceMotion)
                     openCard(for: country)
                 },
                 onOpenRoutes: {
                     withAnimation(motion.animation(.smooth)) {
-                        showsAccount = false
-                        showsRoutes = true
+                        close(.account)
+                        open(.routes)
                     }
                 },
                 onDismiss: {
-                    withAnimation(motion.animation(.smooth)) { showsAccount = false }
+                    withAnimation(motion.animation(.smooth)) { close(.account) }
                 },
                 onOpenSettings: {
-                    withAnimation(motion.animation(.smooth)) { showsSettings = true }
+                    withAnimation(motion.animation(.smooth)) { open(.settings) }
                 },
                 onEditMarks: {
-                    withAnimation(motion.animation(.smooth)) { showsMarks = true }
+                    withAnimation(motion.animation(.smooth)) { open(.marks) }
                 },
                 onOpenAppearance: {
                     withAnimation(motion.animation(.smooth)) {
-                        showsAccount = false
-                        showsThemes = true
+                        close(.account)
+                        open(.themes)
                     }
                 }
             )
@@ -664,7 +680,7 @@ struct WorldMapView: View {
 
     @ViewBuilder
     private var themeSheet: some View {
-        if showsThemes {
+        if isOpen(.themes) {
             ThemePicker(
                 surface: surface,
                 palette: palette,
@@ -681,7 +697,7 @@ struct WorldMapView: View {
                 },
                 isPlus: shop.isPlus,
                 onOpenPlus: {
-                    withAnimation(motion.animation(.smooth)) { showsPlus = true }
+                    withAnimation(motion.animation(.smooth)) { open(.plus) }
                 }
             )
             .themedPanel(activeTheme)
@@ -704,7 +720,7 @@ struct WorldMapView: View {
 
     private func closeThemes() {
         withAnimation(motion.animation(.smooth)) {
-            showsThemes = false
+            close(.themes)
             previewChoice = nil
         }
     }
@@ -752,13 +768,13 @@ struct WorldMapView: View {
             VStack(spacing: DS.Space.sm) {
                 // Поиск открывается ровно там, где лежит панель мира, и
                 // «МИР ОТКРЫТ НА 2.5%» читалось сквозь поле ввода.
-                if model.state == .ready, !showsSearch {
+                if model.state == .ready, !isOpen(.search) {
                     WorldStatsPanel(
                         statistics: model.statistics,
                         theme: activeTheme,
                         isExpanded: $statsExpanded,
                         onOpenMarks: {
-                            withAnimation(motion.animation(.smooth)) { showsMarks = true }
+                            withAnimation(motion.animation(.smooth)) { open(.marks) }
                         }
                     )
                         .transition(motion.transition(.move(edge: .top).combined(with: .opacity)))
@@ -768,9 +784,9 @@ struct WorldMapView: View {
                 // должен узнать о ней до того, как начнёт отмечать карту
                 // заново, решив, что всё пропало.
                 if let failure = model.logFailure ?? model.routesFailure ?? account.failure,
-                   !showsSearch {
+                   !isOpen(.search) {
                     StorageAlertBar(failure: failure, accent: activeTheme.accent) {
-                        withAnimation(motion.animation(.smooth)) { showsSettings = true }
+                        withAnimation(motion.animation(.smooth)) { open(.settings) }
                     }
                     .transition(motion.transition(.move(edge: .top).combined(with: .opacity)))
                 }
@@ -842,14 +858,14 @@ struct WorldMapView: View {
         HStack(spacing: 0) {
             tabItem(icon: "person.crop.circle",
                     title: "Профиль",
-                    isActive: showsAccount) {
-                withAnimation(motion.animation(.smooth)) { showsAccount = true }
+                    isActive: isOpen(.account)) {
+                withAnimation(motion.animation(.smooth)) { open(.account) }
             }
 
             tabItem(icon: "point.topleft.down.curvedto.point.bottomright.up",
                     title: "Маршруты",
                     isActive: model.editingRoute != nil) {
-                withAnimation(motion.animation(.smooth)) { showsRoutes = true }
+                withAnimation(motion.animation(.smooth)) { open(.routes) }
             }
 
             // Сообщество — только когда сервер подключён. Вкладка, которая
@@ -863,8 +879,8 @@ struct WorldMapView: View {
             if showsCommunityTab {
                 tabItem(icon: "person.2",
                         title: "Сообщество",
-                        isActive: showsCommunity) {
-                    withAnimation(motion.animation(.smooth)) { showsCommunity = true }
+                        isActive: isOpen(.community)) {
+                    withAnimation(motion.animation(.smooth)) { open(.community) }
                 }
             }
 
@@ -872,7 +888,7 @@ struct WorldMapView: View {
                     title: "Поделиться",
                     isActive: false,
                     isEnabled: !model.statistics.isEmpty) {
-                withAnimation(motion.animation(.smooth)) { showsExport = true }
+                withAnimation(motion.animation(.smooth)) { open(.export) }
             }
         }
         .padding(.horizontal, DS.Space.xxs)
@@ -1013,9 +1029,9 @@ struct WorldMapView: View {
             VStack(spacing: 0) {
                 // Поиск — первым: без него до половины приложения не дойти,
                 // и это чаще нужно, чем зум.
-                MapControlButton(icon: "magnifyingglass", isActive: showsSearch,
+                MapControlButton(icon: "magnifyingglass", isActive: isOpen(.search),
                                  tint: activeTheme.accent) {
-                    withAnimation(motion.animation(.smooth)) { showsSearch = true }
+                    withAnimation(motion.animation(.smooth)) { open(.search) }
                 }
                 .accessibilityLabel("Найти страну или город")
 
